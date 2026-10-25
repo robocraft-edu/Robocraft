@@ -8,6 +8,7 @@ import { aiServerUrl } from '@/config/services';
 import { accountsEnabled, aiEnabled } from '@/lib/features';
 import { fb, currentFirebaseUser, authError } from '@/api/firebase';
 import { nativeGoogle } from '@/lib/platform';
+import { coerceToSchema } from '@/lib/aiShape';
 
 let deleting = false;
 
@@ -181,7 +182,7 @@ async function invokeLLM({ prompt, response_json_schema, user_input } = {}) {
   const cacheKey = user_input ? null : hashOf(JSON.stringify([prompt, response_json_schema || null]));
   if (cacheKey) {
     const hit = readAiCache()[cacheKey];
-    if (hit && Date.now() - hit.t < AI_CACHE_DAYS * 86400000) return hit.r;
+    if (hit && Date.now() - hit.t < AI_CACHE_DAYS * 86400000) return coerceToSchema(hit.r, response_json_schema);
   }
   let res;
   try {
@@ -196,7 +197,7 @@ async function invokeLLM({ prompt, response_json_schema, user_input } = {}) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.error) throw Object.assign(new Error(data.error || 'AI is busy right now. Please try again.'), { status: res.status });
   if (cacheKey && !data.blocked) writeAiCache(cacheKey, data.result);
-  return data.result;
+  return coerceToSchema(data.result, response_json_schema);
 }
 
 // ── Saved AI projects (Firestore) ───────────────────────────────────────────

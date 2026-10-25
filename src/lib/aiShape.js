@@ -18,7 +18,20 @@ export const asList = (v) => {
 export const asText = (v) => {
   if (typeof v === 'string') return v;
   if (v === null || v === undefined) return '';
-  if (Array.isArray(v)) return v.map(asText).join('\n');
+  if (Array.isArray(v)) return v.map(asText).filter(Boolean).join('\n');
+  if (typeof v === 'object') {
+    // The model sometimes answers { challenge: "…", coding: "…" } where a
+    // single string was asked for. Read it out rather than printing
+    // "[object Object]" — or, worse, handing React an object to render.
+    return Object.entries(v)
+      .filter(([, val]) => val !== null && val !== undefined && val !== '')
+      .map(([k, val]) => {
+        const label = String(k).replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+        const body = asText(val);
+        return body.startsWith(label) ? body : `${label.charAt(0).toUpperCase()}${label.slice(1)}: ${body}`;
+      })
+      .join('\n\n');
+  }
   return String(v);
 };
 
@@ -44,4 +57,33 @@ export function normalizeProject(p) {
     c && typeof c === 'object' ? c : { name: asText(c), quantity: 1 }
   ));
   return out;
+}
+
+/**
+ * Make an AI reply match the schema it was asked for. A field declared as a
+ * string is always a string, a list is always a list, and so on, so no screen
+ * can be handed an object to print. Unknown shapes pass through untouched.
+ */
+export function coerceToSchema(value, schema) {
+  if (!schema || typeof schema !== 'object') return value;
+  const t = schema.type;
+  if (t === 'string') return asText(value);
+  if (t === 'number' || t === 'integer') {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  }
+  if (t === 'boolean') return value === true || value === 'true';
+  if (t === 'array') {
+    const list = asList(value);
+    return schema.items ? list.map(v => coerceToSchema(v, schema.items)) : list;
+  }
+  if (t === 'object' && schema.properties) {
+    const src = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    const out = { ...src };
+    for (const [k, s] of Object.entries(schema.properties)) {
+      if (k in src || s?.type === 'string' || s?.type === 'array') out[k] = coerceToSchema(src[k], s);
+    }
+    return out;
+  }
+  return value;
 }

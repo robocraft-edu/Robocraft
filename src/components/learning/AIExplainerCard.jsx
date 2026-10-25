@@ -3,6 +3,7 @@ import ReportButton from '@/components/ReportButton';
 import { aiEnabled } from '@/lib/features';
 import { backend } from '@/api/client';
 import { Loader2, ChevronUp, ChevronDown } from 'lucide-react';
+import { asText } from '@/lib/aiShape';
 
 function AIExplainerCardInner({ title, subtitle, icon: Icon, color = '#00D2FF', prompt, renderResponse }) {
   const [open, setOpen] = useState(false);
@@ -18,7 +19,7 @@ function AIExplainerCardInner({ title, subtitle, icon: Icon, color = '#00D2FF', 
         prompt,
         response_json_schema: { type: 'object', properties: { response: { type: 'string' } } },
       });
-      setContent(res.response || 'Sorry, I could not generate this. Please try again.');
+      setContent(asText(res?.response ?? res) || 'Sorry, I could not generate this. Please try again.');
     } catch {
       setContent('Could not connect to AI. Please try again in a moment.');
     } finally {

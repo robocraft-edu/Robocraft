@@ -44,7 +44,7 @@
     </script>
     <style>
       /* Shown until the app loads — also what a crawler sees. */
-      .pre { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1.25rem 3rem; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #0f172a; }
+      .pre { display: none; max-width: 46rem; margin: 0 auto; padding: 2.5rem 1.25rem 3rem; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #0f172a; }
       html.dark .pre { color: #e2e8f0; }
       body { margin: 0; background: #f4f6fa; }
       html.dark body { background: #0a0f1e; }
@@ -61,9 +61,9 @@
          In a browser (and inside the Android app) it would flash for a second
          before React mounts, which looked like the download page opening by
          mistake — so it is hidden the instant we know scripts are running. */
-      html.js .pre { display: none; }
-      .boot { display: none; }
-      html.js .boot { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; gap: .9rem; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      /* hidden by default so it can never flash */
+      .boot { display: flex; }
+      html .boot { flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; gap: .9rem; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
       .boot-mark { width: 64px; height: 64px; border-radius: 1rem; background: linear-gradient(135deg, #06b6d4, #2563eb); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(37, 99, 235, .25); }
       .boot-name { font-weight: 800; font-size: 1.1rem; letter-spacing: -.01em; background: linear-gradient(90deg, #0e7490, #1d4ed8); -webkit-background-clip: text; background-clip: text; color: transparent; }
       html.dark .boot-name { background: linear-gradient(90deg, #22d3ee, #60a5fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -77,6 +77,7 @@
       .skip-link { position: absolute; left: -9999px; top: 0; background: #0b1120; color: #fff; padding: .6rem 1rem; border-radius: 0 0 .5rem 0; z-index: 100; }
       .skip-link:focus { left: 0; }
     </style>
+    <noscript><style>.pre { display: block !important; } .boot { display: none !important; }</style></noscript>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -85,10 +86,6 @@
       <main id="main" class="pre">
         <h1>RoboCraft — Robotics &amp; AI for ICSE and ISC students</h1>
         <p class="lead">A complete companion for the CISCE <strong>Robotics and Artificial Intelligence</strong> syllabus, Classes 9 to 11. Most of it works offline, and there are no ads.</p>
-        <p>
-          <a class="cta" href="https://github.com/aryanworldwide/Robocraft/releases/tag/apk-latest">Download the Android app</a>
-          <a class="cta" href="https://github.com/aryanworldwide/Robocraft">Source code on GitHub</a>
-        </p>
         <h2>What is inside</h2>
         <ul>
           <li><strong>Every chapter</strong> as textbook notes with labelled diagrams, key terms and audio.</li>
@@ -101,14 +98,13 @@
         </ul>
         <p>Free to use. No ads, no subscription, no in-app purchases — guest mode keeps everything on your own device.</p>
         <p class="muted">
-          <a href="https://github.com/aryanworldwide/Robocraft/releases">Release notes</a> ·
           <a href="./privacy.html">Privacy policy</a> ·
           <a href="./terms.html">Terms of use</a> ·
           <a href="./accessibility.html">Accessibility</a> ·
           <a href="./contact.html">Contact</a> ·
           <a href="./security.html">Security</a>
         </p>
-        <noscript><p><strong>JavaScript is switched off.</strong> RoboCraft runs in the browser, so please enable JavaScript or install the Android app from the link above.</p></noscript>
+        <noscript><p><strong>JavaScript is switched off.</strong> RoboCraft runs in the browser, so please enable JavaScript to use it.</p></noscript>
       </main>
       <div class="boot" aria-hidden="true">
         <span class="boot-mark">

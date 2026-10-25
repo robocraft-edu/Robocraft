@@ -43,9 +43,10 @@ function floorTexture(map) {
   return tex;
 }
 
-function makeRobot() {
+function makeRobot(custom) {
   const g = new THREE.Group();
-  const blue = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.5, metalness: 0.1 });
+  const kinds = custom?.parts || [];
+  const blue = new THREE.MeshStandardMaterial({ color: /^#[0-9a-f]{6}$/i.test(custom?.color || '') ? custom.color : 0x0ea5e9, roughness: 0.5, metalness: 0.1 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.8 });
   const board = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.6 });
   const chassis = new THREE.Mesh(new THREE.BoxGeometry(ROBOT.length, 1.2, ROBOT.width), blue);
@@ -74,8 +75,31 @@ function makeRobot() {
   }
   const ledMat = new THREE.MeshStandardMaterial({ color: 0x7f1d1d, emissive: 0x000000 });
   const led = new THREE.Mesh(new THREE.SphereGeometry(0.6, 10, 10), ledMat); led.position.set(2.5, 4.8, 2.5); g.add(led);
+  // Parts a student chose in "Build your own robot" show up on the body.
+  let arm = null;
+  if (kinds.includes('servo')) {
+    const base = new THREE.Mesh(new THREE.BoxGeometry(3, 2.4, 3), new THREE.MeshStandardMaterial({ color: 0x2563eb }));
+    base.position.set(5.5, 5.4, 0); g.add(base);
+    arm = new THREE.Group(); arm.position.set(5.5, 7, 0); g.add(arm);
+    const link = new THREE.Mesh(new THREE.BoxGeometry(11, 1.2, 1.6), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
+    link.position.set(5, 0, 0); arm.add(link);
+    for (const z of [-1.6, 1.6]) {
+      const claw = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1, 0.6), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
+      claw.position.set(10.5, 0, z); arm.add(claw);
+    }
+  }
+  let buzzMat = null;
+  if (kinds.includes('buzzer')) {
+    buzzMat = new THREE.MeshStandardMaterial({ color: 0x0891b2, emissive: 0x000000 });
+    const bz = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 1.2, 14), buzzMat); bz.position.set(-1, 5.1, -2.2); g.add(bz);
+  }
+  if (kinds.includes('line_array')) {
+    for (const z of [2.5, 0, -2.5]) {
+      const s = new THREE.Mesh(new THREE.BoxGeometry(1, 0.7, 1), new THREE.MeshStandardMaterial({ color: 0x7c3aed })); s.position.set(ROBOT.length / 2 - 0.5, 2, z); g.add(s);
+    }
+  }
   g.traverse(o => { if (o.isMesh) o.castShadow = true; });
-  return { group: g, wheels, irMat, ledMat };
+  return { group: g, wheels, irMat, ledMat, arm, buzzMat };
 }
 
 function makeBin() {
@@ -162,7 +186,7 @@ export default function ArenaView({ boardRef, cameraMode = 'chase', height = 320
 
     let robot = null, bin = null;
     if (map.bin) { bin = makeBin(); scene.add(bin.group); }
-    else { robot = makeRobot(); scene.add(robot.group); }
+    else { robot = makeRobot(map.custom); scene.add(robot.group); }
 
     // trail
     const trailGeo = new THREE.BufferGeometry();
@@ -198,6 +222,8 @@ export default function ArenaView({ boardRef, cameraMode = 'chase', height = 320
         robot.wheels.forEach((w) => { w.rotation.y = spin; });
         robot.irMat.forEach((m, i) => { const on = b.digitalRead(i === 0 ? ROBOT_PINS.IR_LEFT : ROBOT_PINS.IR_RIGHT); m.emissive.setHex(on ? 0x000000 : 0xef4444); });
         robot.ledMat.emissive.setHex(b.out[ROBOT_PINS.LED] ? 0xff2020 : 0x000000);
+        if (robot.arm) robot.arm.rotation.y = (((b.servo?.[ROBOT_PINS.SERVO] ?? 90) - 90) * Math.PI) / 180;
+        if (robot.buzzMat) robot.buzzMat.emissive.setHex(b.tones && Object.keys(b.tones).some(k => b.tones[k]) ? 0x22d3ee : 0x000000);
         const n = Math.min(b.trail.length, 600);
         for (let i = 0; i < n; i++) { const p = b.trail[b.trail.length - n + i]; trailPos[i * 3] = p[0]; trailPos[i * 3 + 1] = baseY + 0.3; trailPos[i * 3 + 2] = -p[1]; }
         trailGeo.setDrawRange(0, n); trailGeo.attributes.position.needsUpdate = true;
