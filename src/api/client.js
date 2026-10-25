@@ -197,7 +197,9 @@ async function invokeLLM({ prompt, response_json_schema, user_input } = {}) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.error) throw Object.assign(new Error(data.error || 'AI is busy right now. Please try again.'), { status: res.status });
   if (cacheKey && !data.blocked) writeAiCache(cacheKey, data.result);
-  return coerceToSchema(data.result, response_json_schema);
+  const out = coerceToSchema(data.result, response_json_schema);
+  if (data.blocked && out && typeof out === 'object') out.__blocked = true;
+  return out;
 }
 
 // ── Saved AI projects (Firestore) ───────────────────────────────────────────

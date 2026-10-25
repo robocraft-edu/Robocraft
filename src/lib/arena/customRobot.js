@@ -298,7 +298,7 @@ export async function designRobot(request) {
       const res = await backend.integrations.Core.InvokeLLM({ user_input: text, prompt: aiPrompt(text, previous), response_json_schema: SCHEMA });
       if (!res || typeof res !== 'object') throw new Error('empty');
       // The safety filter answers with { response } and no sketch.
-      if (!res.code && (res.response || res.text)) return { blocked: true, note: asText(res.response || res.text) };
+      if (res.__blocked) return { blocked: true, note: asText(res.response || res.text) };
       const design = {
         name: asText(res.name).slice(0, 60) || 'My robot', summary: asText(res.summary).slice(0, 240),
         environment: ENV_TASK[asText(res.environment).toLowerCase()] ? asText(res.environment).toLowerCase() : 'obstacles',
