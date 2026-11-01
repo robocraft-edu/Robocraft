@@ -41,7 +41,7 @@ export function armMap() {
       objects: [
         { ...at(-30, 20), color: 0xef4444 }, { ...at(0, 20), color: 0x3b82f6 }, { ...at(30, 20), color: 0xfacc15 },
       ],
-      tray: { ...at(70, 20), half: 8.5 },
+      tray: { ...at(75, 20), half: 7.5 },
     },
   };
 }

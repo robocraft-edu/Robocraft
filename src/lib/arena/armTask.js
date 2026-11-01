@@ -63,9 +63,9 @@ void setup() {
 }
 
 void loop() {
-  pickAndPlace(60, 148);    // right cube  -> first spot in the tray
-  pickAndPlace(90, 160);    // middle cube -> middle of the tray
-  pickAndPlace(120, 172);   // left cube   -> last spot
+  pickAndPlace(60, 153);    // right cube  -> first spot in the tray
+  pickAndPlace(90, 165);    // middle cube -> middle of the tray
+  pickAndPlace(120, 177);   // left cube   -> last spot
   pose(90, 92, 67, 500);
   while (true) { delay(1000); }   // done: all cubes moved
 }
@@ -79,9 +79,9 @@ void setup() {
 }
 
 // The three cubes sit 20 cm from the base at base angles 60, 90 and 120.
-// The tray is on the left, around base angle 160 (spots 148, 160 and 172 keep cubes apart).
+// The tray is on the left, around base angle 165 (spots 153, 165 and 177 keep cubes apart).
 // Hover pose: pose(angle, 92, 67, 700)    Table height: pose(angle, 62, 63, 900)
-// Try it: lower onto the middle cube, close the gripper, lift, swing to 160, lower, open.
+// Try it: lower onto the middle cube, close the gripper, lift, swing to 165, lower, open.
 void loop() {
   Serial.print("Distance ahead: "); Serial.println(readDistance());
   delay(500);

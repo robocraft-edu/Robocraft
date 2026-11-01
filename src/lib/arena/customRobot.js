@@ -269,6 +269,18 @@ export function dryRun(code, envTask) {
   });
 }
 
+/** Runs a robotic-arm sketch to the end of the task. Resolves to how many cubes reached the tray. */
+export function armCheck(code) {
+  return new Promise((resolve) => {
+    try {
+      const board = new ArenaBoard(armMap());
+      const h = runSketch(code, board, { speed: 64, maxMs: 45000, onError: () => {} });
+      const t = setTimeout(() => { h.stop(); resolve(board.arm?.placed || 0); }, 20000);
+      h.done.then(() => { clearTimeout(t); resolve(board.arm?.placed || 0); }).catch(() => { clearTimeout(t); resolve(board.arm?.placed || 0); });
+    } catch { resolve(0); }
+  });
+}
+
 const looksLikeSketch = (c) => typeof c === 'string' && /void\s+setup\s*\(/.test(c) && /void\s+loop\s*\(/.test(c);
 const stripFence = (c) => String(c || '').replace(/^\s*```[a-z+]*\n?/i, '').replace(/```\s*$/i, '').trim();
 
@@ -280,7 +292,7 @@ const SCHEMA = { type: 'object', properties: {
 
 function armPrompt(request, previous) {
   return `A school student wants to build a robotic arm: "${request}".
-It is a STATIONARY 4-servo arm bolted to a table (not on a car). Three cubes already sit on the table 20 cm from the base, at base angles 60, 90 and 120. A tray waits at base angle about 160 (use 148, 160, 172 so the cubes do not stack).
+It is a STATIONARY 4-servo arm bolted to a table (not on a car). Three cubes already sit on the table 20 cm from the base, at base angles 60, 90 and 120. A tray waits at base angle about 165, also 20 cm out (drop the three cubes at base angles 153, 165 and 177 so they do not stack).
 Return JSON with: name, summary (one sentence), color (hex, the arm's colour), explain (2-3 simple sentences), and code: a complete Arduino sketch that picks up every cube and puts it in the tray, then stops. Start from this skeleton EXACTLY, keep every line, then add pickAndPlace helpers, setup() and loop():
 ${ARM_SKELETON}
 Angles: base 90 = straight ahead. shoulder 90 = upright, smaller leans forward. elbow 180 = straight, smaller bends. grip 0 = open, 90 = closed.
@@ -330,6 +342,13 @@ export async function designRobot(request) {
       if (!looksLikeSketch(design.code)) throw new Error('no sketch');
       if (isArm && !/\bgrip\b/.test(design.code)) throw new Error('not an arm sketch');
       const problem = await dryRun(design.code, design.environment);
+      if (!problem && isArm) {
+        // The code must really do the job: all three cubes into the tray.
+        const placed = await armCheck(design.code);
+        if (placed >= 3) return { design, note: '' };
+        previous = { code: design.code, error: `it only put ${placed} of 3 cubes in the tray. Use the reference poses and the drop angles 153, 165, 177` };
+        continue;
+      }
       if (!problem) return { design, note: '' };
       previous = { code: design.code, error: `${problem.line ? `line ${problem.line}: ` : ''}${problem.message}` };
     } catch (e) {

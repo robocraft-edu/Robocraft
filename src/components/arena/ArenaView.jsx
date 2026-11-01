@@ -252,7 +252,7 @@ export default function ArenaView({ boardRef, cameraMode = 'chase', height = 320
 
     // initial camera
     if (map.bin) { camera.position.set(90, 70, 90); controls.target.set(10, 20, 0); }
-    else if (map.arm) { camera.position.set(-18, 52, 62); controls.target.set(10, 8, -4); }
+    else if (map.arm) { camera.position.set(-30, 62, 100); controls.target.set(6, 16, -4); }
     else { camera.position.set(0, Math.max(W, H) * 0.9 + tableH, Math.max(W, H) * 0.55); controls.target.set(0, tableH, 0); }
 
     const resize = () => {
