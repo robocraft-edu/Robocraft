@@ -51,6 +51,7 @@ const DesignStudio = lazy(() => import('@/pages/DesignStudio'));
 const MechanismLab = lazy(() => import('@/pages/MechanismLab'));
 const Assessment = lazy(() => import('@/pages/Assessment'));
 const BuildHub = lazy(() => import('@/pages/BuildHub'));
+const RobotQuiz = lazy(() => import('@/pages/RobotQuiz'));
 
 function PageLoading() {
   return (
@@ -111,6 +112,7 @@ const AuthenticatedApp = () => {
       <Suspense fallback={<PageLoading />}>
       <Routes>
         <Route path="/splash" element={<Splash />} />
+        <Route path="/robot-quiz" element={<RobotQuiz />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
