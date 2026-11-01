@@ -328,7 +328,7 @@ function PinTag({ p, text, color, dim, nudge = 0 }) {
 const SHADOW_FILTER = 'rcCompShadow';
 
 // ── Main component ───────────────────────────────────────────────────────────
-export default function CircuitDiagram({ pinConnections, projectName, header, onComponentClick, highlightWire }) {
+export default function CircuitDiagram({ pinConnections, projectName, header, onComponentClick, highlightWire, natural = false }) {
   if (!pinConnections || pinConnections.length === 0) {
     return (
       <div style={{ padding: '24px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
@@ -519,8 +519,8 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
   const subtitle = hInfo.subtitle || instances.map(i => i.name).slice(0, 5).join(' + ');
 
   return (
-    <svg width="100%" viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
-      style={{ maxWidth: `${CANVAS_W}px`, margin: '0 auto', display: 'block', background: '#FAFBFC' }}>
+    <svg width={natural ? CANVAS_W : '100%'} height={natural ? CANVAS_H : undefined} viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
+      style={natural ? { display: 'block', background: '#FAFBFC' } : { maxWidth: `${CANVAS_W}px`, margin: '0 auto', display: 'block', background: '#FAFBFC' }}>
       <defs>
         <style>{'.rc-mirror text{transform-box:fill-box;transform-origin:center;transform:scaleX(-1)}'}</style>
         <filter id={SHADOW_FILTER} x="-20%" y="-20%" width="140%" height="140%">
