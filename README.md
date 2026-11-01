@@ -6,9 +6,9 @@
 
 | | |
 |---|---|
-| **🤖 Android** | [**⬇️ Download RoboCraft.apk**](https://github.com/aryanworldwide/Robocraft/releases/latest/download/RoboCraft.apk) |
-| **🍎 iPhone / iPad** | [**▶️ Open RoboCraft**](https://aryanworldwide.github.io/Robocraft/) then add it to your Home Screen |
-| **💻 Laptop / any browser** | [**▶️ Open RoboCraft**](https://aryanworldwide.github.io/Robocraft/) |
+| **🤖 Android** | [**⬇️ Download RoboCraft.apk**](https://github.com/robocraft-edu/Robocraft/releases/latest/download/RoboCraft.apk) |
+| **🍎 iPhone / iPad** | [**▶️ Open RoboCraft**](https://robocraft-edu.github.io/Robocraft/) then add it to your Home Screen |
+| **💻 Laptop / any browser** | [**▶️ Open RoboCraft**](https://robocraft-edu.github.io/Robocraft/) |
 
 ### Android: install
 1. Tap **Download RoboCraft.apk** and open the downloaded file.

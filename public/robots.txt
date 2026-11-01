@@ -1,7 +1,7 @@
-# RoboCraft — https://github.com/aryanworldwide/Robocraft
+# RoboCraft — https://github.com/robocraft-edu/Robocraft
 User-agent: *
 Allow: /
 # Header config for other hosts, not a page.
 Disallow: /_headers
 
-Sitemap: https://aryanworldwide.github.io/Robocraft/sitemap.xml
+Sitemap: https://robocraft-edu.github.io/Robocraft/sitemap.xml

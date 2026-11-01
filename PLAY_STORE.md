@@ -81,7 +81,7 @@ Works offline for most features. No ads.
 - **Content rating questionnaire:** Education app; no violence, no sexual content, no gambling;
   *users can interact* → answer **Yes** for "AI-generated content" and point to the in-app Report button.
 - **Target audience:** 13–15, 16–17, 18+ (not under 13).
-- **Privacy policy URL:** `https://aryanworldwide.github.io/Robocraft/privacy.html`
+- **Privacy policy URL:** `https://robocraft-edu.github.io/Robocraft/privacy.html`
   (edit the contact email at the bottom of `public/privacy.html` first).
 - **Account deletion URL** (required because the app has accounts): same privacy page, section 8,
   or Settings → Delete account inside the app.

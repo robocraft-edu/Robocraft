@@ -10,8 +10,8 @@ Every push to `main` runs two workflows:
 
 | Workflow | Result |
 |---|---|
-| **Build Android APK** | Publishes `RoboCraft.apk` to the [latest release](https://github.com/aryanworldwide/Robocraft/releases/latest) |
-| **Deploy web app** | Updates https://aryanworldwide.github.io/Robocraft/ (iPhone users add it to the Home Screen) |
+| **Build Android APK** | Publishes `RoboCraft.apk` to the [latest release](https://github.com/robocraft-edu/Robocraft/releases/latest) |
+| **Deploy web app** | Updates https://robocraft-edu.github.io/Robocraft/ (iPhone users add it to the Home Screen) |
 
 You can also run either one by hand: **Actions** tab → pick the workflow → **Run workflow**.
 

@@ -1,6 +1,6 @@
 # Hosting and the security-header findings
 
-A site audit will report these as failing on `aryanworldwide.github.io`:
+A site audit will report these as failing on `robocraft-edu.github.io`:
 
 | Finding | Severity |
 |---|---|
@@ -37,7 +37,7 @@ site turns all of them on with no code change.
 ### Cloudflare Pages (recommended — you already have a Cloudflare account)
 
 1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** →
-   **Connect to Git** → pick `aryanworldwide/Robocraft`.
+   **Connect to Git** → pick `robocraft-edu/Robocraft`.
 2. Build command `npm run build`, output directory `dist`.
 3. Add an environment variable **`BASE_PATH`** = `/` (Cloudflare serves from the
    domain root, not from a `/Robocraft/` sub-path).
@@ -49,7 +49,7 @@ site turns all of them on with no code change.
    `backend/worker.js` (`ALLOWED_ORIGINS`), then redeploy the Worker.
 2. Firebase console → **Authentication → Settings → Authorised domains** → add
    the new domain, or Google sign-in will fail.
-3. Replace `https://aryanworldwide.github.io/Robocraft/` with the new URL in
+3. Replace `https://robocraft-edu.github.io/Robocraft/` with the new URL in
    `index.html` (canonical, `og:url`, `twitter:`), `public/sitemap.xml`,
    `public/robots.txt` and `public/.well-known/security.txt`.
 

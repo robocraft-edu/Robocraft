@@ -7,7 +7,8 @@ const FAST_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8';    // short chat answer
 const CACHE_SECONDS = 7 * 24 * 3600;                         // identical requests are answered from cache
 const GUARD = '@cf/meta/llama-guard-3-8b';
 const ALLOWED_ORIGINS = [
-  'https://aryanworldwide.github.io', // web / iPhone version
+  'https://robocraft-edu.github.io',  // web / iPhone version
+  'https://aryanworldwide.github.io', // old address, kept while people move over
   'https://localhost',                // Android app
   'capacitor://localhost',
   'http://localhost:5173',            // local development
