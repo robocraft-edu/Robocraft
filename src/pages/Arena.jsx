@@ -413,11 +413,11 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
 
       {tab === 'pins' && !isCustom && (
         <div className="glass-strong rounded-xl p-3 text-xs">
-          <p className="text-muted-foreground mb-2">{task.body === 'arm' ? 'The arm is wired like a school robotics kit: Arduino Uno, four servos (base, shoulder, elbow, gripper) on their own 5 V supply, and an HC-SR04 on the base.' : 'The simulated robot is wired like a standard school kit: Arduino Uno, L298N motor driver, 2 IR sensors, HC-SR04 ultrasonic sensor'}{task.body !== 'arm' && task.id === 'pid' ? ', and a 3-sensor analog IR array on A0–A2' : ''}.</p>
+          <p className="text-muted-foreground mb-2">{task.body === 'arm' ? 'The arm is wired like a school robotics kit: Arduino Uno, four servos (base, shoulder, elbow, gripper) on their own 5 V supply, and an HC-SR04 on the base' : 'The simulated robot is wired like a standard school kit: Arduino Uno, L298N motor driver, 2 IR sensors, HC-SR04 ultrasonic sensor'}{task.body !== 'arm' && task.id === 'pid' ? ', and a 3-sensor analog IR array on A0–A2' : ''}.</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
             {pinRows.map(([k, v]) => <div key={k} className="flex justify-between border-b border-white/5 py-0.5"><span>{k}</span><span className="text-cyan-400">{v >= 14 ? `A${v - 14}` : v}</span></div>)}
           </div>
-          <p className="text-muted-foreground mt-2">IR sensors read HIGH on black (or when there is no floor). Motor: IN1 HIGH + IN2 LOW = forward; ENA PWM 0–255 sets speed (below ~45 the motor stalls).</p>
+          {task.body !== 'arm' && <p className="text-muted-foreground mt-2">IR sensors read HIGH on black (or when there is no floor). Motor: IN1 HIGH + IN2 LOW = forward; ENA PWM 0–255 sets speed (below ~45 the motor stalls).</p>}
         </div>
       )}
 

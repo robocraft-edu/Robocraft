@@ -482,19 +482,20 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
       });
     });
   }
+  const [bPlus, bMinus] = batteryInst && batteryInst.id === 'power_supply' ? ['V', 'G'] : ['P', 'N'];
   if (batteryInst && hub) {
-    [['P', '12V', WIRE_COLORS.red, '+'], ['N', 'GND', WIRE_COLORS.black, '−']].forEach(([bp, dp, col, tag], j) => {
+    [[bPlus, '12V', WIRE_COLORS.red, '+'], [bMinus, 'GND', WIRE_COLORS.black, '−']].forEach(([bp, dp, col, tag], j) => {
       auto(`auto_b${j}`, batteryInst, bp, colOf[batteryInst.key], hub, dp, colOf[hub.key], col, tag, dp, `Battery → ${dp}`);
     });
   } else if (batteryInst && servos.length) {
     servos.forEach((m, mi) => {
-      auto(`auto_sv${mi}`, batteryInst, 'P', colOf[batteryInst.key], m, 'VCC', colOf[m.key], WIRE_COLORS.red, '+', 'VCC', 'Supply → Servo +');
-      auto(`auto_sg${mi}`, batteryInst, 'N', colOf[batteryInst.key], m, 'GND', colOf[m.key], WIRE_COLORS.black, '−', 'GND', 'Supply → Servo −');
+      auto(`auto_sv${mi}`, batteryInst, bPlus, colOf[batteryInst.key], m, 'VCC', colOf[m.key], WIRE_COLORS.red, '+', 'VCC', 'Supply → Servo +');
+      auto(`auto_sg${mi}`, batteryInst, bMinus, colOf[batteryInst.key], m, 'GND', colOf[m.key], WIRE_COLORS.black, '−', 'GND', 'Supply → Servo −');
     });
   } else if (batteryInst && driven.length) {
     driven.forEach((m, mi) => {
-      auto(`auto_bm${mi}`, batteryInst, 'P', colOf[batteryInst.key], m, 'P', colOf[m.key], WIRE_COLORS.red, '+', 'P', 'Battery → Motor');
-      auto(`auto_bn${mi}`, batteryInst, 'N', colOf[batteryInst.key], m, 'N', colOf[m.key], WIRE_COLORS.black, '−', 'N', 'Battery → Motor');
+      auto(`auto_bm${mi}`, batteryInst, bPlus, colOf[batteryInst.key], m, 'P', colOf[m.key], WIRE_COLORS.red, '+', 'P', 'Battery → Motor');
+      auto(`auto_bn${mi}`, batteryInst, bMinus, colOf[batteryInst.key], m, 'N', colOf[m.key], WIRE_COLORS.black, '−', 'N', 'Battery → Motor');
     });
   }
 
