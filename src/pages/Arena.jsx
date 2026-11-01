@@ -375,13 +375,13 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
 
       {tab === 'pins' && (
         <div className="glass-strong rounded-xl p-3 mb-3">
-          <button onClick={() => setBigWiring(true)} className="block w-full overflow-hidden rounded-lg bg-white text-left" aria-label="Open the wiring diagram full screen">
+          <button onClick={() => setBigWiring(true)} className="block w-full overflow-x-auto rounded-lg bg-white text-left" aria-label="Open the wiring diagram full screen"><div style={{ minWidth: 760 }}>
             <Suspense fallback={<div className="py-10 text-xs text-center text-muted-foreground">Drawing the circuit…</div>}>
               <ErrorBoundary compact message="The wiring diagram could not be drawn. The table below still lists every pin.">
                 <CircuitDiagram pinConnections={wiringConns} projectName={isCustom ? 'Your robot' : task.title} />
               </ErrorBoundary>
             </Suspense>
-          </button>
+          </div></button>
           <p className="text-[10px] text-muted-foreground mt-2">Wires are coloured by job: red power, black ground, blue digital, orange PWM, green analog. Tap the picture to zoom in.</p>
         </div>
       )}

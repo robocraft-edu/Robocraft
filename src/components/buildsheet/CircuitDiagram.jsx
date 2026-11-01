@@ -239,7 +239,7 @@ function routeWires(wires, ctx) {
     const ht = t.side === 'left' || t.side === 'right';
     const facing = hs && ht && ((s.side === 'right' && t.side === 'left' && t.x > s.x) || (s.side === 'left' && t.side === 'right' && t.x < s.x));
     if (facing) { w.kind = 'gap'; w.dir = t.x > s.x ? 1 : -1; add(`gap:${w.sCol}>${w.tCol}`, w); }
-    else if (hs && ht) { w.kind = 'around'; w.top = (s.y + t.y) / 2 < ctx.midY; add(w.top ? 'top' : 'bottom', w); }
+    else if (hs && ht) { w.kind = 'around'; w.top = s.y < ctx.midY; add(w.top ? 'top' : 'bottom', w); }
     else w.kind = 'elbow';
   });
 
