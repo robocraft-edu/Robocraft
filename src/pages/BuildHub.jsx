@@ -5,7 +5,7 @@ import { LAB_EXPERIMENTS } from '@/lib/lab/labExperiments';
 import { SHAPES } from '@/lib/design/shapes';
 import { PROJECTS as DESIGN_PROJECTS } from '@/lib/design/parts';
 import { useInk } from '@/lib/ui/ink';
-import { Cpu, Bot, Cog, Trophy, ChevronRight, FileText, Plus, Clock, Boxes, CircuitBoard } from 'lucide-react';
+import { Cpu, Bot, Cog, Trophy, ChevronRight, FileText, Plus, Clock, Boxes, CircuitBoard, Wand2 } from 'lucide-react';
 
 // Always a list, whatever is actually in storage: a corrupt or older value
 // used to reach .slice() and take the Build screen down.
@@ -80,10 +80,13 @@ export default function BuildHub() {
   const designs = useMemo(() => read('robocraft_designs').slice(0, 6)
     .map(d => ({ id: d.id, name: d.name, when: ago(d.updated || Date.now()) })), []);
 
+  const pyProjects = useMemo(() => read('robocraft_py_projects').filter(p => p && p.title).slice(0, 6)
+    .map(p => ({ id: p.id, name: p.title, when: ago(p.when || Date.now()) })), []);
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 pb-10">
       <h1 className="text-xl font-bold">Build</h1>
-      <p className="text-xs text-muted-foreground mb-4">Two workspaces, like Tinkercad: wire a circuit in 2-D, or model a part in 3-D. Everything runs inside the app.</p>
+      <p className="text-xs text-muted-foreground mb-4">Three workspaces: wire a circuit in 2-D, model a part in 3-D, or have Python projects made and explained for you. Everything runs inside the app.</p>
 
       <div className="space-y-3">
         <StudioTile icon={CircuitBoard} color="#f97316" kicker="2D · CIRCUITS"
@@ -108,6 +111,18 @@ export default function BuildHub() {
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{DESIGN_PROJECTS.length} guided projects</span>
           </div>
           <RecentRow items={designs} onOpen={() => navigate('/design')} empty="No saved designs yet — start with a box and a hole." />
+        </StudioTile>
+
+        <StudioTile icon={Wand2} color="#10b981" kicker="PYTHON · PROJECTS"
+          title="Python Project Maker" blurb="Say what you want to build. Get working Python, then learn every line and operator in it."
+          cta="New Python project" onOpen={() => navigate('/pyproject')}>
+          <div className="px-4 pb-2 flex flex-wrap gap-1">
+            {['Calculator', 'Marks & grades', 'Guessing game', 'Bank account', 'Chatbot'].map(n => (
+              <span key={n} className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">{n}</span>
+            ))}
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">or anything you imagine</span>
+          </div>
+          <RecentRow items={pyProjects} onOpen={() => navigate('/pyproject')} empty="No saved Python projects yet — describe one and press Make." />
         </StudioTile>
       </div>
 

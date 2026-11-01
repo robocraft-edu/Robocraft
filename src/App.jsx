@@ -35,6 +35,7 @@ const ProgressPage = lazy(() => import('@/pages/ProgressPage'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const Shop = lazy(() => import('@/pages/Shop'));
 const PythonPlayground = lazy(() => import('@/pages/PythonPlayground'));
+const PythonProjectMaker = lazy(() => import('@/pages/PythonProjectMaker'));
 const Leaderboard = lazy(() => import('@/pages/Leaderboard'));
 const StoryMap = lazy(() => import('@/pages/StoryMap'));
 const Mentor = lazy(() => import('@/pages/Mentor'));
@@ -129,6 +130,7 @@ const AuthenticatedApp = () => {
             <Route path="/settings" element={<Settings />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/python" element={<PythonPlayground />} />
+            <Route path="/pyproject" element={<PythonProjectMaker />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/story" element={<StoryMap />} />
             <Route path="/mentor" element={<Mentor />} />

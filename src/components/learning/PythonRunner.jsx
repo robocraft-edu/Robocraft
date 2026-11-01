@@ -5,7 +5,7 @@ import { runPython } from '@/lib/python/runner';
 /**
  * A small Python editor with a Run button. Output (and charts) appear below.
  */
-export default function PythonRunner({ initialCode = '', initialInput = '', task, note, title = 'Try it in Python', onRun, storageKey }) {
+export default function PythonRunner({ initialCode = '', initialInput = '', task, note, title = 'Try it in Python', onRun, onCodeChange, storageKey }) {
   const saved = () => { try { return storageKey ? localStorage.getItem(storageKey) : null; } catch { return null; } };
   const [code, setCode] = useState(() => saved() ?? initialCode);
   const [input, setInput] = useState(initialInput);
@@ -16,6 +16,8 @@ export default function PythonRunner({ initialCode = '', initialInput = '', task
   const [hasRun, setHasRun] = useState(false);
   const stopRef = useRef(null);
   const editorRef = useRef(null);
+
+  useEffect(() => { if (onCodeChange) onCodeChange(code); }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!storageKey) return;
