@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { RealisticComponent, REALISTIC_SIZES, REALISTIC_PINS } from './RealisticComponents';
 
 // ── Wire colors aligned to the RoboCraft circuit legend ──────────────────────
@@ -7,23 +7,10 @@ const WIRE_COLORS = {
   orange: '#EA580C', yellow: '#CA8A04', purple: '#A78BFA', cyan: '#0891B2',
 };
 
-const WIRE_LEGEND = [
-  { color: WIRE_COLORS.red, label: '5V / Power' },
-  { color: WIRE_COLORS.black, label: 'GND' },
-  { color: WIRE_COLORS.blue, label: 'Digital' },
-  { color: WIRE_COLORS.green, label: 'Analog' },
-  { color: WIRE_COLORS.orange, label: 'PWM' },
-  { color: WIRE_COLORS.yellow, label: 'Signal / Data' },
-];
-
-function resolveColor(conn) {
-  if (conn.color && /^#/.test(conn.color)) return conn.color;
-  if (conn.wireColor) {
-    const k = String(conn.wireColor).toLowerCase();
-    if (WIRE_COLORS[k]) return WIRE_COLORS[k];
-  }
-  return '#64748B';
-}
+// Every wire gets its own colour and number, so any wire can be followed by eye
+// and found in the wire list.
+const WIRE_PALETTE = ['#E11D48', '#2563EB', '#16A34A', '#F59E0B', '#7C3AED', '#0891B2', '#EA580C', '#DB2777', '#65A30D', '#0D9488',
+  '#4F46E5', '#B45309', '#C026D3', '#0284C7', '#84CC16', '#475569', '#F43F5E', '#14B8A6', '#8B5CF6', '#CA8A04'];
 
 // ── Name → component id matching (reused from prior renderer) ────────────────
 export function matchComponentId(name) {
@@ -307,19 +294,16 @@ function GenericModule({ name, x, y, size, pins, onComponentClick }) {
   );
 }
 
-/** A small coloured label at a wire end, naming the pin it connects to. */
-function PinTag({ p, text, color, dim, nudge = 0 }) {
-  if (!p || !text) return null;
-  const short = String(text).replace(/\s*\(.*\)$/, '').slice(0, 12);
-  const w = Math.max(22, short.length * 7.2 + 10);
-  const off = 15;
-  const raw = p.side === 'left' ? p.x - off - w : p.side === 'right' ? p.x + off : p.x - w / 2;
-  const x = Math.max(4, Math.min(raw, 1180 - w - 4)); // never fall off the page
-  const y = (p.side === 'top' ? p.y - off - 16 : p.side === 'bottom' ? p.y + off : p.y - 8) + nudge;
+/** A numbered dot at a wire end; the number matches the wire list. */
+function PinBadge({ p, n, color, dim, nudge = 0 }) {
+  if (!p) return null;
+  const off = 16;
+  const x = p.side === 'left' ? p.x - off : p.side === 'right' ? p.x + off : p.x + nudge;
+  const y = p.side === 'top' ? p.y - off : p.side === 'bottom' ? p.y + off : p.y + nudge;
   return (
     <g opacity={dim ? 0.25 : 1} style={{ pointerEvents: 'none' }}>
-      <rect x={x} y={y} width={w} height={16} rx={4} fill="#fff" stroke={color} strokeWidth="1.4" />
-      <text x={x + w / 2} y={y + 11.5} textAnchor="middle" fontSize="9.5" fontWeight="800" fill={color} fontFamily="'Inter',sans-serif">{short}</text>
+      <circle cx={x} cy={y} r={8.5} fill={color} stroke="#fff" strokeWidth="1.6" />
+      <text x={x} y={y + 3.4} textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#fff" fontFamily="'Inter',sans-serif">{n}</text>
     </g>
   );
 }
@@ -328,7 +312,16 @@ function PinTag({ p, text, color, dim, nudge = 0 }) {
 const SHADOW_FILTER = 'rcCompShadow';
 
 // ── Main component ───────────────────────────────────────────────────────────
-export default function CircuitDiagram({ pinConnections, projectName, header, onComponentClick, highlightWire, natural = false }) {
+export default function CircuitDiagram({ pinConnections, projectName, header, onComponentClick, highlightWire, natural = false, onWireList }) {
+  const [pickedWire, setPickedWire] = useState(null);
+  const listRef = useRef([]);
+  const sentRef = useRef('');
+  useEffect(() => {
+    if (!onWireList) return;
+    const sig = JSON.stringify(listRef.current);
+    if (sig !== sentRef.current) { sentRef.current = sig; onWireList(listRef.current); }
+  });
+  const hl = highlightWire != null ? highlightWire : pickedWire;
   if (!pinConnections || pinConnections.length === 0) {
     return (
       <div style={{ padding: '24px', textAlign: 'center', color: '#64748B', fontSize: '13px' }}>
@@ -456,13 +449,14 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
 
     wires.push({
       key: `c${idx}`,
-      color: resolveColor(conn),
+      color: WIRE_PALETTE[0],
+      sName: COMPONENT_LABELS[controllerId] || 'Controller', tName: inst?.name || compId,
       s, t, sCol: 'C', tCol: colOf[instKey] || 'C',
       sTag: String(conn.controllerPin || '').toUpperCase(),
       tTag: String(conn.componentPin || '').toUpperCase(),
       label: `${conn.controllerPin} → ${conn.componentPin}`,
-      dimmed: highlightWire != null && highlightWire !== idx,
-      highlighted: highlightWire === idx,
+      dimmed: false,
+      highlighted: false,
       idx,
     });
   });
@@ -472,7 +466,7 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
     const s = pinAbs(positions[a.key], a.id, aPin, dyn, a.key);
     const t = pinAbs(positions[b.key], b.id, bPin, dyn, b.key);
     if (!s || !t) return;
-    wires.push({ key, color, s, t, sCol: aCol, tCol: bCol, sTag, tTag, label, dimmed: false, highlighted: false, idx: -1 });
+    wires.push({ key, color, sName: a.name, tName: b.name, s, t, sCol: aCol, tCol: bCol, sTag, tTag, label, dimmed: false, highlighted: false, idx: -1 });
   };
   if (hub && hub.id === 'motor_driver' && driven.length) {
     const half = Math.ceil(driven.length / 2);
@@ -501,7 +495,7 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
   const allBottoms = Object.values(positions).map(p => p.y + p.h);
   const contentBottom = Math.max(...allBottoms);
   const bottomRoom = 44 + LANE * Math.min(8, direct.length);
-  const CANVAS_H = contentBottom + bottomRoom + 70;
+  const CANVAS_H = contentBottom + bottomRoom + 24;
   const colLeft = {}, colRight = {};
   colLeft.C = positions[controllerId].x; colRight.C = positions[controllerId].x + cSize.w;
   Object.entries(cols).forEach(([c, list]) => {
@@ -511,6 +505,16 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
   });
   routeWires(wires, { colLeft, colRight, midY: ctrlY + cSize.h / 2, topY: top - 26, bottomY: contentBottom + 40 });
   const ctrlX0 = positions[controllerId].x;
+  wires.forEach((w, i) => {
+    w.n = i + 1;
+    w.color = WIRE_PALETTE[i % WIRE_PALETTE.length];
+    w.dimmed = hl != null && hl !== w.n;
+    w.highlighted = hl === w.n;
+  });
+  listRef.current = wires.map(w => ({
+    n: w.n, color: w.color,
+    from: `${w.sName} · ${w.sTag}`, to: `${w.tName} · ${w.tTag}`,
+  }));
 
   // ── Header ──
   const diffColors = { Beginner: '#16A34A', Intermediate: '#EA580C', Advanced: '#DC2626' };
@@ -519,6 +523,7 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
   const subtitle = hInfo.subtitle || instances.map(i => i.name).slice(0, 5).join(' + ');
 
   return (
+    <>
     <svg width={natural ? CANVAS_W : '100%'} height={natural ? CANVAS_H : undefined} viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
       style={natural ? { display: 'block', background: '#FAFBFC' } : { maxWidth: `${CANVAS_W}px`, margin: '0 auto', display: 'block', background: '#FAFBFC' }}>
       <defs>
@@ -579,7 +584,7 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
         ))}
       </g>
 
-      {/* ── Pin tags: which pin each wire lands on ── */}
+      {/* ── Numbered dots at both ends of every wire ── */}
       <g>
         {(() => {
           const seen = new Map();
@@ -587,11 +592,11 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
             const k = `${Math.round(pt.x)},${Math.round(pt.y)}`;
             const n = seen.get(k) || 0;
             seen.set(k, n + 1);
-            return n * 17;
+            return n * 18;
           };
           return wires.flatMap(w => [
-            w.sTag ? <PinTag key={`${w.key}s`} p={w.s} text={w.sTag} color={w.color} dim={w.dimmed} nudge={slot(w.s)} /> : null,
-            w.tTag ? <PinTag key={`${w.key}t`} p={w.t} text={w.tTag} color={w.color} dim={w.dimmed} nudge={slot(w.t)} /> : null,
+            <PinBadge key={`${w.key}s`} p={w.s} n={w.n} color={w.color} dim={w.dimmed} nudge={slot(w.s)} />,
+            <PinBadge key={`${w.key}t`} p={w.t} n={w.n} color={w.color} dim={w.dimmed} nudge={slot(w.t)} />,
           ]);
         })()}
       </g>
@@ -639,17 +644,32 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
         })}
       </g>
 
-      {/* ── Legend ── */}
-      <g transform={`translate(${PAD}, ${CANVAS_H - 26})`}>
-        <rect x="-10" y="-18" width={CANVAS_W - 2 * PAD + 20} height="34" rx="8" fill="#fff" stroke="#E2E8F0" strokeWidth="1" />
-        {WIRE_LEGEND.map((item, i) => (
-          <g key={i} transform={`translate(${i * 165}, 0)`}>
-            <rect x="0" y="-4" width="20" height="6" rx="3" fill={item.color} />
-            <text x="26" y="2" fontSize="11" fontWeight="600" fill="#334155" fontFamily="'Inter',sans-serif">{item.label}</text>
-          </g>
-        ))}
-      </g>
     </svg>
+      {!natural && !onWireList && <WireList items={listRef.current} active={hl} onPick={(n) => setPickedWire(pickedWire === n ? null : n)} />}
+    </>
+  );
+}
+
+/** The wire list: number, colour, and the two pins it joins. */
+export function WireList({ items, active, onPick }) {
+  if (!items || !items.length) return null;
+  return (
+    <div style={{ padding: '10px 12px 14px', background: '#fff', fontFamily: "'Inter',sans-serif" }} onClick={(e) => e.stopPropagation()}>
+      <div style={{ fontSize: 11, fontWeight: 800, color: '#0F172A', margin: '2px 2px 8px' }}>Wires — tap one to highlight it</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 6 }}>
+        {items.map(w => (
+          <div key={w.n} role="button" tabIndex={0} onClick={() => onPick?.(w.n)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onPick?.(w.n); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, cursor: 'pointer',
+              border: `1.5px solid ${active === w.n ? w.color : '#E2E8F0'}`, background: active === w.n ? '#F8FAFC' : '#fff' }}>
+            <span style={{ width: 20, height: 20, borderRadius: 10, background: w.color, color: '#fff', fontSize: 10, fontWeight: 800, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{w.n}</span>
+            <span style={{ fontSize: 11, color: '#334155', lineHeight: 1.25 }}>
+              <b>{w.from}</b><br />→ {w.to}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -6,6 +6,7 @@ import { COMPONENT_INFO } from '@/components/buildsheet/RealisticComponents';
 export default function FullscreenCircuit({ pinConnections, projectName, onClose }) {
   const [view, setView] = useState({ x: 0, y: 0, k: 1 });
   const [selectedComponent, setSelectedComponent] = useState(null);
+  const [wireList, setWireList] = useState([]);
   const [highlightWire, setHighlightWire] = useState(null);
   const [showWires, setShowWires] = useState(false);
   const containerRef = useRef(null);
@@ -139,6 +140,7 @@ export default function FullscreenCircuit({ pinConnections, projectName, onClose
               projectName={projectName}
               onComponentClick={setSelectedComponent}
               highlightWire={highlightWire}
+              onWireList={setWireList}
             />
           </div>
 
@@ -148,33 +150,29 @@ export default function FullscreenCircuit({ pinConnections, projectName, onClose
           </div>
 
           {/* Wire list (tap to highlight) */}
-          {pinConnections && pinConnections.length > 0 && !showWires && (
+          {wireList.length > 0 && !showWires && (
             <button onClick={() => setShowWires(true)} className="absolute top-3 right-3 glass-strong rounded-xl px-3 py-2 text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
-              <ListOrdered className="w-3.5 h-3.5" /> Wires ({pinConnections.length})
+              <ListOrdered className="w-3.5 h-3.5" /> Wires ({wireList.length})
             </button>
           )}
-          {pinConnections && pinConnections.length > 0 && showWires && (
+          {wireList.length > 0 && showWires && (
             <div className="absolute top-3 right-3 glass-strong rounded-xl p-2 max-h-[55%] overflow-y-auto" style={{ minWidth: '200px' }} onPointerDown={(e) => e.stopPropagation()}>
               <button onClick={() => setShowWires(false)} aria-label="Hide wire list" className="absolute right-1 top-1 p-1 text-muted-foreground hover:text-cyan-400"><X className="w-3.5 h-3.5" /></button>
               <p className="text-[9px] font-bold uppercase tracking-wider text-cyan-400 px-1 py-1 flex items-center gap-1">
-                <Info className="w-3 h-3" /> Wires ({pinConnections.length})
+                <Info className="w-3 h-3" /> Wires ({wireList.length})
               </p>
-              {pinConnections.map((conn, i) => {
-                const colors = { red: '#EF4444', black: '#1A1A1A', blue: '#3B82F6', green: '#22C55E', purple: '#A78BFA', yellow: '#F59E0B' };
-                const color = colors[conn.wireColor] || conn.color || '#64748B';
-                return (
-                  <button
-                    key={i}
-                    onClick={() => setHighlightWire(highlightWire === i ? null : i)}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors ${highlightWire === i ? 'bg-cyan-500/15' : 'hover:bg-cyan-500/5'}`}
-                  >
-                    <span className="w-4 h-1 rounded-full flex-shrink-0" style={{ background: color }} />
-                    <span className="text-[10px] text-foreground/90 truncate">
-                      <span className="text-cyan-400 font-bold">{conn.controllerPin}</span> → {conn.componentPin}
-                    </span>
-                  </button>
-                );
-              })}
+              {wireList.map(w => (
+                <button
+                  key={w.n}
+                  onClick={() => setHighlightWire(highlightWire === w.n ? null : w.n)}
+                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors ${highlightWire === w.n ? 'bg-cyan-500/15' : 'hover:bg-cyan-500/5'}`}
+                >
+                  <span className="w-5 h-5 rounded-full flex-shrink-0 grid place-items-center text-[10px] font-bold text-white" style={{ background: w.color }}>{w.n}</span>
+                  <span className="text-[10px] text-foreground/90 leading-tight">
+                    <span className="text-cyan-400 font-bold">{w.from}</span><br />→ {w.to}
+                  </span>
+                </button>
+              ))}
             </div>
           )}
         </div>
