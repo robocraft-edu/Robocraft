@@ -51,6 +51,7 @@ export default function Lab3DView({ components, wires, simState }) {
     const grid = new THREE.GridHelper(3000, 60, 0x2b3a57, 0x1e2a42); grid.position.y = -0.3; scene.add(grid);
     const camera = new THREE.PerspectiveCamera(42, 1, 5, 9000);
     camera.position.set(300, 420, 560);
+    camera.far = 12000; camera.updateProjectionMatrix();
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.dampingFactor = 0.08;
     controls.maxPolarAngle = Math.PI / 2 - 0.03;
@@ -121,7 +122,7 @@ export default function Lab3DView({ components, wires, simState }) {
       const up = (P) => P.clone().add(new THREE.Vector3(0, 10, 0));
       const curve = new THREE.CatmullRomCurve3([A, up(A), m1, m2, up(B), B], false, 'catmullrom', 0.3);
       const tube = new THREE.Mesh(
-        new THREE.TubeGeometry(curve, 36, 1.5, 8, false),
+        new THREE.TubeGeometry(curve, 36, 2.1, 8, false),
         new THREE.MeshStandardMaterial({ color: wireHex(w, components), roughness: 0.45 }),
       );
       root.add(tube);
@@ -136,10 +137,12 @@ export default function Lab3DView({ components, wires, simState }) {
       box.makeEmpty();
       parts.forEach(({ part }) => box.expandByObject(part.group));
       if (!box.isEmpty()) {
-        const c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
-        const r = Math.max(sz.x, sz.z, 120) * 0.9;
-        ctx.controls.target.copy(c);
-        ctx.camera.position.set(c.x + r * 0.55, Math.max(180, r * 0.85), c.z + r * 1.05);
+        const sph = box.getBoundingSphere(new THREE.Sphere());
+        const fov = (ctx.camera.fov * Math.PI) / 180;
+        const dist = Math.max(120, (sph.radius / Math.sin(fov / 2)) * 1.15);
+        const dir = new THREE.Vector3(0.45, 0.75, 0.9).normalize();
+        ctx.controls.target.copy(sph.center);
+        ctx.camera.position.copy(sph.center).addScaledVector(dir, dist);
       }
     }
     // keep pin world positions available to the debugger and tests
@@ -153,7 +156,7 @@ export default function Lab3DView({ components, wires, simState }) {
   return (
     <div className="absolute inset-0" data-testid="lab-3d">
       <div ref={hostRef} className="absolute inset-0" />
-      <div className="absolute left-3 top-3 px-2.5 py-1.5 rounded-lg glass text-[10px] font-bold text-cyan-300 pointer-events-none">
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-3 px-2.5 py-1.5 rounded-lg glass text-[10px] font-bold text-cyan-300 pointer-events-none whitespace-nowrap">
         Drag to orbit · pinch or scroll to zoom · build in 2D
       </div>
     </div>

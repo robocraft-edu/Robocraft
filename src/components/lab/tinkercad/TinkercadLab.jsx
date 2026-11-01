@@ -478,7 +478,7 @@ export default function TinkercadLab({ onExit }) {
             />
           )}
           <button onClick={() => setView3d(v => !v)} data-testid="toggle-3d" aria-pressed={view3d}
-            className="absolute right-3 top-3 z-20 px-3 py-1.5 rounded-lg glass text-cyan-300 text-[11px] font-bold flex items-center gap-1.5 hover:bg-cyan-500/10">
+            className="absolute left-3 top-3 z-20 px-3 py-1.5 rounded-lg glass text-cyan-300 text-[11px] font-bold flex items-center gap-1.5 hover:bg-cyan-500/10">
             <Box className="w-3.5 h-3.5" /> {view3d ? '2D circuit' : '3D view'}
           </button>
           {/* floating fit/help (desktop) */}
