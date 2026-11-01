@@ -31,7 +31,12 @@ export function isSafe(code) {
 
 export function offlineProject(request) {
   const text = String(request || '');
-  const t = PY_TEMPLATES.find(x => x.re.test(text));
+  // the project whose keywords match the request most often wins; ties go to the earlier one
+  let t = null, best = 0;
+  for (const x of PY_TEMPLATES) {
+    const hits = (text.match(new RegExp(x.re.source, 'gi')) || []).length;
+    if (hits > best) { best = hits; t = x; }
+  }
   const pick = t || PY_TEMPLATES[0];
   return { ...shape(pick), matched: !!t };
 }
@@ -142,6 +147,6 @@ export async function makeProject(request, cls) {
     }
   }
   const o = offlineProject(text);
-  const why = note || 'The AI helper was not available';
+  const why = String(note || 'The AI helper was not available').replace(/[.\s]+$/, '');
   return { project: o, note: `${why}, so here is the closest ready-made project${o.matched ? '' : ' (a calculator: it shows every operator)'}. You can edit it and run it.` };
 }

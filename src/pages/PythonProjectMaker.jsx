@@ -53,7 +53,7 @@ function OperatorsTab({ analysis, notes }) {
                   {why && <p className="text-xs mt-2 rounded-lg bg-cyan-500/10 text-cyan-300 px-2 py-1.5"><b>In this project:</b> {why}</p>}
                   <div className="mt-2 space-y-1">
                     {o.lines.map(l => (
-                      <p key={l.n} className="text-[11px] font-mono rounded-md bg-black/30 on-dark text-slate-200 px-2 py-1 break-words"><span className="text-slate-500 mr-2">line {l.n}</span>{l.text}</p>
+                      <p key={l.n} className="text-[11px] font-mono rounded-md bg-[#0d1117] on-dark text-slate-200 px-2 py-1 break-words"><span className="text-slate-500 mr-2">line {l.n}</span>{l.text}</p>
                     ))}
                   </div>
                 </div>
