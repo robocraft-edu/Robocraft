@@ -248,11 +248,11 @@ export function explainLine(rawLine, ops = []) {
     const conv = m[2] ? ` ${m[2]}( ) then turns that text into ${m[2] === 'int' ? 'a whole number' : 'a decimal number'}, so you can do maths with it.` : ' input() always returns text (a str), even if you type digits.';
     return { kind: 'input', explain: `Asks the user a question (${m[3] || 'no prompt'}) and stores the answer in ${m[1]}.${conv}` };
   }
-  if ((m = /^([\w.\[\]"']+)\s*(\+=|-=|\*\*=|\*=|\/\/=|\/=|%=)\s*(.+)$/.exec(t))) return { kind: 'assign', explain: `Updates ${m[1]} in place: ${m[1]} ${m[2][0] === '*' && m[2] === '**=' ? '**' : m[2].slice(0, -1)} ${m[3]}, and the result is stored back in ${m[1]}.${O}` };
+  if ((m = /^([\w.[\]"']+)\s*(\+=|-=|\*\*=|\*=|\/\/=|\/=|%=)\s*(.+)$/.exec(t))) return { kind: 'assign', explain: `Updates ${m[1]} in place: ${m[1]} ${m[2][0] === '*' && m[2] === '**=' ? '**' : m[2].slice(0, -1)} ${m[3]}, and the result is stored back in ${m[1]}.${O}` };
   if ((m = /^(\w+(?:\s*,\s*\w+)+)\s*=\s*(.+)$/.exec(t))) return { kind: 'assign', explain: `Stores several values at once: ${m[1]} receive the parts of ${m[2]} in order.${O}` };
   if ((m = /^([\w.]+)\s*=\s*\[(.*)\]\s*$/.exec(t))) return { kind: 'assign', explain: m[2].trim() ? `Creates a list called ${m[1]} holding ${m[2]}. A list keeps items in order and each has a position number starting at 0.` : `Creates an empty list called ${m[1]}, ready to be filled with append().` };
   if ((m = /^([\w.]+)\s*=\s*\{(.*)\}\s*$/.exec(t))) return { kind: 'assign', explain: m[2].trim() ? `Creates a dictionary called ${m[1]}: pairs of key: value, so you can look a value up by its key.` : `Creates an empty dictionary called ${m[1]}.` };
-  if ((m = /^([\w.\[\]"']+)\s*=\s*(.+)$/.exec(t))) {
+  if ((m = /^([\w.[\]"']+)\s*=\s*(.+)$/.exec(t))) {
     const rhs = m[2];
     const call = /^(\w+)\(/.exec(rhs);
     const fn = call && WORDS[call[1]] ? ` ${call[1]}() ${WORDS[call[1]].does.charAt(0).toLowerCase()}${WORDS[call[1]].does.slice(1)}` : '';
