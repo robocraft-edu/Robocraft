@@ -65,26 +65,35 @@ export const LAB_COMPONENTS = {
       { id: 'b3', label: 'b3', side: 'bottom', type: 'terminal' }, { id: 'b4', label: 'b4', side: 'bottom', type: 'terminal' },
     ],
   },
-  led: { name: 'LED', category: 'Outputs', w: 70, h: 70, color: '#F87171', emoji: '💡',
-    pins: [ { id: 'anode', label: 'Anode (+)', side: 'top', type: 'plus' }, { id: 'cathode', label: 'Cathode (−)', side: 'bottom', type: 'minus' } ] },
+  led: { name: 'LED', category: 'Outputs', w: 70, h: 96, color: '#F87171', emoji: '💡',
+    pins: [ { id: 'cathode', label: 'Cathode (−)', side: 'bottom', type: 'minus' }, { id: 'anode', label: 'Anode (+)', side: 'bottom', type: 'plus' } ] },
   resistor: { name: 'Resistor 220Ω', category: 'Passive', w: 130, h: 44, color: '#D4A373', emoji: '🟫', symmetric: true,
     pins: [ { id: 'a', label: 'Terminal A', side: 'left', type: 'terminal' }, { id: 'b', label: 'Terminal B', side: 'right', type: 'terminal' } ] },
   push_button: { name: 'Push Button', category: 'Inputs', w: 80, h: 80, color: '#FBBF24', emoji: '🔘',
     pins: [ { id: 'a', label: 'Pin A', side: 'left', type: 'terminal' }, { id: 'b', label: 'Pin B', side: 'right', type: 'terminal' } ] },
-  buzzer: { name: 'Buzzer', category: 'Outputs', w: 70, h: 70, color: '#FB923C', emoji: '🔊',
-    pins: [ { id: 'pos', label: '+', side: 'top', type: 'plus' }, { id: 'neg', label: '−', side: 'bottom', type: 'minus' } ] },
+  buzzer: { name: 'Buzzer', category: 'Outputs', w: 70, h: 92, color: '#FB923C', emoji: '🔊',
+    pins: [ { id: 'neg', label: '−', side: 'bottom', type: 'minus' }, { id: 'pos', label: '+', side: 'bottom', type: 'plus' } ] },
   servo: { name: 'Servo Motor', category: 'Outputs', w: 100, h: 76, color: '#60A5FA', emoji: '⚙️',
     pins: [ { id: 'VCC', label: 'VCC', side: 'left', type: 'power' }, { id: 'GND', label: 'GND', side: 'left', type: 'ground' }, { id: 'SIG', label: 'Signal', side: 'left', type: 'pwm' } ] },
-  dc_motor: { name: 'DC Motor', category: 'Outputs', w: 90, h: 76, color: '#34D399', emoji: '🌀',
-    pins: [ { id: 't1', label: 'Terminal 1', side: 'left', type: 'terminal' }, { id: 't2', label: 'Terminal 2', side: 'right', type: 'terminal' } ] },
+  dc_motor: { name: 'DC Motor', category: 'Outputs', w: 120, h: 80, color: '#34D399', emoji: '🌀',
+    pins: [ { id: 't1', label: 'Terminal 1', side: 'right', type: 'terminal' }, { id: 't2', label: 'Terminal 2', side: 'right', type: 'terminal' } ] },
   ir_sensor: { name: 'IR Sensor', category: 'Sensors', w: 100, h: 84, color: '#22D3EE', emoji: '👁️',
     pins: [ { id: 'VCC', label: 'VCC', side: 'left', type: 'power' }, { id: 'GND', label: 'GND', side: 'left', type: 'ground' }, { id: 'OUT', label: 'OUT', side: 'right', type: 'digital' } ] },
-  ultrasonic: { name: 'Ultrasonic HC-SR04', category: 'Sensors', w: 110, h: 76, color: '#38BDF8', emoji: '📡',
-    pins: [ { id: 'VCC', label: 'VCC', side: 'left', type: 'power' }, { id: 'TRIG', label: 'TRIG', side: 'right', type: 'digital' }, { id: 'ECHO', label: 'ECHO', side: 'right', type: 'digital' }, { id: 'GND', label: 'GND', side: 'left', type: 'ground' } ] },
+  ultrasonic: { name: 'Ultrasonic HC-SR04', category: 'Sensors', w: 140, h: 90, color: '#38BDF8', emoji: '📡',
+    pins: [ { id: 'VCC', label: 'VCC', side: 'bottom', type: 'power' }, { id: 'TRIG', label: 'TRIG', side: 'bottom', type: 'digital' }, { id: 'ECHO', label: 'ECHO', side: 'bottom', type: 'digital' }, { id: 'GND', label: 'GND', side: 'bottom', type: 'ground' } ] },
   ldr: { name: 'LDR', category: 'Sensors', w: 70, h: 70, color: '#A78BFA', emoji: '🌙',
     pins: [ { id: 'a', label: 'A', side: 'left', type: 'terminal' }, { id: 'b', label: 'B', side: 'right', type: 'terminal' } ] },
-  potentiometer: { name: 'Potentiometer', category: 'Inputs', w: 84, h: 84, color: '#F472B6', emoji: '🎚️',
-    pins: [ { id: 'VCC', label: 'VCC', side: 'left', type: 'power' }, { id: 'GND', label: 'GND', side: 'left', type: 'ground' }, { id: 'WIPER', label: 'Wiper', side: 'right', type: 'analog' } ] },
+  potentiometer: { name: 'Potentiometer', category: 'Inputs', w: 110, h: 90, color: '#F472B6', emoji: '🎚️',
+    pins: [ { id: 'VCC', label: 'VCC', side: 'bottom', type: 'power' }, { id: 'WIPER', label: 'Wiper', side: 'bottom', type: 'analog' }, { id: 'GND', label: 'GND', side: 'bottom', type: 'ground' } ] },
+  rgb_led: { name: 'RGB LED', category: 'Outputs', w: 130, h: 110, color: '#C084FC', emoji: '🌈',
+    pins: [ { id: 'R', label: 'R', side: 'bottom', type: 'pwm' }, { id: 'GND', label: 'GND', side: 'bottom', type: 'ground' },
+            { id: 'G', label: 'G', side: 'bottom', type: 'pwm' }, { id: 'B', label: 'B', side: 'bottom', type: 'pwm' } ] },
+  gear_motor: { name: 'Gear Motor (TT)', category: 'Outputs', w: 100, h: 130, color: '#FACC15', emoji: '🚗',
+    pins: [ { id: 't1', label: 'Terminal 1', side: 'bottom', type: 'terminal' }, { id: 't2', label: 'Terminal 2', side: 'bottom', type: 'terminal' } ] },
+  vibration_motor: { name: 'Vibration Motor', category: 'Outputs', w: 70, h: 100, color: '#94A3B8', emoji: '📳',
+    pins: [ { id: 't1', label: 'Terminal 1', side: 'bottom', type: 'terminal' }, { id: 't2', label: 'Terminal 2', side: 'bottom', type: 'terminal' } ] },
+  aa_battery: { name: 'AA Battery 1.5V', category: 'Power', w: 84, h: 130, color: '#2DD4BF', emoji: '🔋',
+    pins: [ { id: 'N', label: '−', side: 'top', type: 'minus' }, { id: 'P', label: '+', side: 'top', type: 'plus' } ] },
   lcd: { name: 'LCD 16x2 (I2C)', category: 'Display', w: 170, h: 90, color: '#94A3B8', emoji: '📟',
     pins: [ { id: 'VCC', label: 'VCC', side: 'left', type: 'power' }, { id: 'GND', label: 'GND', side: 'left', type: 'ground' }, { id: 'SDA', label: 'SDA', side: 'right', type: 'data' }, { id: 'SCL', label: 'SCL', side: 'right', type: 'data' } ] },
   oled: { name: 'OLED 0.96"', category: 'Display', w: 130, h: 80, color: '#94A3B8', emoji: '🔲',
@@ -96,22 +105,30 @@ export const LAB_COMPONENTS = {
       { id: '12V', label: '12V', side: 'left', type: 'power' }, { id: 'GND', label: 'GND', side: 'left', type: 'ground' }, { id: '5V', label: '5V', side: 'left', type: 'power' } ] },
   mpu6050: { name: 'MPU6050 (IMU)', category: 'Sensors', w: 100, h: 80, color: '#22D3EE', emoji: '🧭',
     pins: [ { id: 'VCC', label: 'VCC', side: 'left', type: 'power' }, { id: 'GND', label: 'GND', side: 'left', type: 'ground' }, { id: 'SDA', label: 'SDA', side: 'right', type: 'data' }, { id: 'SCL', label: 'SCL', side: 'right', type: 'data' } ] },
-  battery: { name: '9V Battery', category: 'Power', w: 80, h: 90, color: '#F87171', emoji: '🔋',
-    pins: [ { id: 'P', label: '+', side: 'top', type: 'plus' }, { id: 'N', label: '−', side: 'bottom', type: 'minus' } ] },
+  battery: { name: '9V Battery', category: 'Power', w: 90, h: 100, color: '#F87171', emoji: '🔋',
+    pins: [ { id: 'N', label: '−', side: 'top', type: 'minus' }, { id: 'P', label: '+', side: 'top', type: 'plus' } ] },
   power_supply: { name: 'Power Supply', category: 'Power', w: 100, h: 90, color: '#F87171', emoji: '⚡',
     pins: [ { id: 'V', label: 'V+', side: 'top', type: 'plus' }, { id: 'G', label: 'GND', side: 'bottom', type: 'ground' } ] },
 };
 
 export const PALETTE_CATEGORIES = [
   { name: 'Boards', items: ['arduino_uno', 'arduino_nano', 'esp32', 'breadboard'] },
-  { name: 'Outputs', items: ['led', 'buzzer', 'servo', 'dc_motor'] },
+  { name: 'Outputs', items: ['led', 'rgb_led', 'buzzer', 'servo', 'dc_motor', 'gear_motor', 'vibration_motor'] },
   { name: 'Inputs', items: ['push_button', 'potentiometer', 'ldr'] },
   { name: 'Sensors', items: ['ir_sensor', 'ultrasonic', 'mpu6050'] },
   { name: 'Display', items: ['lcd', 'oled'] },
   { name: 'Drivers', items: ['motor_driver'] },
   { name: 'Passive', items: ['resistor'] },
-  { name: 'Power', items: ['battery', 'power_supply'] },
+  { name: 'Power', items: ['battery', 'aa_battery', 'power_supply'] },
 ];
+
+// Parts that look different but behave exactly like another part. The
+// simulation and the wiring checks see the behaviour name; the canvas keeps
+// showing the part the student picked. Pin ids match their twin on purpose.
+export const SIM_ALIAS = { gear_motor: 'dc_motor', vibration_motor: 'dc_motor', aa_battery: 'battery' };
+export const simType = (type) => SIM_ALIAS[type] || type;
+/** Same components, with look-alike parts renamed to the part they behave like. */
+export const forSim = (components) => (components || []).map(c => (SIM_ALIAS[c.type] ? { ...c, type: SIM_ALIAS[c.type] } : c));
 
 const BOARD_TYPES = new Set(['arduino_uno', 'arduino_nano', 'esp32']);
 

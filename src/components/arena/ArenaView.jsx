@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { ROBOT, ROBOT_PINS } from '@/lib/arena/world';
+import { buildPart3D } from '@/lib/lab/parts3d';
 
 const PX = 4; // texture pixels per cm
 // Cheap phones: skip shadows and render a little softer so the simulation stays smooth.
@@ -43,16 +44,25 @@ function floorTexture(map) {
   return tex;
 }
 
+// A real part (modelled in millimetres) standing on the chassis; the arena works in cm.
+function place(g, type, x, z, rotY = 0, y = 3.8) {
+  const part = buildPart3D(type);
+  part.group.scale.setScalar(0.1);
+  part.group.position.set(x, y, z);
+  part.group.rotation.y = rotY;
+  g.add(part.group);
+  return part;
+}
+
 function makeRobot(custom) {
   const g = new THREE.Group();
   const kinds = custom?.parts || [];
   const blue = new THREE.MeshStandardMaterial({ color: /^#[0-9a-f]{6}$/i.test(custom?.color || '') ? custom.color : 0x0ea5e9, roughness: 0.5, metalness: 0.1 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.8 });
-  const board = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.6 });
   const chassis = new THREE.Mesh(new THREE.BoxGeometry(ROBOT.length, 1.2, ROBOT.width), blue);
   chassis.position.y = 3.2; g.add(chassis);
-  const top = new THREE.Mesh(new THREE.BoxGeometry(7, 0.8, 5.5), board); top.position.set(-1.5, 4.2, 0); g.add(top); // Arduino
-  const batt = new THREE.Mesh(new THREE.BoxGeometry(4, 2, 7), dark); batt.position.set(-5.5, 4.8, 0); g.add(batt);
+  place(g, 'arduino_uno', -1.5, 0);
+  place(g, 'battery', -5.5, 1.5);
   const wheels = [];
   for (const [x, z] of [[4.5, 7], [4.5, -7], [-4.5, 7], [-4.5, -7]]) {
     const w = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.2, 2, 20), dark);
@@ -60,27 +70,24 @@ function makeRobot(custom) {
     const hub = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 2.1, 10), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
     hub.rotation.x = Math.PI / 2; hub.position.copy(w.position); g.add(hub); wheels.push(hub);
   }
-  // ultrasonic "eyes"
-  const pcb = new THREE.Mesh(new THREE.BoxGeometry(0.4, 2, 4.5), new THREE.MeshStandardMaterial({ color: 0x1d4ed8 }));
-  pcb.position.set(ROBOT.length / 2, 5, 0); g.add(pcb);
-  for (const z of [1.2, -1.2]) {
-    const eye = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1, 16), new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.6, roughness: 0.3 }));
-    eye.rotation.z = Math.PI / 2; eye.position.set(ROBOT.length / 2 + 0.6, 5, z); g.add(eye);
-  }
+  // ultrasonic sensor on the nose, eyes facing forward
+  place(g, 'ultrasonic', ROBOT.length / 2 - 1.1, 0, Math.PI / 2, 3.5);
   // IR sensors under the front
   const irMat = [];
   for (const z of [3.5, -3.5]) {
     const m = new THREE.MeshStandardMaterial({ color: 0x111827, emissive: 0x000000 });
     const ir = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 1.2), m); ir.position.set(ROBOT.length / 2 - 0.6, 2.2, z); g.add(ir); irMat.push(m);
   }
-  const ledMat = new THREE.MeshStandardMaterial({ color: 0x7f1d1d, emissive: 0x000000 });
-  const led = new THREE.Mesh(new THREE.SphereGeometry(0.6, 10, 10), ledMat); led.position.set(2.5, 4.8, 2.5); g.add(led);
+  const ledPart = place(g, 'led', 2.5, 2.5);
+  // the sim drives `ledMat.emissive.setHex(...)`; hand it to the real LED
+  const ledMat = { emissive: { setHex: (h) => ledPart.update({ ledOn: h !== 0, brightness: 1 }) } };
   // Parts a student chose in "Build your own robot" show up on the body.
   let arm = null;
   if (kinds.includes('servo')) {
-    const base = new THREE.Mesh(new THREE.BoxGeometry(3, 2.4, 3), new THREE.MeshStandardMaterial({ color: 0x2563eb }));
-    base.position.set(5.5, 5.4, 0); g.add(base);
-    arm = new THREE.Group(); arm.position.set(5.5, 7, 0); g.add(arm);
+    const sv = buildPart3D('servo', undefined);
+    sv.group.remove(sv.horn); // the arm below is the horn
+    sv.group.scale.setScalar(0.1); sv.group.position.set(4.0, 3.8, 0); g.add(sv.group);
+    arm = new THREE.Group(); arm.position.set(3.45, 6.8, 0); g.add(arm);
     const link = new THREE.Mesh(new THREE.BoxGeometry(11, 1.2, 1.6), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
     link.position.set(5, 0, 0); arm.add(link);
     for (const z of [-1.6, 1.6]) {
@@ -90,8 +97,8 @@ function makeRobot(custom) {
   }
   let buzzMat = null;
   if (kinds.includes('buzzer')) {
-    buzzMat = new THREE.MeshStandardMaterial({ color: 0x0891b2, emissive: 0x000000 });
-    const bz = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 1.2, 14), buzzMat); bz.position.set(-1, 5.1, -2.2); g.add(bz);
+    const bzPart = place(g, 'buzzer', -1, -2.2);
+    buzzMat = { emissive: { setHex: (h) => bzPart.update({ buzzerOn: h !== 0 }) } };
   }
   if (kinds.includes('line_array')) {
     for (const z of [2.5, 0, -2.5]) {

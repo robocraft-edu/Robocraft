@@ -88,6 +88,7 @@ export class CircuitBoard extends SimBoard {
     const s = { ledOn: false, buzzerOn: false, servoAngle: 90, motorAngle: 0, irDetected: cm < 5, distance: cm, comp };
     for (const p of this.parts) {
       if (p.type === 'led') { const v = p.map.anode != null ? this.level(p.map.anode) : 0; comp[p.id] = { ledOn: v > 0, brightness: v / 255 }; s.ledOn ||= v > 0; }
+      else if (p.type === 'rgb_led') { const lv = (k) => (p.map[k] != null ? this.level(p.map[k]) : 0); comp[p.id] = { rgb: [lv('R'), lv('G'), lv('B')] }; }
       else if (p.type === 'buzzer') { const on = (p.map.pos != null && (this.out[p.map.pos] || this.tones[p.map.pos] > 0)) || false; comp[p.id] = { buzzerOn: !!on }; s.buzzerOn ||= !!on; }
       else if (p.type === 'servo') { const a = p.map.SIG != null ? (this.servo[p.map.SIG] ?? 90) : 90; comp[p.id] = { servoAngle: a }; s.servoAngle = a; }
       else if (p.type === 'dc_motor') comp[p.id] = { motorAngle: this.rot[p.id] || 0 };

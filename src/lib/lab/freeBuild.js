@@ -225,6 +225,18 @@ export function generateFreeCode(components, wires) {
         loop.push('  digitalWrite(LED_PIN, (millis() / 500) % 2 ? HIGH : LOW);');
         break;
       }
+      case 'rgb_led': {
+        const r = pm['R'] || '9', g = pm['G'] || '10', b = pm['B'] || '11';
+        defs.push(`#define RED_PIN ${pinCode(r)}`);
+        defs.push(`#define GREEN_PIN ${pinCode(g)}`);
+        defs.push(`#define BLUE_PIN ${pinCode(b)}`);
+        setup.push('  pinMode(RED_PIN, OUTPUT); pinMode(GREEN_PIN, OUTPUT); pinMode(BLUE_PIN, OUTPUT);');
+        loop.push('  int phase = (millis() / 1000) % 3;');
+        loop.push('  analogWrite(RED_PIN, phase == 0 ? 255 : 0);');
+        loop.push('  analogWrite(GREEN_PIN, phase == 1 ? 255 : 0);');
+        loop.push('  analogWrite(BLUE_PIN, phase == 2 ? 255 : 0);');
+        break;
+      }
       case 'push_button': {
         const p = pm['a'] || '2';
         defs.push(`#define BUTTON_PIN ${pinCode(p)}`);

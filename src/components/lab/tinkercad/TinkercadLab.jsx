@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { aiEnabled } from '@/lib/features';
 import { useNavigate } from 'react-router-dom';
 import {
   Undo2, Redo2, Trash2, ChevronLeft, Code2, Play, Pause, RotateCcw,
-  PanelLeftClose, X, Save, FolderOpen, Blocks, Cpu, Sparkles, Wrench, Terminal, Maximize2, LayoutGrid,
+  PanelLeftClose, X, Save, FolderOpen, Blocks, Cpu, Sparkles, Wrench, Terminal, Maximize2, LayoutGrid, Box,
 } from 'lucide-react';
 import { LAB_EXPERIMENTS, getExperiment, generateCode } from '@/lib/lab/labExperiments';
 import { validateCircuit, resolvePins } from '@/lib/lab/validateLab';
@@ -17,6 +17,7 @@ import { runSketch } from '@/lib/arduino/runtime';
 import { transpile } from '@/lib/arduino/transpile';
 import Palette from './Palette';
 import Canvas from './Canvas';
+const Lab3DView = lazy(() => import('./Lab3DView'));
 import PropertiesPanel from './PropertiesPanel';
 import CodePanel from './CodePanel';
 import SerialMonitor from './SerialMonitor';
@@ -29,6 +30,7 @@ import HelpMeBuild from './HelpMeBuild';
 import { toast } from '@/components/ui/use-toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { checkWire } from '@/lib/lab/wireAdvice';
+import { forSim } from '@/lib/lab/labComponents';
 import { checkCircuit, blockingFaults } from '@/lib/lab/electrical';
 
 // Returns false when the device refuses the write (storage full, private mode).
@@ -80,6 +82,7 @@ export default function TinkercadLab({ onExit }) {
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [showCode, setShowCode] = useState(false);
   const [showSerial, setShowSerial] = useState(false);
+  const [view3d, setView3d] = useState(false);
 
   // mobile sheet
   const [mobileSheet, setMobileSheet] = useState(null);
@@ -91,6 +94,8 @@ export default function TinkercadLab({ onExit }) {
   const [showSaves, setShowSaves] = useState(false);
   const [wiringGuide, setWiringGuide] = useState(null);
 
+  // Look-alike parts (gear motor, AA battery…) are simulated as the part they behave like.
+  const simComps = useMemo(() => forSim(components), [components]);
   const board = detectBoard(components) || { type: 'arduino_uno', id: 'default' };
   const boardType = board.type;
 
@@ -124,28 +129,28 @@ export default function TinkercadLab({ onExit }) {
   }, [selectedId]);
 
   // ── derived ──
-  const templateValidation = useMemo(() => experiment ? validateCircuit(experiment, components, wires) : null, [experiment, components, wires]);
-  const freeCheck = useMemo(() => free ? validateFreeBuild(components, wires) : null, [free, components, wires]);
+  const templateValidation = useMemo(() => experiment ? validateCircuit(experiment, simComps, wires) : null, [experiment, simComps, wires]);
+  const freeCheck = useMemo(() => free ? validateFreeBuild(simComps, wires) : null, [free, simComps, wires]);
   // What the circuit would actually do on a real board: an LED with no
   // resistor, a motor straight off a pin, a sensor with no ground.
-  const faults = useMemo(() => checkCircuit(components, wires), [components, wires]);
+  const faults = useMemo(() => checkCircuit(simComps, wires), [simComps, wires]);
   const dangers = useMemo(() => blockingFaults(faults), [faults]);
-  const templatePins = useMemo(() => experiment ? resolvePins(experiment, components, wires) : {}, [experiment, components, wires]);
-  const freePins = useMemo(() => free ? resolveFreePins(components, wires) : {}, [free, components, wires]);
+  const templatePins = useMemo(() => experiment ? resolvePins(experiment, simComps, wires) : {}, [experiment, simComps, wires]);
+  const freePins = useMemo(() => free ? resolveFreePins(simComps, wires) : {}, [free, simComps, wires]);
   const pins = experiment ? templatePins : freePins;
 
   const code = useMemo(() => {
     if (experiment) return experiment && templateValidation?.valid ? generateCode(experiment, templatePins) : '';
-    return components.length ? generateFreeCode(components, wires) : '';
-  }, [experiment, templateValidation, templatePins, components, wires]);
+    return components.length ? generateFreeCode(simComps, wires) : '';
+  }, [experiment, templateValidation, templatePins, components, simComps, wires]);
 
   const wireStatuses = useMemo(() => {
     if (experiment) return templateValidation ? templateValidation.wireResults.map(w => w.status) : [];
-    return freeCheck ? freeWireStatuses(components, wires) : [];
-  }, [experiment, templateValidation, freeCheck, components, wires]);
+    return freeCheck ? freeWireStatuses(simComps, wires) : [];
+  }, [experiment, templateValidation, freeCheck, simComps, wires]);
 
   const activeCode = userCode ?? code;
-  const needsInput = experiment ? { ...simInputsFor(experiment), ...freeSimInputs(components), motor: false } : { ...freeSimInputs(components), motor: engine === 'script' && freeSimInputs(components).motor };
+  const needsInput = experiment ? { ...simInputsFor(experiment), ...freeSimInputs(simComps), motor: false } : { ...freeSimInputs(simComps), motor: engine === 'script' && freeSimInputs(simComps).motor };
   const canRun = experiment ? !!templateValidation?.valid : (freeCheck?.status !== 'error' && components.length > 0 && !!detectBoard(components));
 
   const status = running ? 'running' : components.length === 0 ? 'empty'
@@ -158,10 +163,10 @@ export default function TinkercadLab({ onExit }) {
   const lastRef = useRef(0);
   const simRef = useRef(simState);
   const inputsRef = useRef(inputs);
-  const componentsRef = useRef(components);
+  const componentsRef = useRef(simComps);
   useEffect(() => { simRef.current = simState; }, [simState]);
   useEffect(() => { inputsRef.current = inputs; }, [inputs]);
-  useEffect(() => { componentsRef.current = components; }, [components]);
+  useEffect(() => { componentsRef.current = simComps; }, [simComps]);
   useEffect(() => {
     if (!running || engine !== 'script') return;
     lastRef.current = performance.now();
@@ -245,7 +250,7 @@ export default function TinkercadLab({ onExit }) {
     if (prev.compId === compId && prev.pinId === pinId) { pendingRef.current = null; setPendingWire(null); return; }
 
     const to = { compId, pinId };
-    const verdict = checkWire({ from: prev, to, components, wires, experiment });
+    const verdict = checkWire({ from: prev, to, components: simComps, wires, experiment });
     pendingRef.current = null; setPendingWire(null);
 
     if (verdict.message) {
@@ -446,6 +451,16 @@ export default function TinkercadLab({ onExit }) {
               instead of losing the whole screen. */}
           <ErrorBoundary compact resetKey={components.length + ':' + wires.length}
             message="The workbench could not draw that. Try again, or undo the last step.">
+          {view3d && (
+            <div className="absolute inset-0 z-10 bg-[#0b1220]">
+              <ErrorBoundary compact resetKey={components.length + ':' + wires.length}
+                message="3D view could not start on this device. Switch back to 2D.">
+                <Suspense fallback={<div className="absolute inset-0 grid place-items-center text-xs text-cyan-300">Loading 3D parts…</div>}>
+                  <Lab3DView components={components} wires={wires} simState={simState} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          )}
           <Canvas
             components={components} wires={wires} selectedId={selectedId} pendingWire={pendingWire}
             simState={simState} running={running} wireStatuses={wireStatuses}
@@ -462,6 +477,10 @@ export default function TinkercadLab({ onExit }) {
               onPickExperiment={chooseExperiment}
             />
           )}
+          <button onClick={() => setView3d(v => !v)} data-testid="toggle-3d" aria-pressed={view3d}
+            className="absolute right-3 top-3 z-20 px-3 py-1.5 rounded-lg glass text-cyan-300 text-[11px] font-bold flex items-center gap-1.5 hover:bg-cyan-500/10">
+            <Box className="w-3.5 h-3.5" /> {view3d ? '2D circuit' : '3D view'}
+          </button>
           {/* floating fit/help (desktop) */}
           <div className="absolute left-3 bottom-3 hidden md:flex items-center gap-1.5">
             <button onClick={() => window.dispatchEvent(new CustomEvent('lab-fit'))} className="px-2.5 py-1.5 rounded-lg glass text-cyan-400 text-[10px] font-bold flex items-center gap-1 hover:bg-cyan-500/10"><Maximize2 className="w-3.5 h-3.5" /> Fit</button>
