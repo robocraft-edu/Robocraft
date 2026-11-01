@@ -11,6 +11,7 @@ import { Play, Square, RotateCcw, Bot, Eye, Code2, Terminal, Cpu, CheckCircle2, 
 import { designRobot, makeTask, fixCode } from '@/lib/arena/customRobot';
 import { standardKitConnections, customRobotConnections } from '@/lib/arena/wiringConnections';
 const CircuitDiagram = lazy(() => import('@/components/buildsheet/CircuitDiagram'));
+const WireList = lazy(() => import('@/components/buildsheet/CircuitDiagram').then(m => ({ default: m.WireList })));
 const FullscreenCircuit = lazy(() => import('@/components/buildsheet/FullscreenCircuit'));
 
 const ArenaView = lazy(() => import('@/components/arena/ArenaView'));
@@ -186,6 +187,8 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
   const [speed, setSpeed] = useState(1);
   const [tab, setTab] = useState('code');
   const [bigWiring, setBigWiring] = useState(false);
+  const [wireItems, setWireItems] = useState([]);
+  const [wireHi, setWireHi] = useState(null);
   const [cam, setCam] = useState(task.id === 'bin' ? 'free' : 'chase');
   const [serial, setSerial] = useState([]);
   const [error, setError] = useState(null);
@@ -378,11 +381,14 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
           <button onClick={() => setBigWiring(true)} className="block w-full overflow-x-auto rounded-lg bg-white text-left" aria-label="Open the wiring diagram full screen"><div style={{ minWidth: 760 }}>
             <Suspense fallback={<div className="py-10 text-xs text-center text-muted-foreground">Drawing the circuit…</div>}>
               <ErrorBoundary compact message="The wiring diagram could not be drawn. The table below still lists every pin.">
-                <CircuitDiagram pinConnections={wiringConns} projectName={isCustom ? 'Your robot' : task.title} />
+                <CircuitDiagram pinConnections={wiringConns} projectName={isCustom ? 'Your robot' : task.title} onWireList={setWireItems} highlightWire={wireHi} />
               </ErrorBoundary>
             </Suspense>
           </div></button>
-          <p className="text-[10px] text-muted-foreground mt-2">Wires are coloured by job: red power, black ground, blue digital, orange PWM, green analog. Tap the picture to zoom in.</p>
+          <Suspense fallback={null}>
+            <div className="mt-2 rounded-lg overflow-hidden"><WireList items={wireItems} active={wireHi} onPick={(n) => setWireHi(wireHi === n ? null : n)} /></div>
+          </Suspense>
+          <p className="text-[10px] text-muted-foreground mt-2">Every wire has its own colour and number. Tap the picture to zoom in, or tap a wire in the list to light it up.</p>
         </div>
       )}
       {bigWiring && (
