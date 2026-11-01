@@ -34,6 +34,9 @@ export const REALISTIC_SIZES = {
   a4988: { w: 150, h: 170 },
   mpu6050: { w: 120, h: 150 },
   nema17: { w: 130, h: 170 },
+  gear_motor: { w: 160, h: 120 },
+  vibration_motor: { w: 110, h: 90 },
+  aa_battery: { w: 160, h: 80 },
 };
 
 // Pin positions relative to component top-left (x, y)
@@ -220,13 +223,13 @@ export const REALISTIC_PINS = {
     { id: 'IN4', label: 'IN4', type: 'digital', x: 0, y: 116 },
     { id: 'ENA', label: 'ENA', type: 'pwm', x: 0, y: 148 },
     { id: 'ENB', label: 'ENB', type: 'pwm', x: 0, y: 174 },
-    { id: '12V', label: '12V', type: 'power', x: 170, y: 40 },
-    { id: 'GND', label: 'GND', type: 'ground', x: 170, y: 75 },
-    { id: '5V', label: '5V', type: 'power', x: 170, y: 110 },
-    { id: 'OUT1', label: 'OUT1', type: 'power', x: 30, y: 157 },
-    { id: 'OUT2', label: 'OUT2', type: 'ground', x: 50, y: 157 },
-    { id: 'OUT3', label: 'OUT3', type: 'power', x: 120, y: 157 },
-    { id: 'OUT4', label: 'OUT4', type: 'ground', x: 140, y: 157 },
+    { id: 'OUT1', label: 'OUT1', type: 'motor', x: 170, y: 24 },
+    { id: 'OUT2', label: 'OUT2', type: 'motor', x: 170, y: 46 },
+    { id: '12V', label: '12V', type: 'power', x: 170, y: 80 },
+    { id: 'GND', label: 'GND', type: 'ground', x: 170, y: 104 },
+    { id: '5V', label: '5V', type: 'power', x: 170, y: 128 },
+    { id: 'OUT3', label: 'OUT3', type: 'motor', x: 170, y: 160 },
+    { id: 'OUT4', label: 'OUT4', type: 'motor', x: 170, y: 182 },
   ],
   bluetooth: [
     { id: 'VCC', label: 'VCC', type: 'power', x: 0, y: 30 },
@@ -265,6 +268,18 @@ export const REALISTIC_PINS = {
     { id: 'SCL', label: 'SCL', type: 'analog', x: 0, y: 90 },
     { id: 'SDA', label: 'SDA', type: 'analog', x: 0, y: 120 },
     { id: 'INT', label: 'INT', type: 'digital', x: 120, y: 30 },
+  ],
+  gear_motor: [
+    { id: 'P', label: 'Terminal (+)', type: 'power', x: 0, y: 42 },
+    { id: 'N', label: 'Terminal (−)', type: 'ground', x: 0, y: 78 },
+  ],
+  vibration_motor: [
+    { id: 'P', label: 'Wire (+)', type: 'power', x: 0, y: 34 },
+    { id: 'N', label: 'Wire (−)', type: 'ground', x: 0, y: 56 },
+  ],
+  aa_battery: [
+    { id: 'P', label: '+', type: 'power', x: 0, y: 26 },
+    { id: 'N', label: '−', type: 'ground', x: 0, y: 54 },
   ],
   nema17: [
     { id: '1A', label: '1A', type: 'power', x: 0, y: 50 },
@@ -454,26 +469,33 @@ function Ultrasonic({ x, y }) {
 }
 
 function MotorDriver({ x, y }) {
+  const block = (y0, h, n) => (
+    <g>
+      <rect x="128" y={y0} width="36" height={h} rx="2" fill="#1E9E4A" stroke="#15803D" strokeWidth="1" />
+      {Array.from({ length: n }).map((_, i) => {
+        const cy = y0 + h / (n * 2) * (2 * i + 1);
+        return <g key={i}><circle cx="148" cy={cy} r="7" fill="#D1D5DB" stroke="#6B7280" strokeWidth="1" /><line x1="143" y1={cy} x2="153" y2={cy} stroke="#4B5563" strokeWidth="1.6" /></g>;
+      })}
+    </g>
+  );
   return (
     <g transform={`translate(${x},${y})`}>
-      {/* PCB */}
-      <rect x="10" y="10" width="150" height="180" rx="4" fill="#7F1D1D" stroke="#991B1B" strokeWidth="2" />
-      {/* Label */}
-      <text x="85" y="175" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fff" fontFamily="monospace">L298N</text>
-      {/* Heatsink */}
-      <rect x="45" y="50" width="80" height="80" rx="2" fill="#C0C0C0" stroke="#888" strokeWidth="1.5" />
-      {Array.from({ length: 8 }).map((_, i) => (
-        <line key={i} x1={50 + i * 9} y1="50" x2={50 + i * 9} y2="130" stroke="#888" strokeWidth="0.5" />
+      <rect x="10" y="6" width="152" height="190" rx="4" fill="#C62828" stroke="#8E1B1B" strokeWidth="2" />
+      <rect x="34" y="40" width="70" height="74" rx="2" fill="#B8BEC6" stroke="#7C8590" strokeWidth="1.5" />
+      {Array.from({ length: 9 }).map((_, i) => (
+        <rect key={i} x={38 + i * 7.4} y="40" width="3.6" height="74" fill="#9AA2AD" />
       ))}
-      {/* Big chip under heatsink visible */}
-      <rect x="55" y="70" width="60" height="40" rx="2" fill="#1A1A1A" />
-      {/* Terminal blocks (green) */}
-      <rect x="15" y="145" width="140" height="25" rx="1" fill="#16A34A" stroke="#15803D" strokeWidth="1" />
-      <circle cx="30" cy="157" r="3" fill="#1A1A1A" />
-      <circle cx="50" cy="157" r="3" fill="#1A1A1A" />
-      <circle cx="120" cy="157" r="3" fill="#1A1A1A" />
-      <circle cx="140" cy="157" r="3" fill="#1A1A1A" />
+      <rect x="22" y="136" width="60" height="26" rx="2" fill="#101418" />
+      <text x="52" y="152" textAnchor="middle" fontSize="9" fontWeight="800" fill="#E5E7EB" fontFamily="monospace">L298N</text>
+      <rect x="92" y="134" width="22" height="12" rx="2" fill="#15171A" />
+      <circle cx="104" cy="165" r="6" fill="#222" stroke="#555" strokeWidth="1" />
+      {block(10, 46, 2)}
+      {block(66, 72, 3)}
+      {block(146, 46, 2)}
       <HeaderPads id="motor_driver" labels={false} />
+      {[['OUT1', 24], ['OUT2', 46], ['12V', 80], ['GND', 104], ['5V', 128], ['OUT3', 160], ['OUT4', 182]].map(([t, py]) => (
+        <text key={t} x="122" y={py + 2.6} textAnchor="end" fontSize="7" fontWeight="800" fill="#fff" fontFamily="'Inter',sans-serif">{t}</text>
+      ))}
     </g>
   );
 }
@@ -908,6 +930,55 @@ function NEMA17({ x, y }) {
   );
 }
 
+
+function GearMotor({ x, y }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <path d="M0 42 H34" stroke="#DC2626" strokeWidth="3" strokeLinecap="round" />
+      <path d="M0 78 H34" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
+      <rect x="34" y="32" width="44" height="56" rx="22" fill="#C2C8D0" stroke="#7C8590" strokeWidth="1.5" />
+      <rect x="34" y="32" width="44" height="18" rx="9" fill="#E5E8EC" opacity="0.8" />
+      <rect x="78" y="22" width="44" height="76" rx="4" fill="#F5C518" stroke="#C99A0A" strokeWidth="1.8" />
+      <circle cx="89" cy="33" r="2.6" fill="#B07F00" /><circle cx="111" cy="33" r="2.6" fill="#B07F00" />
+      <circle cx="89" cy="87" r="2.6" fill="#B07F00" /><circle cx="111" cy="87" r="2.6" fill="#B07F00" />
+      <circle cx="100" cy="60" r="9" fill="#FDE68A" stroke="#B07F00" strokeWidth="1.2" />
+      <rect x="122" y="48" width="14" height="24" rx="3" fill="#F5C518" stroke="#C99A0A" strokeWidth="1.2" />
+      <circle cx="136" cy="60" r="19" fill="#1B1D21" stroke="#0A0B0D" strokeWidth="2" />
+      <circle cx="136" cy="60" r="8" fill="#F5C518" stroke="#C99A0A" strokeWidth="1" />
+      <circle cx="136" cy="60" r="2.4" fill="#555" />
+    </g>
+  );
+}
+
+function VibrationMotor({ x, y }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <path d="M0 34 H40" stroke="#DC2626" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M0 56 H40" stroke="#1F2937" strokeWidth="2.6" strokeLinecap="round" />
+      <circle cx="62" cy="45" r="22" fill="#C2C8D0" stroke="#7C8590" strokeWidth="1.8" />
+      <circle cx="62" cy="45" r="15" fill="#D9DDE2" stroke="#9AA2AD" strokeWidth="1" />
+      <circle cx="62" cy="45" r="4" fill="#4B5563" />
+      <path d="M92 28 q6 8 0 17 q-6 9 0 17" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" />
+      <path d="M100 32 q5 6 0 13 q-5 7 0 13" fill="none" stroke="#CBD5E1" strokeWidth="2" strokeLinecap="round" />
+    </g>
+  );
+}
+
+function AABattery({ x, y }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <path d="M0 26 H30" stroke="#DC2626" strokeWidth="3" strokeLinecap="round" />
+      <path d="M0 54 H30" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
+      <rect x="30" y="8" width="126" height="64" rx="6" fill="#1F2937" stroke="#0F172A" strokeWidth="2" />
+      <rect x="40" y="18" width="98" height="44" rx="22" fill="#14B8A6" stroke="#0F766E" strokeWidth="1.5" />
+      <rect x="138" y="32" width="8" height="16" rx="2" fill="#CBD5E1" stroke="#64748B" strokeWidth="1" />
+      <text x="88" y="46" textAnchor="middle" fontSize="13" fontWeight="800" fill="#fff" fontFamily="'Inter',sans-serif">AA 1.5V</text>
+      <text x="46" y="14" fontSize="9" fontWeight="800" fill="#9CA3AF" fontFamily="monospace">−</text>
+      <text x="130" y="14" fontSize="9" fontWeight="800" fill="#FCA5A5" fontFamily="monospace">+</text>
+    </g>
+  );
+}
+
 const RENDERERS = {
   arduino_uno: ArduinoUno,
   arduino_nano: ArduinoNano,
@@ -938,6 +1009,9 @@ const RENDERERS = {
   a4988: A4988,
   mpu6050: MPU6050,
   nema17: NEMA17,
+  gear_motor: GearMotor,
+  vibration_motor: VibrationMotor,
+  aa_battery: AABattery,
 };
 
 export function RealisticComponent({ componentId, x, y, onComponentClick, selected }) {
@@ -997,5 +1071,8 @@ export const COMPONENT_INFO = {
   joystick: { name: 'Joystick Module', description: 'Analog joystick with 2 axes (VRX, VRY) and a push button (SW). Great for game controllers.' },
   a4988: { name: 'A4988 Stepper Driver', description: 'Drives one bipolar stepper motor. STEP + DIR pins control motion; VMOT powers the motor (8–35V), VDD is logic (5V).' },
   mpu6050: { name: 'MPU6050 IMU', description: '6-axis accelerometer + gyroscope. Communicates over I2C (SDA/SCL). Used for balance, tilt, and motion sensing.' },
+  gear_motor: { name: 'TT Gear Motor + Wheel', description: 'Yellow geared DC motor that drives a robot wheel. Swap its two wires to spin the other way; always power it through a motor driver.' },
+  vibration_motor: { name: 'Vibration Motor', description: 'Tiny DC motor with an off-centre weight that makes a phone-style buzz. Driven like any DC motor.' },
+  aa_battery: { name: 'AA Battery Holder (1.5V)', description: 'Holds AA cells. Red wire is +, black wire is −.' },
   nema17: { name: 'NEMA 17 Stepper Motor', description: 'Bipolar stepper motor with 200 steps/rev (1.8°). Driven by an A4988 via its 4 coil wires (1A, 1B, 2A, 2B).' },
 };

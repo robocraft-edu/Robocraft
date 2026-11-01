@@ -41,6 +41,9 @@ export function matchComponentId(name) {
     push_button: ['push button', 'button'],
     buzzer: ['buzzer', 'piezo'],
     servo: ['servo', 'servo motor', 'sg90'],
+    gear_motor: ['gear motor', 'tt motor', 'tt gear motor', 'geared motor', 'yellow motor'],
+    vibration_motor: ['vibration motor', 'vibrator'],
+    aa_battery: ['aa battery', 'aa battery holder', 'aa cells'],
     dc_motor: ['dc motor', 'motor', 'dc'],
     stepper: ['stepper'],
     ultrasonic: ['ultrasonic', 'hc-sr04', 'distance sensor'],
@@ -82,6 +85,10 @@ export function matchPinId(componentId, pinLabel) {
     .replace(/^3\.?3V$|^33V$/, '3V3');
   const want = norm(pinLabel);
   if (!want) return null;
+  if (componentId === 'motor_driver') {
+    if (/^(VCC|5V|VSS|LOGIC)/.test(want)) return '5V';
+    if (/^(\+?12V|VMOT|VS|BATTERY|PACK)/.test(want)) return '12V';
+  }
 
   const by = (f) => pins.find(f);
   const hit = by(p => norm(p.id) === want) || by(p => norm(p.label) === want);
@@ -119,12 +126,8 @@ export function matchPinId(componentId, pinLabel) {
 }
 
 // ── Component categories for workbench placement ─────────────────────────────
-const DISCRETE = new Set(['led', 'rgb_led', 'resistor', 'push_button', 'buzzer', 'ldr']);
-const SENSOR = new Set(['ultrasonic', 'ir_sensor', 'temp_sensor', 'gas_sensor', 'joystick', 'mpu6050']);
-const MOTOR = new Set(['dc_motor', 'servo', 'stepper', 'nema17']);
-const POWER = new Set(['battery', 'power_supply']);
-const DISPLAY = new Set(['lcd', 'oled']);
-const COMMS = new Set(['bluetooth', 'relay']);
+const MOTOR = new Set(['dc_motor', 'gear_motor', 'vibration_motor', 'servo', 'stepper', 'nema17']);
+const POWER = new Set(['battery', 'aa_battery', 'power_supply']);
 const DRIVER_IDS = new Set(['motor_driver', 'a4988']);
 
 // ── Build component instances from pin connections ───────────────────────────
@@ -159,7 +162,12 @@ function buildInstances(pinConnections) {
     dyn[inst.key] = { pins, size: { w: 150, h } };
     inst.id = `generic:${inst.key}`;
   }
-  return { controllerId, instances: Array.from(byName.values()), dyn };
+  // "+12V from battery pack" on a driver means there is a pack to draw.
+  const list = Array.from(byName.values());
+  const needsPack = list.some(i => DRIVER_IDS.has(i.id)) && !list.some(i => POWER.has(i.id)) &&
+    pinConnections.some(c => /battery|12\s*v|supply|pack/i.test(String(c.componentPin || '')));
+  if (needsPack) list.push({ key: 'Battery Pack', id: 'battery', name: 'Battery Pack', conns: [], generic: false });
+  return { controllerId, instances: list, dyn };
 }
 
 // ── Absolute pin position + exit side ────────────────────────────────────────
@@ -179,40 +187,104 @@ function pinAbs(pos, compId, pinId, dyn, key) {
   const pin = pins.find(p => p.id === pinId);
   if (!pin) return null;
   const size = sizeOf(compId, dyn, key) || { w: pos.w, h: pos.h };
-  const x = pos.x + pin.x;
+  // Parts left of the board are drawn mirrored, so their pins face it.
+  const px = pos.mirror ? size.w - pin.x : pin.x;
+  const x = pos.x + px;
   const y = pos.y + pin.y;
-  let side = 'left';
-  if (pin.x <= 2) side = 'left';
-  else if (pin.x >= size.w - 2) side = 'right';
-  else if (pin.y <= 2) side = 'top';
-  else if (pin.y >= size.h - 2) side = 'bottom';
+  const d = { left: px, right: size.w - px, top: pin.y, bottom: size.h - pin.y };
+  const side = Object.keys(d).reduce((m, k) => (d[k] < d[m] ? k : m), 'left');
   return { x, y, side };
 }
 
-// ── Orthogonal jumper-wire path (rounded right-angle) ────────────────────────
-function wirePath(s, t) {
-  const exit = 26;
-  const es = s.side === 'left' ? { x: s.x - exit, y: s.y }
-    : s.side === 'right' ? { x: s.x + exit, y: s.y }
-      : s.side === 'top' ? { x: s.x, y: s.y - exit }
-        : { x: s.x, y: s.y + exit };
-  const et = t.side === 'left' ? { x: t.x - exit, y: t.y }
-    : t.side === 'right' ? { x: t.x + exit, y: t.y }
-      : t.side === 'top' ? { x: t.x, y: t.y - exit }
-        : { x: t.x, y: t.y + exit };
+// ── Orthogonal wire routing ──────────────────────────────────────────────────
+// Every wire gets its own lane, so two wires never run on top of each other and
+// none cuts through a part.
+const LANE = 10;
+const STUB = 22;
 
-  const horizS = s.side === 'left' || s.side === 'right';
-  const horizT = t.side === 'left' || t.side === 'right';
-  if (horizS && horizT) {
-    const midX = (es.x + et.x) / 2;
-    return `M ${s.x} ${s.y} L ${es.x} ${es.y} L ${midX} ${es.y} L ${midX} ${et.y} L ${et.x} ${et.y} L ${t.x} ${t.y}`;
+const stubOf = (p, len = STUB) =>
+  p.side === 'left' ? { x: p.x - len, y: p.y }
+    : p.side === 'right' ? { x: p.x + len, y: p.y }
+      : p.side === 'top' ? { x: p.x, y: p.y - len }
+        : { x: p.x, y: p.y + len };
+
+/** Polyline → SVG path with softly rounded corners. */
+function roundedPath(pts, r = 7) {
+  const P = pts.filter((p, i) => i === 0 || p.x !== pts[i - 1].x || p.y !== pts[i - 1].y);
+  if (P.length < 3) return `M ${P[0].x} ${P[0].y} L ${P[P.length - 1].x} ${P[P.length - 1].y}`;
+  let d = `M ${P[0].x} ${P[0].y}`;
+  for (let i = 1; i < P.length - 1; i++) {
+    const a = P[i - 1], b = P[i], c = P[i + 1];
+    const l1 = Math.hypot(b.x - a.x, b.y - a.y), l2 = Math.hypot(c.x - b.x, c.y - b.y);
+    const k = Math.min(r, l1 / 2, l2 / 2);
+    const p1 = { x: b.x + ((a.x - b.x) / l1) * k, y: b.y + ((a.y - b.y) / l1) * k };
+    const p2 = { x: b.x + ((c.x - b.x) / l2) * k, y: b.y + ((c.y - b.y) / l2) * k };
+    d += ` L ${p1.x} ${p1.y} Q ${b.x} ${b.y} ${p2.x} ${p2.y}`;
   }
-  if (!horizS && !horizT) {
-    const midY = (es.y + et.y) / 2;
-    return `M ${s.x} ${s.y} L ${es.x} ${es.y} L ${es.x} ${midY} L ${et.x} ${midY} L ${et.x} ${et.y} L ${t.x} ${t.y}`;
+  const z = P[P.length - 1];
+  return `${d} L ${z.x} ${z.y}`;
+}
+
+/**
+ * Lay out every wire. `ctx` carries column edges and the channels above and below
+ * the whole drawing, used when a wire has to go round the back of a part.
+ */
+function routeWires(wires, ctx) {
+  const lanes = new Map(); // channel id → wires, in drawing order
+  const add = (id, w) => { if (!lanes.has(id)) lanes.set(id, []); lanes.get(id).push(w); };
+
+  wires.forEach(w => {
+    const { s, t } = w;
+    const hs = s.side === 'left' || s.side === 'right';
+    const ht = t.side === 'left' || t.side === 'right';
+    const facing = hs && ht && ((s.side === 'right' && t.side === 'left' && t.x > s.x) || (s.side === 'left' && t.side === 'right' && t.x < s.x));
+    if (facing) { w.kind = 'gap'; w.dir = t.x > s.x ? 1 : -1; add(`gap:${w.sCol}>${w.tCol}`, w); }
+    else if (hs && ht) { w.kind = 'around'; w.top = (s.y + t.y) / 2 < ctx.midY; add(w.top ? 'top' : 'bottom', w); }
+    else w.kind = 'elbow';
+  });
+
+  for (const [id, group] of lanes) {
+    if (id.startsWith('gap:')) {
+      // Wires that turn nearest the source never cross the ones that turn later.
+      const key = (w) => {
+        const down = w.t.y >= w.s.y;
+        const base = down ? -w.s.y : w.s.y;
+        const order = (down ? 0 : 1000000) + (w.dir > 0 ? base : -base);
+        return order;
+      };
+      group.sort((a, b) => key(a) - key(b));
+      group.forEach((w, i) => {
+        const edge = w.dir > 0 ? ctx.colRight[w.sCol] : ctx.colLeft[w.sCol];
+        w.laneX = edge + w.dir * (STUB + 18 + i * LANE);
+      });
+    } else {
+      group.sort((a, b) => (id === 'top' ? a.s.y - b.s.y : b.s.y - a.s.y));
+      const used = new Map();
+      const slot = (k) => { const n = used.get(k) || 0; used.set(k, n + 1); return n; };
+      group.forEach((w, i) => {
+        w.laneY = id === 'top' ? ctx.topY - i * LANE : ctx.bottomY + i * LANE;
+        w.sLen = STUB + slot(`s:${w.sCol}:${w.s.side}`) * LANE;
+        w.tLen = STUB + slot(`t:${w.tCol}:${w.t.side}`) * LANE;
+      });
+    }
   }
-  // mixed
-  return `M ${s.x} ${s.y} L ${es.x} ${es.y} L ${et.x} ${es.y} L ${et.x} ${et.y} L ${t.x} ${t.y}`;
+
+  wires.forEach(w => {
+    const { s, t } = w;
+    const es = stubOf(s, w.sLen || STUB), et = stubOf(t, w.tLen || STUB);
+    let pts;
+    if (w.kind === 'gap') pts = [s, { x: w.laneX, y: s.y }, { x: w.laneX, y: t.y }, t];
+    else if (w.kind === 'around') pts = [s, es, { x: es.x, y: w.laneY }, { x: et.x, y: w.laneY }, et, t];
+    else {
+      const hs = s.side === 'left' || s.side === 'right';
+      const ht = t.side === 'left' || t.side === 'right';
+      if (!hs && !ht) { const my = (es.y + et.y) / 2; pts = [s, es, { x: es.x, y: my }, { x: et.x, y: my }, et, t]; }
+      else if (hs) pts = [s, es, { x: et.x, y: es.y }, et, t];
+      else pts = [s, es, { x: es.x, y: et.y }, et, t];
+    }
+    w.d = roundedPath(pts);
+  });
+  return wires;
 }
 
 /** A part with no artwork: a labelled module carrying exactly its wired pins. */
@@ -252,53 +324,6 @@ function PinTag({ p, text, color, dim, nudge = 0 }) {
   );
 }
 
-// ── A large realistic breadboard as the workbench stage ──────────────────────
-function WorkbenchBreadboard({ x, y, w, h }) {
-  const holes = Math.floor((w - 60) / 13);
-  const cols = [];
-  for (let i = 0; i < holes; i++) cols.push(40 + i * 13);
-  return (
-    <g transform={`translate(${x},${y})`}>
-      {/* shadow */}
-      <rect x="6" y="10" width={w} height={h} rx="10" fill="#000" opacity="0.08" />
-      {/* body */}
-      <rect width={w} height={h} rx="10" fill="#F3EAD6" stroke="#D9C9A3" strokeWidth="2" />
-      <rect x="3" y="3" width={w - 6} height={h - 6} rx="8" fill="none" stroke="#E8Dcba" strokeWidth="1" />
-      {/* power rails */}
-      <rect x="20" y="14" width={w - 40} height="18" rx="3" fill="#E0533D" opacity="0.85" />
-      <rect x="20" y={h - 32} width={w - 40} height="18" rx="3" fill="#3B6FB0" opacity="0.85" />
-      <text x="30" y="27" fontSize="11" fontWeight="800" fill="#fff" fontFamily="monospace">+</text>
-      <text x="30" y={h - 19} fontSize="11" fontWeight="800" fill="#fff" fontFamily="monospace">−</text>
-      <text x={w - 30} y="27" fontSize="11" fontWeight="800" fill="#fff" fontFamily="monospace" textAnchor="end">+</text>
-      <text x={w - 30} y={h - 19} fontSize="11" fontWeight="800" fill="#fff" fontFamily="monospace" textAnchor="end">−</text>
-      {/* rail holes */}
-      {cols.map((cx, i) => (
-        <g key={`r${i}`}>
-          <circle cx={cx} cy="23" r="2.4" fill="#9B7B4A" />
-          <circle cx={cx} cy={h - 23} r="2.4" fill="#9B7B4A" />
-        </g>
-      ))}
-      {/* center groove */}
-      <rect x="20" y={h / 2 - 6} width={w - 40} height="12" rx="3" fill="#E3D2AE" />
-      {/* main terminal strips */}
-      {cols.map((cx, i) => (
-        <g key={`m${i}`}>
-          {Array.from({ length: 5 }).map((_, j) => (
-            <circle key={j} cx={cx} cy={48 + j * 12} r="2.4" fill="#9B7B4A" />
-          ))}
-          {Array.from({ length: 5 }).map((_, j) => (
-            <circle key={j} cx={cx} cy={h / 2 + 14 + j * 12} r="2.4" fill="#9B7B4A" />
-          ))}
-        </g>
-      ))}
-      {/* column numbers */}
-      {cols.filter((_, i) => i % 5 === 0).map((cx, i) => (
-        <text key={i} x={cx} y={h / 2 - 10} textAnchor="middle" fontSize="7" fill="#B59B6A" fontFamily="monospace">{i * 5 + 1}</text>
-      ))}
-    </g>
-  );
-}
-
 // ── Soft drop shadow filter id ───────────────────────────────────────────────
 const SHADOW_FILTER = 'rcCompShadow';
 
@@ -315,76 +340,101 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
 
   const { controllerId, instances, dyn } = buildInstances(pinConnections);
   const cSize = REALISTIC_SIZES[controllerId] || { w: 180, h: 260 };
+  const cPins = REALISTIC_PINS[controllerId] || [];
 
-  // ── Layout coordinates ──
-  const CANVAS_W = 1180;
-  const PAD = 40;
+  const PAD = 44;
   const TITLE_H = 92;
+  const ROW_GAP = 78;
+  const sizes = {};
+  instances.forEach(i => { sizes[i.key] = sizeOf(i.id, dyn, i.key) || { w: 150, h: 130 }; });
+  const edgeOf = (size, pin) => {
+    const d = { left: pin.x, right: size.w - pin.x, top: pin.y, bottom: size.h - pin.y };
+    return Object.keys(d).reduce((m, k) => (d[k] < d[m] ? k : m), 'left');
+  };
 
-  const ctrlX = (CANVAS_W - cSize.w) / 2;
-  const ctrlY = TITLE_H + 24;
+  // ── Which controller pins does each part use? ──
+  const info = {};
+  instances.forEach(i => { info[i.key] = { n: 0, side: 0, y: 0 }; });
+  pinConnections.forEach(conn => {
+    const inst = instances.find(i => i.key === (conn.component || conn.componentId));
+    if (!inst) return;
+    const cp = cPins.find(p => p.id === (conn.controllerPinId || matchPinId(controllerId, conn.controllerPin)));
+    if (!cp) return;
+    const e = edgeOf(cSize, cp);
+    const weight = cp.type === 'power' || cp.type === 'ground' ? 0.4 : 2; // signal wires decide the side
+    info[inst.key].n += 1;
+    info[inst.key].side += (e === 'left' ? -1 : e === 'right' ? 1 : 0) * weight;
+    info[inst.key].y += cp.y;
+  });
 
-  const discreteCount = instances.filter(i => DISCRETE.has(i.id)).length;
-  const showBreadboard = discreteCount > 0;
-  const BB_W = 880, BB_H = showBreadboard ? 250 : 0;
-  const bbX = (CANVAS_W - BB_W) / 2;
-  const bbY = ctrlY + cSize.h + (showBreadboard ? 120 : 0);
+  // ── Columns: parts that talk to the board sit beside it; motors and the battery sit beside their driver ──
+  const hub = instances.find(i => DRIVER_IDS.has(i.id));
+  const cols = { L2: [], L1: [], R1: [], R2: [] };
+  const colOf = { [controllerId]: 'C' };
+  let hL = 0, hR = 0;
+  const direct = instances.filter(i => info[i.key].n > 0);
+  const indirect = instances.filter(i => info[i.key].n === 0);
+  direct.forEach(i => {
+    const sd = info[i.key].side;
+    const c = sd < 0 ? 'L1' : sd > 0 ? 'R1' : (hL <= hR ? 'L1' : 'R1');
+    cols[c].push(i);
+    if (c === 'L1') hL += sizes[i.key].h + ROW_GAP; else hR += sizes[i.key].h + ROW_GAP;
+  });
+  const hubCol = hub ? (cols.L1.includes(hub) ? 'L1' : 'R1') : (hL <= hR ? 'R1' : 'L1');
+  const outerCol = hubCol === 'L1' ? 'L2' : 'R2';
+  indirect.forEach(i => cols[outerCol].push(i));
+  Object.entries(cols).forEach(([c, list]) => list.forEach(i => { colOf[i.key] = c; }));
+  const avgY = (i) => (info[i.key].n ? info[i.key].y / info[i.key].n : 0);
+  cols.L1.sort((a, b) => avgY(a) - avgY(b));
+  cols.R1.sort((a, b) => avgY(a) - avgY(b));
 
+  // ── Space between columns grows with the number of wires that must pass through ──
+  const wiresInto = (c) => pinConnections.filter(cn => colOf[cn.component || cn.componentId] === c).length;
+  const driven = instances.filter(i => ['dc_motor', 'gear_motor', 'vibration_motor'].includes(i.id) && info[i.key].n === 0);
+  const batteryInst = instances.find(i => POWER.has(i.id) && info[i.key].n === 0);
+  const outerWires = driven.length * 2 + (batteryInst ? 2 : 0);
+  const gapCtrl = (c) => (cols[c].length ? Math.max(170, 70 + LANE * wiresInto(c)) : 0);
+  const gapOuter = (c) => (cols[c].length ? Math.max(150, 70 + LANE * Math.max(outerWires, 4)) : 0);
+  const colW = (c) => (cols[c].length ? Math.max(...cols[c].map(i => sizes[i.key].w)) : 0);
+
+  const xs = {};
+  let cx = PAD;
+  xs.L2 = cx; cx += colW('L2') + gapOuter('L2');
+  xs.L1 = cx; cx += colW('L1') + gapCtrl('L1');
+  const ctrlX = cx; cx += cSize.w + gapCtrl('R1');
+  xs.R1 = cx; cx += colW('R1') + gapOuter('R2');
+  xs.R2 = cx; cx += colW('R2');
+  const CANVAS_W = Math.max(960, cx + PAD);
+  const shiftX = (CANVAS_W - (cx + PAD)) / 2;   // centre the drawing when it is narrower than the minimum
+  Object.keys(xs).forEach(k => { xs[k] += shiftX; });
+
+  const wrapRoom = 40 + LANE * Math.min(10, direct.length);
+  const top = TITLE_H + wrapRoom;
+  const ctrlY = top;
   const positions = {};
-  positions[controllerId] = { x: ctrlX, y: ctrlY, w: cSize.w, h: cSize.h };
-
-  // Discrete components on the breadboard
-  const discrete = instances.filter(i => DISCRETE.has(i.id));
-  discrete.forEach((inst, i) => {
-    const sz = sizeOf(inst.id, dyn, inst.key);
-    const n = discrete.length;
-    const span = BB_W - 160;
-    const slot = n === 1 ? span / 2 : span / n;
-    const x = bbX + 80 + slot * i + (slot - sz.w) / 2;
-    const y = bbY + 56;
-    positions[inst.key] = { x, y, w: sz.w, h: sz.h };
+  positions[controllerId] = { x: ctrlX + shiftX, y: ctrlY, w: cSize.w, h: cSize.h };
+  const stack = (list, c, y0) => {
+    let y = y0;
+    list.forEach(inst => {
+      const sz = sizes[inst.key];
+      const colWd = colW(c);
+      // parts hug the side facing the board so wires stay short
+      const x = (c === 'L1' || c === 'L2') ? xs[c] + colWd - sz.w : xs[c];
+      positions[inst.key] = { x, y, w: sz.w, h: sz.h, mirror: c === 'L1' || c === 'L2' };
+      y += sz.h + ROW_GAP;
+    });
+    return y;
+  };
+  stack(cols.L1, 'L1', top);
+  stack(cols.R1, 'R1', top);
+  ['L2', 'R2'].forEach(c => {
+    const list = cols[c];
+    if (!list.length) return;
+    const total = list.reduce((n, i) => n + sizes[i.key].h + ROW_GAP, -ROW_GAP);
+    const hubMid = hub && positions[hub.key] ? positions[hub.key].y + positions[hub.key].h / 2 : top + total / 2;
+    stack(list, c, Math.max(top, hubMid - total / 2));
   });
-
-  // Modules row (sensors, driver, displays, comms)
-  const mods = instances.filter(i =>
-    SENSOR.has(i.id) || i.id === 'motor_driver' || DISPLAY.has(i.id) || COMMS.has(i.id));
-  const modY = bbY + BB_H + (showBreadboard ? 96 : 110);
-  let modMaxH = 0;
-  const modSpan = CANVAS_W - 2 * PAD;
-  const modSlot = mods.length ? modSpan / mods.length : modSpan;
-  mods.forEach((inst, i) => {
-    const sz = sizeOf(inst.id, dyn, inst.key);
-    modMaxH = Math.max(modMaxH, sz.h);
-    // a lone module sits off to one side, so wires to it stay visible
-    const x = mods.length === 1 ? PAD + modSpan * 0.22 : PAD + modSlot * i + (modSlot - sz.w) / 2;
-    const y = modY;
-    positions[inst.key] = { x, y, w: sz.w, h: sz.h };
-  });
-
-  // Actuators + power row
-  const actuators = instances.filter(i => MOTOR.has(i.id) || POWER.has(i.id));
-  const actY = modY + modMaxH + 86;
-  let actMaxH = 0;
-  const actSpan = CANVAS_W - 2 * PAD;
-  const actSlot = actuators.length ? actSpan / actuators.length : actSpan;
-  actuators.forEach((inst, i) => {
-    const sz = sizeOf(inst.id, dyn, inst.key);
-    actMaxH = Math.max(actMaxH, sz.h);
-    const x = actuators.length === 1 ? PAD + actSpan * 0.62 : PAD + actSlot * i + (actSlot - sz.w) / 2;
-    const y = actY;
-    positions[inst.key] = { x, y, w: sz.w, h: sz.h };
-  });
-
-  // Any leftover (unknown) components → place in modules row end
-  const placed = new Set([controllerId, ...discrete.map(i => i.key), ...mods.map(i => i.key), ...actuators.map(i => i.key)]);
-  const leftover = instances.filter(i => !placed.has(i.key));
-  leftover.forEach((inst, i) => {
-    const sz = sizeOf(inst.id, dyn, inst.key) || { w: 150, h: 130 };
-    const x = PAD + i * (sz.w + 30);
-    const y = actY + actMaxH + 70;
-    positions[inst.key] = { x, y, w: sz.w, h: sz.h };
-    actMaxH = Math.max(actMaxH, sz.h + 60);
-  });
+  const parts = instances;
 
   // ── Build wires ──
   const wires = [];
@@ -406,9 +456,8 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
 
     wires.push({
       key: `c${idx}`,
-      d: wirePath(s, t),
       color: resolveColor(conn),
-      s, t,
+      s, t, sCol: 'C', tCol: colOf[instKey] || 'C',
       sTag: String(conn.controllerPin || '').toUpperCase(),
       tTag: String(conn.componentPin || '').toUpperCase(),
       label: `${conn.controllerPin} → ${conn.componentPin}`,
@@ -418,63 +467,50 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
     });
   });
 
-  // ── Auto inter-component wires (motor driver ↔ motors ↔ battery) ──
-  const driverInst = instances.find(i => i.id === 'motor_driver');
-  const motorInsts = instances.filter(i => MOTOR.has(i.id));
-  const batteryInst = instances.find(i => POWER.has(i.id));
-
-  if (driverInst && motorInsts.length > 0) {
-    const outs = ['OUT1', 'OUT2', 'OUT3', 'OUT4'];
-    const motorPinPairs = { dc_motor: ['P', 'N'], servo: ['VCC', 'GND'], stepper: ['A1', 'A2'] };
-    motorInsts.forEach((m, mi) => {
-      const pair = motorPinPairs[m.id] || ['P', 'N'];
-      const oIdx = mi * 2;
-      const driverPos = positions[driverInst.key];
-      const mPos = positions[m.key];
-      pair.forEach((mp, j) => {
-        const outId = outs[oIdx + j];
-        if (!outId) return;
-        const s = pinAbs(driverPos, 'motor_driver', outId, dyn, driverInst.key);
-        const t = pinAbs(mPos, m.id, mp, dyn, m.key);
-        if (!s || !t) return;
-        wires.push({
-          key: `auto_d${mi}${j}`,
-          d: wirePath(s, t),
-          color: j === 0 ? WIRE_COLORS.red : WIRE_COLORS.black,
-          s, t, sTag: outId, tTag: mp, label: `${outId} → ${mp}`, dimmed: false, highlighted: false, idx: -1,
-        });
+  // ── Auto wires between parts that have no controller pin (driver ↔ motors, battery ↔ driver) ──
+  const auto = (key, a, aPin, aCol, b, bPin, bCol, color, sTag, tTag, label) => {
+    const s = pinAbs(positions[a.key], a.id, aPin, dyn, a.key);
+    const t = pinAbs(positions[b.key], b.id, bPin, dyn, b.key);
+    if (!s || !t) return;
+    wires.push({ key, color, s, t, sCol: aCol, tCol: bCol, sTag, tTag, label, dimmed: false, highlighted: false, idx: -1 });
+  };
+  if (hub && hub.id === 'motor_driver' && driven.length) {
+    const half = Math.ceil(driven.length / 2);
+    driven.forEach((m, mi) => {
+      // four motors share two channels: left side on A, right side on B
+      const pair = driven.length > 2 ? (mi < half ? 0 : 1) : mi;
+      const outs = [`OUT${pair * 2 + 1}`, `OUT${pair * 2 + 2}`];
+      ['P', 'N'].forEach((mp, j) => {
+        auto(`auto_d${mi}${j}`, hub, outs[j], colOf[hub.key], m, mp, colOf[m.key],
+          j === 0 ? WIRE_COLORS.red : WIRE_COLORS.black, outs[j], mp, `${outs[j]} → ${mp}`);
       });
     });
   }
-  if (batteryInst && driverInst) {
-    const bPos = positions[batteryInst.key];
-    const dPos = positions[driverInst.key];
-    const pairs = [
-      { b: 'P', d: '12V', c: WIRE_COLORS.red },
-      { b: 'N', d: 'GND', c: WIRE_COLORS.black },
-    ];
-    pairs.forEach((p, j) => {
-      const s = pinAbs(bPos, batteryInst.id, p.b, dyn, batteryInst.key);
-      const t = pinAbs(dPos, 'motor_driver', p.d, dyn, driverInst.key);
-      if (!s || !t) return;
-      wires.push({ key: `auto_b${j}`, d: wirePath(s, t), color: p.c, s, t, sTag: p.b === 'P' ? '+' : '−', tTag: p.d, label: `Battery → ${p.d}`, dimmed: false, highlighted: false, idx: -1 });
+  if (batteryInst && hub) {
+    [['P', '12V', WIRE_COLORS.red, '+'], ['N', 'GND', WIRE_COLORS.black, '−']].forEach(([bp, dp, col, tag], j) => {
+      auto(`auto_b${j}`, batteryInst, bp, colOf[batteryInst.key], hub, dp, colOf[hub.key], col, tag, dp, `Battery → ${dp}`);
     });
-  }
-  if (batteryInst && !driverInst && motorInsts.length > 0) {
-    // Battery direct to motor (simple projects)
-    const bPos = positions[batteryInst.key];
-    motorInsts.forEach((m, mi) => {
-      const s = pinAbs(bPos, batteryInst.id, 'P', dyn, batteryInst.key);
-      const t = pinAbs(positions[m.key], m.id, 'P', dyn, m.key);
-      if (!s || !t) return;
-      wires.push({ key: `auto_bm${mi}`, d: wirePath(s, t), color: WIRE_COLORS.red, s, t, label: 'Battery → Motor', dimmed: false, highlighted: false, idx: -1 });
+  } else if (batteryInst && driven.length) {
+    driven.forEach((m, mi) => {
+      auto(`auto_bm${mi}`, batteryInst, 'P', colOf[batteryInst.key], m, 'P', colOf[m.key], WIRE_COLORS.red, '+', 'P', 'Battery → Motor');
+      auto(`auto_bn${mi}`, batteryInst, 'N', colOf[batteryInst.key], m, 'N', colOf[m.key], WIRE_COLORS.black, '−', 'N', 'Battery → Motor');
     });
   }
 
-  // ── Canvas height ──
+  // ── Canvas size, then route every wire into its own lane ──
   const allBottoms = Object.values(positions).map(p => p.y + p.h);
-  const contentBottom = Math.max(...allBottoms, showBreadboard ? bbY + BB_H : 0);
-  const CANVAS_H = contentBottom + 60 + 36; // + legend
+  const contentBottom = Math.max(...allBottoms);
+  const bottomRoom = 44 + LANE * Math.min(8, direct.length);
+  const CANVAS_H = contentBottom + bottomRoom + 70;
+  const colLeft = {}, colRight = {};
+  colLeft.C = positions[controllerId].x; colRight.C = positions[controllerId].x + cSize.w;
+  Object.entries(cols).forEach(([c, list]) => {
+    if (!list.length) return;
+    colLeft[c] = Math.min(...list.map(i => positions[i.key].x));
+    colRight[c] = Math.max(...list.map(i => positions[i.key].x + positions[i.key].w));
+  });
+  routeWires(wires, { colLeft, colRight, midY: ctrlY + cSize.h / 2, topY: top - 26, bottomY: contentBottom + 40 });
+  const ctrlX0 = positions[controllerId].x;
 
   // ── Header ──
   const diffColors = { Beginner: '#16A34A', Intermediate: '#EA580C', Advanced: '#DC2626' };
@@ -486,6 +522,7 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
     <svg width="100%" viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
       style={{ maxWidth: `${CANVAS_W}px`, margin: '0 auto', display: 'block', background: '#FAFBFC' }}>
       <defs>
+        <style>{'.rc-mirror text{transform-box:fill-box;transform-origin:center;transform:scaleX(-1)}'}</style>
         <filter id={SHADOW_FILTER} x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000" floodOpacity="0.18" />
         </filter>
@@ -525,9 +562,6 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
         </g>
       </g>
 
-      {/* ── Breadboard stage (only when parts sit on it) ── */}
-      {showBreadboard && <WorkbenchBreadboard x={bbX} y={bbY} w={BB_W} h={BB_H} />}
-
       {/* ── Wires (under components' pin caps, over breadboard) ── */}
       <g>
         {wires.map(w => (
@@ -565,21 +599,18 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
       {/* ── Components ── */}
       <g filter={`url(#${SHADOW_FILTER})`}>
         {/* Controller */}
-        <RealisticComponent componentId={controllerId} x={ctrlX} y={ctrlY}
+        <RealisticComponent componentId={controllerId} x={ctrlX0} y={ctrlY}
           onComponentClick={onComponentClick} />
-        {/* Discrete on breadboard */}
-        {discrete.map(inst => (
-          <RealisticComponent key={inst.key} componentId={inst.id}
-            x={positions[inst.key].x} y={positions[inst.key].y} onComponentClick={onComponentClick} />
-        ))}
-        {/* Modules, actuators and anything we have no artwork for */}
-        {[...mods, ...actuators, ...leftover].map(inst => (
-          inst.generic
-            ? <GenericModule key={inst.key} name={inst.name} x={positions[inst.key].x} y={positions[inst.key].y}
-                size={dyn[inst.key].size} pins={dyn[inst.key].pins} onComponentClick={onComponentClick} />
-            : <RealisticComponent key={inst.key} componentId={inst.id}
-                x={positions[inst.key].x} y={positions[inst.key].y} onComponentClick={onComponentClick} />
-        ))}
+        {/* Every other part, and any we have no artwork for */}
+        {parts.map(inst => {
+          const pos = positions[inst.key];
+          const body = inst.generic
+            ? <GenericModule name={inst.name} x={0} y={0} size={dyn[inst.key].size} pins={dyn[inst.key].pins} onComponentClick={onComponentClick} />
+            : <RealisticComponent componentId={inst.id} x={0} y={0} onComponentClick={onComponentClick} />;
+          return pos.mirror
+            ? <g key={inst.key} className="rc-mirror" transform={`translate(${pos.x + pos.w},${pos.y}) scale(-1,1)`}>{body}</g>
+            : <g key={inst.key} transform={`translate(${pos.x},${pos.y})`}>{body}</g>;
+        })}
       </g>
 
       {/* ── Pin caps (gold jumper tips) drawn on top ── */}
@@ -596,9 +627,9 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
 
       {/* ── Component labels ── */}
       <g fontFamily="'Inter',sans-serif">
-        <text x={ctrlX + cSize.w / 2} y={ctrlY + cSize.h + 20} textAnchor="middle"
+        <text x={ctrlX0 + cSize.w / 2} y={ctrlY + cSize.h + 20} textAnchor="middle"
           fontSize="12" fontWeight="700" fill="#0F172A">{COMPONENT_LABELS[controllerId] || 'Controller'}</text>
-        {[...discrete, ...mods, ...actuators, ...leftover].map(inst => {
+        {parts.map(inst => {
           const p = positions[inst.key];
           if (!p) return null;
           return (

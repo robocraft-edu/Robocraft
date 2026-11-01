@@ -9,6 +9,9 @@ import BackButton from '@/components/BackButton';
 import ShareScoreButton from '@/components/share/ShareScoreButton';
 import { Play, Square, RotateCcw, Bot, Eye, Code2, Terminal, Cpu, CheckCircle2, XCircle, Lightbulb, Video, Map as MapIcon, Sparkles, Loader2, Wrench, Package } from 'lucide-react';
 import { designRobot, makeTask, fixCode } from '@/lib/arena/customRobot';
+import { standardKitConnections, customRobotConnections } from '@/lib/arena/wiringConnections';
+const CircuitDiagram = lazy(() => import('@/components/buildsheet/CircuitDiagram'));
+const FullscreenCircuit = lazy(() => import('@/components/buildsheet/FullscreenCircuit'));
 
 const ArenaView = lazy(() => import('@/components/arena/ArenaView'));
 
@@ -182,6 +185,7 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
   const [time, setTime] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [tab, setTab] = useState('code');
+  const [bigWiring, setBigWiring] = useState(false);
   const [cam, setCam] = useState(task.id === 'bin' ? 'free' : 'chase');
   const [serial, setSerial] = useState([]);
   const [error, setError] = useState(null);
@@ -270,6 +274,10 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
   const statusColor = { pass: 'bg-green-500/15 text-green-500 border-green-500/30', fail: 'bg-red-500/15 text-red-400 border-red-500/30', running: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30', idle: 'bg-muted text-muted-foreground border-transparent' }[status.state];
   const best = results[task.id]?.best;
   const pinRows = useMemo(() => Object.entries(ROBOT_PINS), []);
+  const wiringConns = useMemo(
+    () => (isCustom ? customRobotConnections(task.plan?.wiring) : standardKitConnections(task.id)),
+    [isCustom, task],
+  );
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-3 pb-10">
@@ -363,6 +371,24 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
             </div>
           ))}
         </div>
+      )}
+
+      {tab === 'pins' && (
+        <div className="glass-strong rounded-xl p-3 mb-3">
+          <button onClick={() => setBigWiring(true)} className="block w-full overflow-hidden rounded-lg bg-white text-left" aria-label="Open the wiring diagram full screen">
+            <Suspense fallback={<div className="py-10 text-xs text-center text-muted-foreground">Drawing the circuit…</div>}>
+              <ErrorBoundary compact message="The wiring diagram could not be drawn. The table below still lists every pin.">
+                <CircuitDiagram pinConnections={wiringConns} projectName={isCustom ? 'Your robot' : task.title} />
+              </ErrorBoundary>
+            </Suspense>
+          </button>
+          <p className="text-[10px] text-muted-foreground mt-2">Wires are coloured by job: red power, black ground, blue digital, orange PWM, green analog. Tap the picture to zoom in.</p>
+        </div>
+      )}
+      {bigWiring && (
+        <Suspense fallback={null}>
+          <FullscreenCircuit pinConnections={wiringConns} projectName={isCustom ? 'Your robot' : task.title} onClose={() => setBigWiring(false)} />
+        </Suspense>
       )}
 
       {tab === 'pins' && isCustom && (

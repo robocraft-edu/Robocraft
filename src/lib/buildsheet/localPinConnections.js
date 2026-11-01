@@ -31,6 +31,8 @@ export function detectComponentType(name) {
   if (/nema\s*-?17/.test(n)) return 'nema17';
   if (/stepper/.test(n)) return 'stepper';
   if (/motor\s*driver|l298|l293|driver/.test(n)) return 'motor_driver';
+  if (/vibration|vibrator/.test(n)) return 'vibration_motor';
+  if (/gear\s*motor|\btt\b|geared/.test(n)) return 'gear_motor';
   if (/dc\s*motor|\bmotor\b/.test(n)) return 'dc_motor';
   if (/ultrasonic|hc-sr04|distance\s*sensor/.test(n)) return 'ultrasonic';
   if (/\bir\s*sensor|\binfrared\b|\bir\b/.test(n)) return 'ir_sensor';
@@ -43,6 +45,7 @@ export function detectComponentType(name) {
   if (/bluetooth|hc-?05|hc-?06|ble/.test(n)) return 'bluetooth';
   if (/joystick/.test(n)) return 'joystick';
   if (/mpu\s*-?6050|gy-?521|\bimu\b|gyro(scope)?|accelerometer/.test(n)) return 'mpu6050';
+  if (/aa\s*batter|aa\s*cell|aa\s*holder/.test(n)) return 'aa_battery';
   if (/battery|9v|cell/.test(n)) return 'battery';
   if (/power\s*supply|adapter|charger/.test(n)) return 'power_supply';
   if (/rfid|nfc/.test(n)) return 'rfid';
