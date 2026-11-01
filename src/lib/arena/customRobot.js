@@ -9,7 +9,8 @@
 // design is used instead, so the feature never ends in an error screen.
 import { backend } from '@/api/client';
 import { getTask } from '@/lib/arena/tasks';
-import { ArenaBoard } from '@/lib/arena/world';
+import { ArenaBoard, armMap } from '@/lib/arena/world';
+import { ARM_TASK, ARM_SKELETON, ARM_OFFLINE_CODE } from '@/lib/arena/armTask';
 import { runSketch } from '@/lib/arduino/runtime';
 import { asText } from '@/lib/aiShape';
 
@@ -74,37 +75,6 @@ const SETUP_ALL = `  pinMode(ENA, OUTPUT); pinMode(IN1, OUTPUT); pinMode(IN2, OU
   pinMode(LED, OUTPUT); pinMode(BUZZER, OUTPUT);
   Serial.begin(9600);`;
 
-const ARM_CODE = `#include <Servo.h>
-${SKELETON}
-Servo arm;
-
-void setup() {
-${SETUP_ALL}
-  arm.attach(SERVO_PIN);
-  arm.write(90);
-}
-
-// Drive forward. When something is closer than 20 cm: stop, light the LED,
-// swing the arm to grab it, then back away and turn.
-void loop() {
-  long d = readDistance();
-  if (d < 20) {
-    motors(0, 0);
-    digitalWrite(LED, HIGH);
-    tone(BUZZER, 880); delay(150); noTone(BUZZER);
-    arm.write(20);  delay(600);     // arm down
-    arm.write(150); delay(600);     // arm up
-    digitalWrite(LED, LOW);
-    motors(-130, -130); delay(500);
-    motors(150, -150);  delay(450);
-  } else {
-    motors(140, 140);
-    arm.write(90);
-  }
-  delay(30);
-}
-`;
-
 const GUARD_CODE = `${SKELETON}
 void setup() {
 ${SETUP_ALL}
@@ -152,11 +122,15 @@ void loop() {
 
 const withHeader = (task) => String(task?.solution || '').replace(/^\/\/ ── RoboCraft robot pin map ──[\s\S]*?\n\n/, '');
 
+// Words that mean a stationary arm that works on objects, not a car with a gadget on it.
+const ARM_RE = /\b(robot(ic)? arm|arm|grip|gripper|claw|crane|pick(ing)?[- ]?(and|&|n)?[- ]?place|pick ?up|pick|grab|picker|manipulator)\b/i;
+export const isArmRequest = (text) => ARM_RE.test(String(text || ''));
+
 function templates() {
   return [
-    { re: /\b(arm|grip|gripper|claw|pick|grab|servo|crane|hand)\b/i, name: 'Pick-and-Grab Rover', env: 'obstacles', parts: ['ultrasonic', 'servo', 'led', 'buzzer'], color: '#f97316',
-      summary: 'Drives forward, stops when it finds an object, and swings its servo arm to grab it.', code: ARM_CODE,
-      explain: 'The ultrasonic sensor measures distance. When it drops below 20 cm the robot stops, the servo arm swings down and up, and it backs away. The servo takes an angle (0–180), so write(20) and write(150) are the two ends of the arm\'s swing.' },
+    { re: ARM_RE, name: 'Pick-and-Place Robotic Arm', env: 'arm', body: 'arm', parts: ['servo', 'ultrasonic', 'led', 'buzzer'], color: '#f97316',
+      summary: 'A 4-servo arm on a fixed base. Three cubes wait on the table; it picks each one up and puts it in the tray.', code: ARM_OFFLINE_CODE,
+      explain: 'Each joint is a servo: the base turns the arm, the shoulder and elbow reach out and down, and the gripper opens (0°) and closes (90°). pickAndPlace() is a list of poses: hover over the cube, lower, close the gripper, lift, swing to the tray, lower, open. The ultrasonic sensor on the base checks that a cube is really there.' },
     { re: /\b(line|follow|track|path|road|lane)\b/i, name: 'Line-Following Robot', env: 'line', parts: ['ir', 'led'], color: '#0ea5e9',
       summary: 'Two IR sensors watch for the black line and steer to stay on it.', code: () => getTask('line')?.solution,
       explain: 'Each IR sensor reads HIGH over black. If the left sensor sees black the line has drifted left, so turn left; if the right sees it, turn right; otherwise drive straight.' },
@@ -187,12 +161,28 @@ export function offlineDesign(prompt) {
   };
   let code = typeof t.code === 'function' ? t.code() : t.code;
   code = String(code || EXPLORER_CODE);
-  return { name: t.name, summary: t.summary, environment: t.env, color: t.color, parts: t.parts, code, explain: t.explain };
+  return { name: t.name, summary: t.summary, environment: t.env, body: t.body || 'rover', color: t.color, parts: t.parts, code, explain: t.explain };
 }
 
 // ── turning a design into a task the Arena screen can run ────────────────────
-const ENV_TASK = { line: 'line', obstacles: 'obstacle', maze: 'maze', edge: 'edge', open: 'free', pid: 'pid' };
+const ENV_TASK = { arm: 'arm', line: 'line', obstacles: 'obstacle', maze: 'maze', edge: 'edge', open: 'free', pid: 'pid' };
 const COLOR = /^#[0-9a-fA-F]{6}$/;
+
+const ARM_PARTS = [
+  { name: 'Arduino Uno', qty: 1, purpose: 'The brain: runs your sketch.' },
+  { name: 'SG90 / MG90 servo', qty: 4, purpose: 'Base, shoulder, elbow and gripper: each turns to the angle you write().' },
+  { name: 'HC-SR04 ultrasonic sensor', qty: 1, purpose: 'On the base: checks that a cube is in front of the gripper.' },
+  { name: '5 V 3 A power supply', qty: 1, purpose: 'Powers the servos. They draw too much current for the Uno\'s 5 V pin.' },
+  { name: 'Red LED + 220 Ω resistor', qty: 1, purpose: 'Lights while the arm is working on a cube.' },
+  { name: 'Piezo buzzer', qty: 1, purpose: 'Beeps to celebrate or warn.' },
+];
+const ARM_WIRING = [
+  ['Base servo', 'Signal', 'D3 (PWM)', 'Turns the whole arm'], ['Shoulder servo', 'Signal', 'D5 (PWM)', 'Leans the arm forward'],
+  ['Elbow servo', 'Signal', 'D6 (PWM)', 'Bends the forearm'], ['Gripper servo', 'Signal', 'D11 (PWM)', '0° open, 90° closed'],
+  ['All 4 servos', 'VCC and GND', '5 V supply + and −', 'Not from the Uno: join the supply − to Arduino GND'],
+  ['HC-SR04', 'TRIG / ECHO', 'D9 / D10', 'Distance to the cube'], ['HC-SR04', 'VCC / GND', '5V / GND', 'Sensor power'],
+  ['Red LED', 'Anode (through 220 Ω)', 'D13', 'Status light'], ['Piezo buzzer', '+', 'A4', 'Beeper'],
+];
 
 export function buildWiring(kinds) {
   const rows = BASE_WIRING.map(([part, pin, to, note]) => ({ part, pin, to, note }));
@@ -216,7 +206,27 @@ export function kindsFromCode(code) {
   return used;
 }
 
+function makeArmTask(design, stamp) {
+  const color = COLOR.test(design.color || '') ? design.color : '#f97316';
+  return {
+    id: `custom-${stamp}`,
+    title: design.name || 'My robotic arm',
+    badge: 'Built by you',
+    body: 'arm',
+    classes: ['class_9', 'class_10', 'class_11'],
+    desc: design.summary || 'A robotic arm you designed.',
+    learn: design.explain || 'Read the code line by line and predict what the arm will do before you press Run.',
+    map: () => ({ ...armMap(), custom: { color, parts: ['servo', 'ultrasonic', 'led', 'buzzer'] } }),
+    init: () => ({}),
+    evaluate: ARM_TASK.evaluate,
+    starter: design.code,
+    solution: null,
+    plan: { parts: ARM_PARTS, wiring: ARM_WIRING.map(([part, pin, to, note]) => ({ part, pin, to, note })), kinds: ['servo', 'ultrasonic', 'led', 'buzzer'] },
+  };
+}
+
 export function makeTask(design, stamp = Date.now()) {
+  if (design.body === 'arm') return makeArmTask(design, stamp);
   const fromCode = kindsFromCode(design.code);
   const kinds = [...new Set(fromCode.length ? fromCode : (design.parts || []).filter(k => KINDS[k]))];
   const baseId = ENV_TASK[design.environment] || 'obstacle';
@@ -245,7 +255,7 @@ export function dryRun(code, envTask) {
   return new Promise((resolve) => {
     let err = null;
     try {
-      const board = new ArenaBoard((getTask(ENV_TASK[envTask] || 'obstacle') || getTask('free')).map());
+      const board = new ArenaBoard(envTask === 'arm' ? armMap() : (getTask(ENV_TASK[envTask] || 'obstacle') || getTask('free')).map());
       const h = runSketch(code, board, { speed: 64, maxMs: 1500, onError: (e) => { err = e; } });
       const timer = setTimeout(() => { h.stop(); resolve(err ? { message: err.message, line: err.line } : null); }, 4000);
       h.done.then((res) => {
@@ -267,6 +277,16 @@ const SCHEMA = { type: 'object', properties: {
   color: { type: 'string' }, parts: { type: 'array', items: { type: 'string' } },
   code: { type: 'string' }, explain: { type: 'string' },
 } };
+
+function armPrompt(request, previous) {
+  return `A school student wants to build a robotic arm: "${request}".
+It is a STATIONARY 4-servo arm bolted to a table (not on a car). Three cubes already sit on the table 20 cm from the base, at base angles 60, 90 and 120. A tray waits at base angle about 160 (use 148, 160, 172 so the cubes do not stack).
+Return JSON with: name, summary (one sentence), color (hex, the arm's colour), explain (2-3 simple sentences), and code: a complete Arduino sketch that picks up every cube and puts it in the tray, then stops. Start from this skeleton EXACTLY, keep every line, then add pickAndPlace helpers, setup() and loop():
+${ARM_SKELETON}
+Angles: base 90 = straight ahead. shoulder 90 = upright, smaller leans forward. elbow 180 = straight, smaller bends. grip 0 = open, 90 = closed.
+Reference poses reaching 20 cm: hover pose(angle, 92, 67, 700), table height pose(angle, 62, 63, 900); over the tray lower with pose(drop, 65, 62, 800).
+Rules: only pinMode, digitalWrite/Read, delay, delayMicroseconds, pulseIn, tone/noTone, Serial and Servo. Use grip.write(0) to open and grip.write(90) to close, with delay(500) after closing. Comment each step. Under 70 lines.${previous ? `\n\nYour previous sketch failed with: "${previous.error}". Fix it.\nPrevious sketch:\n${previous.code}` : ''}`;
+}
 
 function aiPrompt(request, previous) {
   return `A school student wants to build a robot: "${request}".
@@ -293,19 +313,22 @@ ${SKELETON}
 export async function designRobot(request) {
   const text = String(request || '').trim().slice(0, 300);
   let previous = null, note = '';
+  const isArm = isArmRequest(text);
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const res = await backend.integrations.Core.InvokeLLM({ user_input: text, prompt: aiPrompt(text, previous), response_json_schema: SCHEMA });
+      const res = await backend.integrations.Core.InvokeLLM({ user_input: text, prompt: (isArm ? armPrompt : aiPrompt)(text, previous), response_json_schema: SCHEMA });
       if (!res || typeof res !== 'object') throw new Error('empty');
       // The safety filter answers with { response } and no sketch.
       if (res.__blocked) return { blocked: true, note: asText(res.response || res.text) };
       const design = {
         name: asText(res.name).slice(0, 60) || 'My robot', summary: asText(res.summary).slice(0, 240),
-        environment: ENV_TASK[asText(res.environment).toLowerCase()] ? asText(res.environment).toLowerCase() : 'obstacles',
+        environment: isArm ? 'arm' : (ENV_TASK[asText(res.environment).toLowerCase()] && asText(res.environment).toLowerCase() !== 'arm' ? asText(res.environment).toLowerCase() : 'obstacles'),
+        body: isArm ? 'arm' : 'rover',
         color: asText(res.color), parts: (res.parts || []).map(p => asText(p).toLowerCase().trim()).filter(p => KINDS[p]),
         code: stripFence(res.code), explain: asText(res.explain).slice(0, 600),
       };
       if (!looksLikeSketch(design.code)) throw new Error('no sketch');
+      if (isArm && !/\bgrip\b/.test(design.code)) throw new Error('not an arm sketch');
       const problem = await dryRun(design.code, design.environment);
       if (!problem) return { design, note: '' };
       previous = { code: design.code, error: `${problem.line ? `line ${problem.line}: ` : ''}${problem.message}` };

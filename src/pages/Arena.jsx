@@ -3,13 +3,13 @@ import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'rea
 import { useSearchParams } from 'react-router-dom';
 import { useApp } from '@/lib/AppContext';
 import { TASKS, getTask } from '@/lib/arena/tasks';
-import { ArenaBoard, ROBOT_PINS } from '@/lib/arena/world';
+import { ArenaBoard, ROBOT_PINS, ARM_PINS } from '@/lib/arena/world';
 import { runSketch } from '@/lib/arduino/runtime';
 import BackButton from '@/components/BackButton';
 import ShareScoreButton from '@/components/share/ShareScoreButton';
 import { Play, Square, RotateCcw, Bot, Eye, Code2, Terminal, Cpu, CheckCircle2, XCircle, Lightbulb, Video, Map as MapIcon, Sparkles, Loader2, Wrench, Package } from 'lucide-react';
 import { designRobot, makeTask, fixCode } from '@/lib/arena/customRobot';
-import { standardKitConnections, customRobotConnections } from '@/lib/arena/wiringConnections';
+import { standardKitConnections, customRobotConnections, armKitConnections } from '@/lib/arena/wiringConnections';
 const CircuitDiagram = lazy(() => import('@/components/buildsheet/CircuitDiagram'));
 const WireList = lazy(() => import('@/components/buildsheet/CircuitDiagram').then(m => ({ default: m.WireList })));
 const FullscreenCircuit = lazy(() => import('@/components/buildsheet/FullscreenCircuit'));
@@ -189,7 +189,7 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
   const [bigWiring, setBigWiring] = useState(false);
   const [wireItems, setWireItems] = useState([]);
   const [wireHi, setWireHi] = useState(null);
-  const [cam, setCam] = useState(task.id === 'bin' ? 'free' : 'chase');
+  const [cam, setCam] = useState(task.id === 'bin' || task.body === 'arm' ? 'free' : 'chase');
   const [serial, setSerial] = useState([]);
   const [error, setError] = useState(null);
   const [usedSolution, setUsedSolution] = useState(false);
@@ -261,7 +261,7 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
   async function aiFix() {
     if (!error || fixing) return;
     setFixing(true);
-    const fixed = await fixCode(code, `${error.line ? `line ${error.line}: ` : ''}${error.message}`, 'obstacles');
+    const fixed = await fixCode(code, `${error.line ? `line ${error.line}: ` : ''}${error.message}`, task.body === 'arm' ? 'arm' : 'obstacles');
     setFixing(false);
     if (fixed) { setCode(fixed); setError(null); setStatus({ state: 'idle', msg: 'Code repaired. Press Run.' }); }
     else setStatus({ state: 'fail', msg: 'The AI could not repair it this time. Read the error line and try fixing it yourself.' });
@@ -276,9 +276,9 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
 
   const statusColor = { pass: 'bg-green-500/15 text-green-500 border-green-500/30', fail: 'bg-red-500/15 text-red-400 border-red-500/30', running: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30', idle: 'bg-muted text-muted-foreground border-transparent' }[status.state];
   const best = results[task.id]?.best;
-  const pinRows = useMemo(() => Object.entries(ROBOT_PINS), []);
+  const pinRows = useMemo(() => Object.entries(task.body === 'arm' ? ARM_PINS : ROBOT_PINS), [task.body]);
   const wiringConns = useMemo(
-    () => (isCustom ? customRobotConnections(task.plan?.wiring) : standardKitConnections(task.id)),
+    () => (task.body === 'arm' ? armKitConnections() : isCustom ? customRobotConnections(task.plan?.wiring) : standardKitConnections(task.id)),
     [isCustom, task],
   );
 
@@ -300,7 +300,7 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
         <div className="absolute top-2 left-2 text-[11px] font-mono bg-black/55 text-white rounded-lg px-2 py-1">
           t = {(time / 1000).toFixed(1)} s
         </div>
-        {task.id !== 'bin' && (
+        {task.id !== 'bin' && task.body !== 'arm' && (
           <button onClick={() => setCam(c => (c === 'chase' ? 'free' : 'chase'))} className="absolute top-2 right-2 text-[11px] bg-black/55 text-white rounded-lg px-2 py-1 flex items-center gap-1">
             {cam === 'chase' ? <><Video className="w-3 h-3" /> Follow cam</> : <><MapIcon className="w-3 h-3" /> Free cam (drag)</>}
           </button>
@@ -413,7 +413,7 @@ function TaskScreen({ task, results, onBack, onPass, backLabel = '← All tasks'
 
       {tab === 'pins' && !isCustom && (
         <div className="glass-strong rounded-xl p-3 text-xs">
-          <p className="text-muted-foreground mb-2">The simulated robot is wired like a standard school kit: Arduino Uno, L298N motor driver, 2 IR sensors, HC-SR04 ultrasonic sensor{task.id === 'pid' ? ', and a 3-sensor analog IR array on A0–A2' : ''}.</p>
+          <p className="text-muted-foreground mb-2">{task.body === 'arm' ? 'The arm is wired like a school robotics kit: Arduino Uno, four servos (base, shoulder, elbow, gripper) on their own 5 V supply, and an HC-SR04 on the base.' : 'The simulated robot is wired like a standard school kit: Arduino Uno, L298N motor driver, 2 IR sensors, HC-SR04 ultrasonic sensor'}{task.body !== 'arm' && task.id === 'pid' ? ', and a 3-sensor analog IR array on A0–A2' : ''}.</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
             {pinRows.map(([k, v]) => <div key={k} className="flex justify-between border-b border-white/5 py-0.5"><span>{k}</span><span className="text-cyan-400">{v >= 14 ? `A${v - 14}` : v}</span></div>)}
           </div>

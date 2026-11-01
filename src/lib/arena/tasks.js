@@ -1,5 +1,6 @@
 // Robot arena tasks — the lab experiments named in the CISCE syllabus plus extras.
 import { ROBOT_PINS as P } from './world';
+import { ARM_TASK } from './armTask';
 
 // Closed track: stadium with an S-bend on one straight.
 function stadium(w, h, n = 120) {
@@ -387,6 +388,7 @@ void loop() {
 }
 ${MOTOR_HELPERS}`,
   },
+  ARM_TASK,
   {
     id: 'free', title: 'Playground', badge: 'Free practice', classes: ['class_9', 'class_10', 'class_11'],
     desc: 'A track and some obstacles — try anything. There is no pass or fail here.',

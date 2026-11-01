@@ -1,7 +1,7 @@
 // Turns an Arena robot into the connection list the wiring diagram draws.
 // The standard kit is an Arduino Uno + L298N + four gear motors + a battery
 // pack; a student-designed robot adds its chosen parts on top.
-import { ROBOT_PINS } from './world';
+import { ROBOT_PINS, ARM_PINS } from './world';
 
 const pinName = (n) => (n >= 14 ? `A${n - 14}` : `D${n}`);
 const colorOf = (pin) => (pin === '5V' ? 'red' : pin === 'GND' ? 'black' : /^A/.test(pin) ? 'green' : 'blue');
@@ -48,5 +48,20 @@ export function customRobotConnections(wiring) {
     const to = String(w.to || '').toUpperCase();
     rows.push(row(component, to, String(w.pin || '').replace(/\s*\(.*\)$/, ''), /PWM/.test(w.pin || '') ? 'orange' : undefined));
   });
+  return rows;
+}
+
+/** Wiring of the robotic arm: four servo signals and the sonar, with the servos on their own 5 V supply. */
+export function armKitConnections() {
+  const p = ARM_PINS;
+  const rows = [
+    row('Base Servo', pinName(p.BASE), 'Signal', 'orange'), row('Shoulder Servo', pinName(p.SHOULDER), 'Signal', 'orange'),
+    row('Elbow Servo', pinName(p.ELBOW), 'Signal', 'orange'), row('Gripper Servo', pinName(p.GRIP), 'Signal', 'orange'),
+    row('HC-SR04 Ultrasonic Sensor', pinName(p.TRIG), 'TRIG', 'yellow'), row('HC-SR04 Ultrasonic Sensor', pinName(p.ECHO), 'ECHO', 'yellow'),
+    row('HC-SR04 Ultrasonic Sensor', '5V', 'VCC'), row('HC-SR04 Ultrasonic Sensor', 'GND', 'GND'),
+    row('Red LED', pinName(p.LED), 'Anode'), row('Red LED', 'GND', 'Cathode'),
+    row('Piezo Buzzer', pinName(p.BUZZER), '+'), row('Piezo Buzzer', 'GND', '−'),
+    row('Power Supply 5V 3A', '—', 'to all four servos (+ and −)', 'red'),
+  ];
   return rows;
 }

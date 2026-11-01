@@ -385,7 +385,9 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
   const wiresInto = (c) => pinConnections.filter(cn => colOf[cn.component || cn.componentId] === c).length;
   const driven = instances.filter(i => ['dc_motor', 'gear_motor', 'vibration_motor'].includes(i.id) && info[i.key].n === 0);
   const batteryInst = instances.find(i => POWER.has(i.id) && info[i.key].n === 0);
-  const outerWires = driven.length * 2 + (batteryInst ? 2 : 0);
+  // servos (a robotic arm) take their power straight from the supply, only the signal comes from the board
+  const servos = !driven.length && !instances.some(i => DRIVER_IDS.has(i.id)) ? instances.filter(i => i.id === 'servo') : [];
+  const outerWires = Math.max(driven.length, servos.length) * 2 + (batteryInst ? 2 : 0);
   const gapCtrl = (c) => (cols[c].length ? Math.max(170, 70 + LANE * wiresInto(c)) : 0);
   const gapOuter = (c) => (cols[c].length ? Math.max(150, 70 + LANE * Math.max(outerWires, 4)) : 0);
   const colW = (c) => (cols[c].length ? Math.max(...cols[c].map(i => sizes[i.key].w)) : 0);
@@ -483,6 +485,11 @@ export default function CircuitDiagram({ pinConnections, projectName, header, on
   if (batteryInst && hub) {
     [['P', '12V', WIRE_COLORS.red, '+'], ['N', 'GND', WIRE_COLORS.black, '−']].forEach(([bp, dp, col, tag], j) => {
       auto(`auto_b${j}`, batteryInst, bp, colOf[batteryInst.key], hub, dp, colOf[hub.key], col, tag, dp, `Battery → ${dp}`);
+    });
+  } else if (batteryInst && servos.length) {
+    servos.forEach((m, mi) => {
+      auto(`auto_sv${mi}`, batteryInst, 'P', colOf[batteryInst.key], m, 'VCC', colOf[m.key], WIRE_COLORS.red, '+', 'VCC', 'Supply → Servo +');
+      auto(`auto_sg${mi}`, batteryInst, 'N', colOf[batteryInst.key], m, 'GND', colOf[m.key], WIRE_COLORS.black, '−', 'GND', 'Supply → Servo −');
     });
   } else if (batteryInst && driven.length) {
     driven.forEach((m, mi) => {

@@ -11,6 +11,41 @@ export const ROBOT_PINS = {
   LINE_L: 14, LINE_C: 15, LINE_R: 16, // analog IR array A0, A1, A2 (high = black)
 };
 
+// ── Robotic arm (stationary, on a table) ─────────────────────────────────────
+// Four hobby servos: base turns the arm, shoulder and elbow lift it, the gripper
+// opens (0°) and closes (90°). Angles are the servo angles the sketch writes.
+export const ARM_PINS = { BASE: 3, SHOULDER: 5, ELBOW: 6, GRIP: 11, TRIG: 9, ECHO: 10, LED: 13, BUZZER: 18 };
+export const ARM = {
+  L1: 16, L2: 22, H0: 6,           // upper arm, forearm incl. gripper, shoulder height (cm)
+  cube: 4, closedAt: 55, rate: 220, // cube edge (cm), grip counts as closed above this angle, servo speed °/s
+  grabReach: 4.5, grabHeight: 3.5,
+};
+export const ARM_HOME = { base: 90, shoulder: 90, elbow: 150, grip: 0 };
+
+/** Where the gripper tip is for a set of servo angles. */
+export function armTip(a) {
+  const p1 = ((90 - a.shoulder) * Math.PI) / 180;
+  const p2 = p1 + ((180 - a.elbow) * Math.PI) / 180;
+  const r = ARM.L1 * Math.sin(p1) + ARM.L2 * Math.sin(p2);
+  const z = ARM.H0 + ARM.L1 * Math.cos(p1) + ARM.L2 * Math.cos(p2);
+  const yaw = ((a.base - 90) * Math.PI) / 180;
+  return { x: r * Math.cos(yaw), y: r * Math.sin(yaw), z, r, yaw };
+}
+
+/** Three cubes waiting on the table and an empty tray to put them in. */
+export function armMap() {
+  const at = (deg, r) => ({ x: r * Math.cos((deg * Math.PI) / 180), y: r * Math.sin((deg * Math.PI) / 180) });
+  return {
+    size: [120, 120], floor: 'white', start: { x: 0, y: 0, a: 0 },
+    arm: {
+      objects: [
+        { ...at(-30, 20), color: 0xef4444 }, { ...at(0, 20), color: 0x3b82f6 }, { ...at(30, 20), color: 0xfacc15 },
+      ],
+      tray: { ...at(70, 20), half: 8.5 },
+    },
+  };
+}
+
 export const ROBOT = { length: 16, width: 12, track: 12, radius: 7.5, maxSpeed: 40, deadband: 45 };
 
 // ── geometry helpers ──
@@ -67,6 +102,7 @@ export class ArenaBoard extends SimBoard {
     this.time = 0; this.trail = []; this.collisions = 0;
     this.mode = {}; this.out = {}; this.pwm = {}; this.servo = {}; this.tones = {}; this.lastTrigger = {}; this.serialLines = [];
     this.hand = null; this.lid = 0;
+    this.arm = this.map.arm ? this.initArm() : null;
   }
   // robot-frame point → world
   toWorld(fx, fy) {
@@ -112,6 +148,7 @@ export class ArenaBoard extends SimBoard {
   }
   sonarDistance() {
     if (this.map.bin) return this.hand ?? 300;
+    if (this.map.arm) return this.armSonar();
     const [ox, oy] = this.toWorld(ROBOT.length / 2, 0);
     let best = 400;
     for (const da of [-0.4, -0.2, 0, 0.2, 0.4]) {
@@ -149,6 +186,7 @@ export class ArenaBoard extends SimBoard {
     const dt = dtMs / 1000;
     this.time += dtMs;
     if (this.map.bin) { this.stepBin(dtMs); return; }
+    if (this.map.arm) { this.stepArm(dtMs); return; }
     const r = this.robot;
     if (r.fallen) return;
     const P = ROBOT_PINS;
@@ -176,6 +214,59 @@ export class ArenaBoard extends SimBoard {
     if (this.map.table && !this.onTable(r.x, r.y)) r.fallen = true;
     if (this.time % 100 < dtMs) { this.trail.push([r.x, r.y]); if (this.trail.length > 600) this.trail.shift(); }
   }
+  // ── robotic arm ──
+  initArm() {
+    const m = this.map.arm;
+    return {
+      ang: { ...ARM_HOME }, held: -1, wasClosed: false, placed: 0, drops: 0,
+      objs: m.objects.map((o, i) => ({ id: i, x: o.x, y: o.y, z: ARM.cube / 2, vz: 0, color: o.color, placed: false, free: false })),
+    };
+  }
+  armTipNow() { return armTip(this.arm.ang); }
+  // The ultrasonic sensor sits on the base and turns with it: how far to the nearest cube it points at.
+  armSonar() {
+    const A = this.arm, yaw = ((A.ang.base - 90) * Math.PI) / 180;
+    const dx = Math.cos(yaw), dy = Math.sin(yaw);
+    let best = 400;
+    for (const o of A.objs) {
+      if (A.held === o.id) continue;
+      const along = o.x * dx + o.y * dy, side = Math.abs(-o.x * dy + o.y * dx);
+      if (along > 3 && side < ARM.cube / 2 + 1) best = Math.min(best, along - ARM.cube / 2);
+    }
+    return Math.max(2, best);
+  }
+  stepArm(dtMs) {
+    const A = this.arm, P = ARM_PINS, dt = dtMs / 1000;
+    const want = {
+      base: this.servo[P.BASE] ?? ARM_HOME.base, shoulder: this.servo[P.SHOULDER] ?? ARM_HOME.shoulder,
+      elbow: this.servo[P.ELBOW] ?? ARM_HOME.elbow, grip: this.servo[P.GRIP] ?? ARM_HOME.grip,
+    };
+    const rate = ARM.rate * dt;
+    for (const k of Object.keys(want)) A.ang[k] += Math.max(-rate, Math.min(rate, want[k] - A.ang[k]));
+    const tip = armTip(A.ang);
+    const closed = A.ang.grip >= ARM.closedAt;
+    if (closed && !A.wasClosed && A.held < 0) {
+      let best = -1, bd = Infinity;
+      for (const o of A.objs) {
+        const d = Math.hypot(o.x - tip.x, o.y - tip.y);
+        if (d < ARM.grabReach && Math.abs(o.z - tip.z) < ARM.grabHeight && d < bd) { bd = d; best = o.id; }
+      }
+      if (best >= 0) { A.held = best; A.objs[best].free = false; A.objs[best].placed = false; }
+    }
+    if (!closed && A.held >= 0) { A.objs[A.held].free = true; A.objs[A.held].vz = 0; A.held = -1; }
+    A.wasClosed = closed;
+    const T = this.map.arm.tray;
+    for (const o of A.objs) {
+      if (A.held === o.id) { o.x = tip.x; o.y = tip.y; o.z = tip.z; continue; }
+      const inTray = Math.abs(o.x - T.x) < T.half && Math.abs(o.y - T.y) < T.half;
+      const floor = (inTray ? 0.6 : 0) + ARM.cube / 2;
+      if (o.z > floor) { o.vz -= 300 * dt; o.z = Math.max(floor, o.z + o.vz * dt); if (o.z === floor) o.vz = 0; }
+      else o.z = floor;
+      o.placed = inTray && o.z <= floor + 0.01;
+    }
+    A.placed = A.objs.filter(o => o.placed).length;
+  }
+
   // Smart waste bin: a hand moves towards and away from the lid sensor.
   stepBin(dtMs) {
     const cycle = this.map.handCycle || 7000;

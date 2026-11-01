@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { ROBOT, ROBOT_PINS } from '@/lib/arena/world';
+import { ROBOT, ROBOT_PINS, ARM } from '@/lib/arena/world';
 import { buildPart3D } from '@/lib/lab/parts3d';
 
 const PX = 4; // texture pixels per cm
@@ -109,6 +109,53 @@ function makeRobot(custom) {
   return { group: g, wheels, irMat, ledMat, arm, buzzMat };
 }
 
+// A stationary 4-servo robotic arm on a pedestal, with the cubes and tray it works on.
+function makeArm(map, color) {
+  const g = new THREE.Group();
+  const std = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.5, ...o });
+  const link = std(/^#[0-9a-f]{6}$/i.test(color || '') ? color : 0xf97316), blue = std(0x2563eb), dark = std(0x1f2937), steel = std(0xcbd5e1, { metalness: 0.6, roughness: 0.3 });
+  const add = (parent, geo, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; };
+  const rotZ = (m) => { m.rotation.x = Math.PI / 2; return m; };   // cylinder along z
+  // pedestal + base servo
+  add(g, new THREE.CylinderGeometry(10, 11, 1.2, 40), dark, 0, 0.6, 0);
+  add(g, new THREE.BoxGeometry(9, 4.8, 12), blue, 0, 3.6, 0);
+  const yaw = new THREE.Group(); yaw.position.y = 6; g.add(yaw);
+  add(yaw, new THREE.CylinderGeometry(7, 7, 1.4, 36), dark, 0, 0.7, 0);
+  add(yaw, new THREE.BoxGeometry(6, 2.4, 6), steel, 0, 2.6, 0);
+  // ultrasonic sensor on the front of the turntable, turning with the arm
+  add(yaw, new THREE.BoxGeometry(1, 3.4, 8), blue, 6.2, 1.6, 0);
+  for (const z of [2, -2]) { const e = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 1.2, 18), std(0xd1d5db, { metalness: 0.6 })); e.rotation.z = Math.PI / 2; e.position.set(6.9, 1.8, z); yaw.add(e); }
+  // shoulder: lives at height 0 of the yaw group, 6 above the table (H0 = 6 → shoulder axis at y 0 here... the pedestal supplies the rest)
+  const shoulder = new THREE.Group(); shoulder.position.set(0, 0, 0); yaw.add(shoulder);
+  add(shoulder, new THREE.BoxGeometry(5.5, 4.4, 5), blue, 0, 0, 0);
+  add(shoulder, new THREE.BoxGeometry(2.6, ARM.L1 - 2, 3.2), link, 0, ARM.L1 / 2, 0);
+  rotZ(add(shoulder, new THREE.CylinderGeometry(2.1, 2.1, 4.6, 24), steel, 0, 0, 0));
+  const elbow = new THREE.Group(); elbow.position.y = ARM.L1; shoulder.add(elbow);
+  add(elbow, new THREE.BoxGeometry(4.6, 3.6, 4.4), blue, 0, 0, 0);
+  rotZ(add(elbow, new THREE.CylinderGeometry(1.9, 1.9, 4.8, 24), steel, 0, 0, 0));
+  add(elbow, new THREE.BoxGeometry(2.4, ARM.L2 - 8, 3), link, 0, (ARM.L2 - 8) / 2, 0);
+  const wrist = new THREE.Group(); wrist.position.y = ARM.L2 - 6; elbow.add(wrist);   // gripper starts 6 cm before the tip
+  add(wrist, new THREE.BoxGeometry(4.6, 3.2, 4.6), blue, 0, 1.2, 0);
+  const fingers = [-1, 1].map((sgn) => {
+    const f = new THREE.Group(); wrist.add(f);
+    add(f, new THREE.BoxGeometry(1.2, 6.5, 0.9), std(0xef4444), 0, 5.4, 0);
+    add(f, new THREE.BoxGeometry(1.2, 1.2, 0.9), std(0x7f1d1d), 0, 8.4, 0);
+    f.userData.sgn = sgn; return f;
+  });
+  // cubes on the table, with a ring under each starting spot
+  const cubes = map.arm.objects.map((o) => {
+    const ring = new THREE.Mesh(new THREE.RingGeometry(3.1, 3.5, 32), new THREE.MeshBasicMaterial({ color: 0x94a3b8, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }));
+    ring.rotation.x = -Math.PI / 2; ring.position.set(o.x, 0.12, -o.y); g.add(ring);
+    return add(g, new THREE.BoxGeometry(ARM.cube, ARM.cube, ARM.cube), std(o.color, { roughness: 0.4 }), o.x, ARM.cube / 2, -o.y);
+  });
+  // tray
+  const T = map.arm.tray, tw = T.half * 2;
+  const tray = new THREE.Group(); tray.position.set(T.x, 0, -T.y); g.add(tray);
+  add(tray, new THREE.BoxGeometry(tw, 0.6, tw), std(0x16a34a), 0, 0.3, 0);
+  for (const [x, z, w, d] of [[0, T.half, tw, 0.8], [0, -T.half, tw, 0.8], [T.half, 0, 0.8, tw], [-T.half, 0, 0.8, tw]]) add(tray, new THREE.BoxGeometry(w, 2, d), std(0x15803d), x, 1, z);
+  return { group: g, yaw, shoulder, elbow, fingers, cubes };
+}
+
 function makeBin() {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.CylinderGeometry(14, 12, 34, 28, 1, true), new THREE.MeshStandardMaterial({ color: 0x16a34a, side: THREE.DoubleSide, roughness: 0.6 }));
@@ -191,8 +238,9 @@ export default function ArenaView({ boardRef, cameraMode = 'chase', height = 320
       }
     }
 
-    let robot = null, bin = null;
+    let robot = null, bin = null, arm = null;
     if (map.bin) { bin = makeBin(); scene.add(bin.group); }
+    else if (map.arm) { arm = makeArm(map, map.custom?.color); scene.add(arm.group); }
     else { robot = makeRobot(map.custom); scene.add(robot.group); }
 
     // trail
@@ -204,6 +252,7 @@ export default function ArenaView({ boardRef, cameraMode = 'chase', height = 320
 
     // initial camera
     if (map.bin) { camera.position.set(90, 70, 90); controls.target.set(10, 20, 0); }
+    else if (map.arm) { camera.position.set(-18, 52, 62); controls.target.set(10, 8, -4); }
     else { camera.position.set(0, Math.max(W, H) * 0.9 + tableH, Math.max(W, H) * 0.55); controls.target.set(0, tableH, 0); }
 
     const resize = () => {
@@ -240,6 +289,15 @@ export default function ArenaView({ boardRef, cameraMode = 'chase', height = 320
           camera.position.lerp(camPos, 0.08);
           controls.target.lerp(camTarget, 0.15);
         }
+      }
+      if (b && arm && b.arm) {
+        const A = b.arm;
+        arm.yaw.rotation.y = ((A.ang.base - 90) * Math.PI) / 180;
+        arm.shoulder.rotation.z = -((90 - A.ang.shoulder) * Math.PI) / 180;
+        arm.elbow.rotation.z = -((180 - A.ang.elbow) * Math.PI) / 180;
+        const half = 4.6 - 2.6 * Math.min(1, Math.max(0, A.ang.grip / 90));
+        arm.fingers.forEach(f => { f.position.z = f.userData.sgn * (half + 0.45); });
+        A.objs.forEach((o, i) => arm.cubes[i].position.set(o.x, o.z, -o.y));
       }
       if (b && bin) {
         bin.hinge.rotation.z = (b.lid || 0) * Math.PI / 180;
