@@ -65,7 +65,6 @@ const NAV = [
   ['projects', 'Projects', FolderGit2, `${BASE}/projects`],
   ['shop', 'Shop', ShoppingBag, `${BASE}/shop`],
   ['progress', 'Progress', BarChart3, `${BASE}/progress`],
-  ['settings', 'Settings', SettingsIcon, `${BASE}/settings`],
 ];
 
 function PyShell({ tab, title, back, children }) {
@@ -85,6 +84,7 @@ function PyShell({ tab, title, back, children }) {
           <span className="text-xs glass px-2 py-1 rounded-full flex items-center gap-1 font-semibold" title="Day streak"><Flame className="w-3.5 h-3.5 text-orange-500" />{tp.streak || 0}</span>
           <span className="text-xs glass px-2 py-1 rounded-full flex items-center gap-1 font-semibold" title="Coins"><Coins className="w-3.5 h-3.5 text-amber-500" />{tp.coins || 0}</span>
           <span className="text-xs glass px-2 py-1 rounded-full flex items-center gap-1 font-semibold text-cyan-600 dark:text-cyan-400" title="Level"><Zap className="w-3.5 h-3.5" />Lv {lv.levelNumber}</span>
+          <button onClick={() => navigate(`${BASE}/settings`)} className="w-8 h-8 rounded-full glass flex items-center justify-center shrink-0" aria-label="Settings"><SettingsIcon className="w-4 h-4" /></button>
         </div>
       </div>
       <main className="min-h-screen" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top))', paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
@@ -96,7 +96,7 @@ function PyShell({ tab, title, back, children }) {
             const active = tab === k;
             return (
               <button key={k} onClick={() => { navigate(path); window.scrollTo(0, 0); }}
-                className={`flex flex-col items-center gap-1 px-1 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${active ? 'text-cyan-400 scale-110' : 'text-muted-foreground hover:text-cyan-400/70'}`}>
+                className={`flex flex-col items-center gap-1 px-1.5 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${active ? 'text-cyan-400 scale-110' : 'text-muted-foreground hover:text-cyan-400/70'}`}>
                 <div className={`p-1.5 rounded-lg transition-all ${active ? 'glass neon-glow' : ''}`}><Icon className="w-5 h-5" /></div>
                 <span className="text-[10px] font-medium">{label}</span>
               </button>
