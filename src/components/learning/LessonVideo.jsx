@@ -49,8 +49,10 @@ export default function LessonVideo({ lesson, onWatched }) {
             aria-label={`Play video: ${lesson.videoTitle || 'Lesson video'}`}
           >
             {online && (
-              <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt="" loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+              // Not lazy: inside this button a lazy image was never requested, so no thumbnail showed.
+              <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt="" decoding="async" referrerPolicy="no-referrer"
+                onError={(e) => { const el = e.currentTarget; if (!el.dataset.retry) { el.dataset.retry = '1'; el.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`; } else el.style.display = 'none'; }}
+                className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
             )}
             <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white">
               {online ? (

@@ -220,6 +220,14 @@ export default function Settings() {
                 {selectedClass === cls.id && <Check className="w-4 h-4 text-cyan-400" />}
               </button>
             ))}
+            <button onClick={() => navigate('/python-course')} className="w-full flex items-center gap-3 p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-xl bg-emerald-500/15">🐍</div>
+              <div className="flex-1 text-left">
+                <h4 className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Learn Python</h4>
+                <p className="text-[10px] text-muted-foreground">Beginner to advanced course with Hindi videos, for every class</p>
+              </div>
+              <span className="text-emerald-500">→</span>
+            </button>
           </div>
         )}
       </div>

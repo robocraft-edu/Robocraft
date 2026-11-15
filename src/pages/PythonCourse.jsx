@@ -6,6 +6,7 @@ import { runPython } from '@/lib/python/runner';
 import PythonRunner from '@/components/learning/PythonRunner';
 import LessonVideo from '@/components/learning/LessonVideo';
 import { useApp } from '@/lib/AppContext';
+import { TEXT } from '@/lib/pycourse/lessonText';
 
 // ── progress (this device) ──
 const KEY = 'robocraft_pycourse';
@@ -16,6 +17,9 @@ function useProgress() {
   const set = (kind, id, v) => setP(x => ({ ...x, [kind]: { ...x[kind], [id]: v } }));
   return [p, set];
 }
+// Teaching text (plain language, everyday examples) overrides the short notes in course.js.
+const full = (l) => (l ? { ...l, ...TEXT[l.id], example: TEXT[l.id] ? TEXT[l.id].walk.map(([c]) => c).join('\n') : l.example, exampleInput: TEXT[l.id]?.input ?? l.exampleInput } : l);
+const looksLikeCode = (o) => o.length < 40 && (/[()[\]{}=*%"']/.test(o) || /^-?[\d.]+$/.test(o));
 const lessonDone = (p, id) => !!p.task[id] && (p.quiz[id] ?? -1) >= 3;
 
 function Shell({ title, back, children }) {
@@ -68,7 +72,10 @@ function CourseHome() {
                 const ok = lessonDone(p, l.id);
                 return (
                   <button key={l.id} onClick={() => navigate(`/python-course/${l.id}`)} className="w-full glass-strong rounded-xl p-3 flex items-center gap-3 text-left">
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${ok ? 'bg-green-500 text-white' : 'bg-muted'}`}>{ok ? <Check className="w-4 h-4" /> : i + 1}</span>
+                    <span className="relative shrink-0">
+                      <img src={`https://i.ytimg.com/vi/${l.video.id}/mqdefault.jpg`} alt="" loading="lazy" className="w-20 h-[45px] rounded-lg object-cover bg-muted" onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />
+                      <span className={`absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ring-2 ring-background ${ok ? 'bg-green-500 text-white' : 'bg-cyan-600 text-white'}`}>{ok ? <Check className="w-3.5 h-3.5" /> : i + 1}</span>
+                    </span>
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-semibold truncate">{l.title}</span>
                       <span className="block text-[10px] text-muted-foreground flex items-center gap-2">
@@ -168,7 +175,11 @@ function Flashcards({ cards, onDone }) {
       <p className="text-xs text-muted-foreground mb-2 text-center">Card {i + 1} of {cards.length} · tap the card to flip it</p>
       <button onClick={() => setFlip(f => !f)} className="w-full min-h-[190px] rounded-2xl p-6 text-center flex items-center justify-center border-2 transition-colors"
         style={{ background: flip ? 'rgb(var(--ac-500) / 0.12)' : 'hsl(var(--card))', borderColor: 'rgb(var(--ac-500) / 0.4)' }}>
-        <span className={flip ? 'text-base' : 'text-lg font-bold'}>{flip ? c.back : c.front}</span>
+        <span className="block">
+          <span className="block text-[10px] font-bold tracking-widest text-muted-foreground mb-2">{flip ? 'ANSWER' : 'QUESTION'}</span>
+          <span className={flip ? 'text-base leading-relaxed' : 'text-lg font-bold'}>{flip ? c.back : c.front}</span>
+          {!flip && <span className="block text-[11px] text-muted-foreground mt-3">Think of your answer, then tap to check</span>}
+        </span>
       </button>
       <div className="flex gap-2 mt-3">
         <button onClick={() => { setFlip(false); setI(Math.max(0, i - 1)); }} disabled={i === 0} className="flex-1 py-2 rounded-xl glass text-sm disabled:opacity-40">Previous</button>
@@ -204,12 +215,13 @@ function Quiz({ questions, onScore, best }) {
     <div>
       <p className="text-xs text-muted-foreground mb-2">Question {i + 1} of {questions.length}{best != null ? ` · best ${best}/${questions.length}` : ''}</p>
       <p className="font-bold mb-3">{q.q}</p>
+      {q.code && <pre className="on-dark rounded-xl bg-[#0d1117] text-[#e6edf3] text-[13px] p-3 mb-3 whitespace-pre-wrap font-mono">{q.code}</pre>}
       <div className="space-y-2">
         {q.options.map((o, k) => {
           const right = answered && k === q.answer, wrong = answered && k === pick && k !== q.answer;
           return (
             <button key={k} onClick={() => choose(k)} className={`w-full text-left rounded-xl px-4 py-3 text-sm border ${right ? 'border-green-500 bg-green-500/15' : wrong ? 'border-red-500 bg-red-500/10' : 'border-border glass-strong'}`}>
-              <code className="font-mono">{o}</code>
+              <span className={looksLikeCode(o) ? 'font-mono' : ''}>{o}</span>
             </button>
           );
         })}
@@ -229,17 +241,17 @@ const TABS = [['learn', 'Learn', BookOpen], ['video', 'Video', Youtube], ['cards
 function LessonPage({ id }) {
   const navigate = useNavigate();
   const { selectedClass, addXP } = useApp();
-  const lesson = LESSONS.find(l => l.id === id);
+  const lesson = full(LESSONS.find(l => l.id === id));
   const [p, set] = useProgress();
   const [tab, setTab] = useState('learn');
   useEffect(() => { setTab('learn'); window.scrollTo(0, 0); }, [id]);
   if (!lesson) return <Shell title="Learn Python" back="/python-course"><p>Lesson not found.</p></Shell>;
-  const idx = LESSONS.indexOf(lesson), next = LESSONS[idx + 1];
+  const idx = LESSONS.findIndex(l => l.id === id), next = LESSONS[idx + 1];
   const xp = (n) => { if (selectedClass && addXP) addXP(selectedClass, n); };
   const lv = LEVELS.find(l => l.id === lesson.level);
   return (
     <Shell title={lesson.title} back="/python-course">
-      <p className="text-[11px] font-bold mb-3" style={{ color: lv.color }}>{lv.emoji} {lv.name.toUpperCase()} · LESSON {lessonsFor(lesson.level).indexOf(lesson) + 1}</p>
+      <p className="text-[11px] font-bold mb-3" style={{ color: lv.color }}>{lv.emoji} {lv.name.toUpperCase()} · LESSON {lessonsFor(lesson.level).findIndex(l => l.id === id) + 1}</p>
       <div className="flex gap-1 mb-4 overflow-x-auto">
         {TABS.map(([k, label, Icon]) => {
           const tick = (k === 'quiz' && (p.quiz[id] ?? -1) >= 3) || (k === 'task' && p.task[id]) || (k === 'cards' && p.cards[id]);
@@ -253,11 +265,48 @@ function LessonPage({ id }) {
 
       {tab === 'learn' && (
         <div className="space-y-4">
-          <div className="glass-strong rounded-2xl p-4 space-y-3">
-            {lesson.explain.map((t, k) => <p key={k} className="text-sm leading-relaxed">{t}</p>)}
+          {lesson.story && (
+            <div className="rounded-2xl p-4 border-2 border-amber-400/40 bg-amber-400/10">
+              <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 tracking-wide">THINK OF IT LIKE THIS</p>
+              <p className="font-bold mt-1 flex items-center gap-2"><span className="text-2xl">{lesson.story.emoji}</span>{lesson.story.title}</p>
+              <p className="text-sm leading-relaxed mt-1.5">{lesson.story.text}</p>
+            </div>
+          )}
+          <div className="glass-strong rounded-2xl p-4">
+            <p className="text-[11px] font-bold text-cyan-600 dark:text-cyan-400 tracking-wide mb-2">IN SIMPLE WORDS</p>
+            <ol className="space-y-2.5">
+              {(lesson.simple || lesson.explain).map((t, k) => (
+                <li key={k} className="flex gap-2.5 text-sm leading-relaxed"><span className="w-5 h-5 rounded-full bg-cyan-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{k + 1}</span><span>{t}</span></li>
+              ))}
+            </ol>
           </div>
-          <PythonRunner key={id} title="Example: press Run, then change it and run again" initialCode={lesson.example} initialInput={lesson.exampleInput || ''} />
-          <button onClick={() => setTab('video')} className="w-full py-2.5 rounded-xl glass text-sm flex items-center justify-center gap-1.5"><Youtube className="w-4 h-4 text-red-500" /> Watch the Hindi explanation</button>
+          {lesson.walk && (
+            <div className="glass-strong rounded-2xl p-4">
+              <p className="text-[11px] font-bold text-cyan-600 dark:text-cyan-400 tracking-wide mb-2">THE EXAMPLE, LINE BY LINE</p>
+              <div className="space-y-1.5">
+                {lesson.walk.filter(([c]) => c).map(([c, m], k) => (
+                  <div key={k} className="rounded-lg overflow-hidden border border-border">
+                    <pre className="on-dark bg-[#0d1117] text-[#e6edf3] text-[12px] px-3 py-1.5 whitespace-pre-wrap font-mono">{c}</pre>
+                    {m && <p className="text-[12.5px] px-3 py-1.5 bg-muted/40">{m}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <PythonRunner key={id} title="Now run it yourself: press Run, change something, run again" initialCode={lesson.example} initialInput={lesson.exampleInput || ''} />
+          {lesson.remember && (
+            <div className="rounded-2xl p-4 border-2 border-green-500/40 bg-green-500/10">
+              <p className="text-[11px] font-bold text-green-700 dark:text-green-400 tracking-wide">REMEMBER THIS</p>
+              <p className="text-sm font-semibold mt-1">{lesson.remember}</p>
+            </div>
+          )}
+          {lesson.used?.length > 0 && (
+            <div className="glass-strong rounded-2xl p-4">
+              <p className="text-[11px] font-bold text-violet-600 dark:text-violet-400 tracking-wide mb-2">WHERE YOU SEE THIS IN REAL LIFE</p>
+              <ul className="space-y-1.5">{lesson.used.map(u => <li key={u} className="text-sm flex gap-2"><span>🌍</span><span>{u}</span></li>)}</ul>
+            </div>
+          )}
+          <button onClick={() => setTab('video')} className="w-full py-2.5 rounded-xl glass text-sm flex items-center justify-center gap-1.5"><Youtube className="w-4 h-4 text-red-500" /> Next: watch it explained in Hindi</button>
         </div>
       )}
 
