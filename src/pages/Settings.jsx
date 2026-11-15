@@ -246,8 +246,16 @@ export default function Settings() {
         <p className="text-xs text-muted-foreground leading-relaxed">
           RoboCraft helps ICSE/ISC students learn Robotics &amp; AI: chapters, board-style practice, a circuit lab, a 3-D robot arena, a 3-D design studio and a practical file.
         </p>
+        <a href={`${import.meta.env.BASE_URL}about.html`} target="_blank" rel="noopener" className="mt-3 flex items-center gap-3 rounded-xl glass p-2.5">
+          <img src={`${import.meta.env.BASE_URL}about-photo.jpg`} alt="" className="w-11 h-11 rounded-full object-cover ring-2 ring-cyan-500" />
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-semibold">Made by Aryan</span>
+            <span className="block text-[11px] text-muted-foreground">Meet the creator and why RoboCraft exists</span>
+          </span>
+          <span className="text-cyan-500 text-xs font-semibold">About →</span>
+        </a>
         <div className="flex flex-wrap gap-3 mt-3 text-xs">
-          {[['privacy.html', 'Privacy policy'], ['terms.html', 'Terms of use'], ['accessibility.html', 'Accessibility'], ['security.html', 'Security'], ['contact.html', 'Contact']].map(([f, label]) => (
+          {[['about.html', 'About us'], ['privacy.html', 'Privacy policy'], ['terms.html', 'Terms of use'], ['accessibility.html', 'Accessibility'], ['security.html', 'Security'], ['contact.html', 'Contact']].map(([f, label]) => (
             <a key={f} href={`${import.meta.env.BASE_URL}${f}`} target="_blank" rel="noopener" className="text-cyan-500 font-semibold">{label}</a>
           ))}
           <ReportButton label="Report a problem" className="!text-xs" />
