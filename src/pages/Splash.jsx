@@ -64,6 +64,10 @@ export default function Splash() {
       {stage === 2 && <RobotBlueprintStage onDone={() => setStage(3)} />}
       {stage === 3 && <NeuralNetworkStage onDone={() => setStage(4)} />}
       {stage === 4 && <FinalStage onDone={() => setStage(5)} />}
+
+      <p className="absolute bottom-0 inset-x-0 z-[60] text-center text-[11px] tracking-wide text-white/60 pointer-events-none" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 18px)' }}>
+        Made &amp; licensed by <span className="text-cyan-300 font-semibold">Aryan</span>
+      </p>
     </div>
   );
 }

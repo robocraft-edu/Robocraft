@@ -37,6 +37,7 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
           <img src={`${import.meta.env.BASE_URL}about-photo.jpg`} alt="" className="w-6 h-6 rounded-full object-cover ring-2 ring-cyan-500" />
           Made by Aryan · About
         </Link>
+        <p className="text-center text-[10px] text-muted-foreground/80 mt-2">© {new Date().getFullYear()} RoboCraft · Licensed by Aryan</p>
       </div>
     </div>
   );

@@ -83,7 +83,7 @@ export async function downloadPaperPdf(paper, withAnswers = false) {
     });
   });
   w.space(10);
-  w.text('Practice paper made by RoboCraft from your syllabus chapters. Check your school\'s latest specimen paper for the official format.', { size: 8, color: [120, 120, 130] });
+  w.text('Practice paper made by RoboCraft (made & licensed by Aryan) from your syllabus chapters. Check your school\'s latest specimen paper for the official format.', { size: 8, color: [120, 120, 130] });
   const name = `RoboCraft_${paper.classId}_Paper${paper.paperNo}${withAnswers ? '_AnswerKey' : ''}.pdf`;
   await downloadFile(w.doc.output('blob'), name, 'application/pdf');
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, useSpring, useMotionValue, useInView, useReducedMotion, animate } from 'framer-motion';
-import { ArrowLeft, ChevronDown, Sparkles, Mail, Github } from 'lucide-react';
+import { AnimatePresence, motion, useScroll, useTransform, useSpring, useMotionValue, useInView, useReducedMotion, animate } from 'framer-motion';
+import { ArrowLeft, ChevronDown, Sparkles, Mail, Github, X, Copy, Check } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 
 const BASE = import.meta.env.BASE_URL;
@@ -239,6 +239,63 @@ const CSS = `
 @media (prefers-reduced-motion: reduce) { .ab-anim { animation: none !important; } }
 `;
 
+export const EMAIL = 'aryansonkar243@gmail.com';
+const WHATSAPP = `https://wa.me/917310259096?text=${encodeURIComponent('Hi Aryan! I found RoboCraft and wanted to say hi 👋')}`;
+
+function WhatsAppIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
+      <path d="M12.04 2a9.9 9.9 0 0 0-8.5 15l-1.4 5 5.2-1.4A9.9 9.9 0 1 0 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3a8.2 8.2 0 1 1 7 3.9Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3Z" />
+    </svg>
+  );
+}
+
+// Contact card: flips in, shows the e-mail (copy / write) and a WhatsApp button.
+function ContactCard({ onClose }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(EMAIL); } catch {
+      const t = document.createElement('textarea'); t.value = EMAIL; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+    }
+    setCopied(true); setTimeout(() => setCopied(false), 1800);
+  };
+  useEffect(() => { const k = (e) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
+  return (
+    <motion.div className="fixed inset-0 z-[80] flex items-center justify-center p-5 bg-black/70" onClick={onClose}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div role="dialog" aria-label="Contact Aryan" onClick={e => e.stopPropagation()} style={{ transformPerspective: 1000 }}
+        className="relative w-full max-w-sm rounded-3xl p-[2px] bg-[conic-gradient(#06b6d4,#2563eb,#a855f7,#22c55e,#06b6d4)] shadow-[0_0_60px_rgba(34,211,238,.35)]"
+        initial={{ rotateY: -180, scale: 0.6, opacity: 0 }} animate={{ rotateY: 0, scale: 1, opacity: 1 }} exit={{ rotateY: 90, scale: 0.8, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 140, damping: 16 }}>
+        <div className="rounded-[22px] bg-[#0b1020] p-6 text-center">
+          <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><X className="w-4 h-4" /></button>
+          <img src={PHOTO} alt="" className="w-20 h-20 rounded-full object-cover mx-auto ring-4 ring-cyan-400/40" />
+          <p className="mt-3 text-[11px] font-bold tracking-[0.3em] text-cyan-300">CONTACT ME</p>
+          <p className="text-xl font-black mt-1">Say hi to Aryan 👋</p>
+          <p className="text-xs text-slate-400 mt-1">Ideas, bugs, feedback or just hello. I reply to everyone.</p>
+
+          <div className="mt-5 rounded-2xl bg-white/5 border border-white/10 p-4 text-left">
+            <p className="text-[10px] font-bold tracking-widest text-slate-400">E-MAIL</p>
+            <p className="font-mono text-[15px] mt-1 break-all">{EMAIL}</p>
+            <div className="flex gap-2 mt-3">
+              <button onClick={copy} className="flex-1 py-2 rounded-xl bg-white/10 text-sm font-semibold flex items-center justify-center gap-1.5">
+                {copied ? <><Check className="w-4 h-4 text-green-400" /> Copied</> : <><Copy className="w-4 h-4" /> Copy</>}
+              </button>
+              <a href={`mailto:${EMAIL}?subject=${encodeURIComponent('Hi from a RoboCraft user')}`} className="flex-1 py-2 rounded-xl bg-cyan-500/20 text-cyan-200 text-sm font-semibold flex items-center justify-center gap-1.5"><Mail className="w-4 h-4" /> Write</a>
+            </div>
+          </div>
+
+          <a href={WHATSAPP} target="_blank" rel="noopener noreferrer"
+            className="mt-3 w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#1ebe5b] text-white font-bold flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(37,211,102,.35)] active:scale-[0.98] transition">
+            <WhatsAppIcon className="w-5 h-5" /> Message me on WhatsApp
+          </a>
+          <p className="text-[10px] text-slate-500 mt-4">RoboCraft · Made &amp; licensed by Aryan</p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 const FEATURES = [
   ['📚', 'Robotics & AI lessons', 'ICSE and ISC chapters in simple language, with board-style practice.'],
   ['🐍', 'Learn Python', '32 lessons from beginner to advanced, Hindi videos, quizzes and projects.'],
@@ -261,6 +318,7 @@ export default function About() {
   const bar = useSpring(page, { stiffness: 120, damping: 25 });
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const start = () => navigate(user || isGuest ? '/' : '/splash');
+  const [contact, setContact] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#05070f] text-slate-100 overflow-x-hidden selection:bg-cyan-400/30">
@@ -339,7 +397,8 @@ export default function About() {
             <li>💬 I keep improving it based on what students tell me.</li>
           </ul>
           <div className="flex flex-wrap gap-2 mt-5">
-            <a href={`${BASE}contact.html`} className="text-sm px-4 py-2 rounded-full bg-white/10 border border-white/15 flex items-center gap-2"><Mail className="w-4 h-4" /> Contact me</a>
+            <button onClick={() => setContact(true)} className="text-sm px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold flex items-center gap-2"><Mail className="w-4 h-4" /> Contact me</button>
+            <button onClick={() => setContact(true)} className="text-sm px-4 py-2 rounded-full bg-[#25D366] text-white font-semibold flex items-center gap-2"><WhatsAppIcon className="w-4 h-4" /> WhatsApp</button>
             <a href="https://github.com/robocraft-edu/Robocraft" target="_blank" rel="noopener noreferrer" className="text-sm px-4 py-2 rounded-full bg-white/10 border border-white/15 flex items-center gap-2"><Github className="w-4 h-4" /> GitHub</a>
           </div>
         </Reveal>
@@ -353,10 +412,12 @@ export default function About() {
             Start learning 🚀
           </Magnetic>
           <p className="text-[11px] text-slate-500 mt-10">
-            <a href={`${BASE}privacy.html`}>Privacy</a> · <a href={`${BASE}terms.html`}>Terms</a> · <a href={`${BASE}contact.html`}>Contact</a> · <a href={`${BASE}security.html`}>Security</a>
+            <a href={`${BASE}privacy.html`}>Privacy</a> · <a href={`${BASE}terms.html`}>Terms</a> · <button onClick={() => setContact(true)}>Contact</button> · <a href={`${BASE}security.html`}>Security</a>
           </p>
+          <p className="text-[11px] text-slate-500 mt-2">© {new Date().getFullYear()} Aryan Sonkar · Made &amp; licensed by Aryan · All rights reserved</p>
         </Reveal>
       </section>
+      <AnimatePresence>{contact && <ContactCard onClose={() => setContact(false)} />}</AnimatePresence>
     </div>
   );
 }

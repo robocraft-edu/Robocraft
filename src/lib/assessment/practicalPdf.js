@@ -133,6 +133,7 @@ export async function buildPracticalPdf(details, items) {
     doc.setPage(p); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(120);
     doc.text(d.name ? `${pdfSafe(d.name)} - Practical File` : 'Practical File', M, H - 32);
     doc.text(String(p), W - M, H - 32, { align: 'right' });
+    doc.setFontSize(7); doc.setTextColor(150); doc.text('Made with RoboCraft by Aryan', W / 2, H - 32, { align: 'center' });
   }
   return doc;
 }

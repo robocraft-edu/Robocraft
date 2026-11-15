@@ -261,6 +261,7 @@ export default function Settings() {
           <button onClick={() => navigate('/creator')} className="text-cyan-500 font-semibold">About us</button>
           <ReportButton label="Report a problem" className="!text-xs" />
         </div>
+        <p className="text-[11px] text-muted-foreground mt-3">© {new Date().getFullYear()} Aryan Sonkar · Made &amp; licensed by Aryan · All rights reserved</p>
       </div>
 
       {/* Account Deletion */}
