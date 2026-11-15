@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => {
     // '/' for the Android app; '/Robocraft/' when published on GitHub Pages
     base: process.env.BASE_PATH || '/',
     plugins: [react()],
-    define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version) },
+    // VITE_BUILD_ID changes on every build, so each release installs a fresh offline
+    // cache and phones pick up new icons, photos and pages, not only new code.
+    define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version), 'import.meta.env.VITE_BUILD_ID': JSON.stringify(`${pkg.version}-${Date.now().toString(36)}`) },
     resolve: {
       alias: { '@': path.resolve(__dirname, './src') },
     },

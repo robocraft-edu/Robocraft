@@ -43,7 +43,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 // Offline support for the web/iPhone version (not needed inside the Android app)
 if ('serviceWorker' in navigator && import.meta.env.PROD && !window.Capacitor?.isNativePlatform?.()) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js?v=' + (import.meta.env.VITE_APP_VERSION || '1')).catch(() => {});
+    navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js?v=' + (import.meta.env.VITE_BUILD_ID || import.meta.env.VITE_APP_VERSION || '1')).catch(() => {});
   });
 }
 
