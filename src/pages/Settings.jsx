@@ -250,7 +250,7 @@ export default function Settings() {
           <img src={`${import.meta.env.BASE_URL}about-photo.jpg`} alt="" className="w-11 h-11 rounded-full object-cover ring-2 ring-cyan-500" />
           <span className="flex-1 min-w-0">
             <span className="block text-sm font-semibold">Made by Aryan</span>
-            <span className="block text-[11px] text-muted-foreground">Meet the creator and why RoboCraft exists</span>
+            <span className="block text-[11px] text-muted-foreground">Meet the founder and why RoboCraft exists</span>
           </span>
           <span className="text-cyan-500 text-xs font-semibold">About →</span>
         </a>

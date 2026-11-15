@@ -118,7 +118,7 @@ function HeroPhoto({ still }) {
           initial={{ clipPath: 'circle(0% at 50% 50%)', filter: 'blur(14px) saturate(0) brightness(1.6)', scale: 1.35 }}
           animate={{ clipPath: 'circle(75% at 50% 50%)', filter: 'blur(0px) saturate(1) brightness(1)', scale: 1 }}
           transition={{ duration: 1.6, delay: 0.35, ease: EASE }}>
-          <img src={PHOTO} alt="Aryan, the creator of RoboCraft" className="w-full h-full object-cover" draggable={false} />
+          <img src={PHOTO} alt="Aryan, the founder of RoboCraft" className="w-full h-full object-cover" draggable={false} />
           {/* moving glare that follows the tilt */}
           <motion.div className="absolute inset-0 pointer-events-none opacity-40" style={{ background: glare }} />
           {/* light sweep */}
@@ -343,7 +343,7 @@ export default function About() {
         <motion.div className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-24" style={reduce ? {} : { y: heroY, scale: heroScale, opacity: heroFade }}>
           <HeroPhoto still={reduce} />
           <motion.p className="mt-12 text-xs font-bold tracking-[0.35em] text-cyan-300/90" initial={{ opacity: 0, letterSpacing: '0.9em' }} animate={{ opacity: 1, letterSpacing: '0.35em' }} transition={{ duration: 1.2, delay: 1.1, ease: EASE }}>
-            THE CREATOR OF ROBOCRAFT
+            THE FOUNDER OF ROBOCRAFT
           </motion.p>
           <h1 className="mt-2 text-5xl sm:text-7xl font-black tracking-tight bg-gradient-to-br from-white via-cyan-100 to-cyan-400 bg-clip-text text-transparent">
             <SplitName text="Hi, I'm Aryan" delay={1.25} />

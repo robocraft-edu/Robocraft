@@ -12,7 +12,7 @@ export default function MadeBy({ className = 'mt-4' }) {
       </span>
       <span className="flex-1 min-w-0">
         <span className="block text-sm font-bold">Made by Aryan</span>
-        <span className="block text-[11px] text-muted-foreground">Meet the creator · Made &amp; licensed by Aryan</span>
+        <span className="block text-[11px] text-muted-foreground">Meet the founder · Made &amp; licensed by Aryan</span>
       </span>
       <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
     </button>
