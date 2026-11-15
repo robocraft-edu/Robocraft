@@ -16,7 +16,9 @@ module.exports = {
   				300: 'rgb(var(--ac-300) / <alpha-value>)',
   				400: 'rgb(var(--ac-400) / <alpha-value>)',
   				500: 'rgb(var(--ac-500) / <alpha-value>)',
-  				600: 'rgb(var(--ac-600) / <alpha-value>)'
+  				600: 'rgb(var(--ac-600) / <alpha-value>)',
+  				700: 'rgb(var(--ac-700) / <alpha-value>)',
+  				800: 'rgb(var(--ac-800) / <alpha-value>)'
   			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

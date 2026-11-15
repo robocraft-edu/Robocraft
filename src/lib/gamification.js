@@ -245,7 +245,8 @@ export const REWARD_SHOP = [
   // Your own photo. It never leaves the phone — see photoAvatar.js.
   { id: 'av_photo', type: 'avatar', name: 'Your own photo', emoji: '📷', cost: 1000, photo: true },
   // App colour themes (recolour buttons, highlights and icons)
-  { id: 'ac_cyan', type: 'accent', name: 'Neon Cyan', value: 'cyan', swatch: '#22d3ee', cost: 0 },
+  { id: 'ac_cyan', type: 'accent', name: 'Lab Green', value: 'cyan', swatch: '#10b981', cost: 0 },
+  { id: 'ac_neon', type: 'accent', name: 'Neon Cyan', value: 'neon', swatch: '#22d3ee', cost: 150 },
   { id: 'ac_sky', type: 'accent', name: 'Sky Blue', value: 'sky', swatch: '#38bdf8', cost: 150 },
   { id: 'ac_emerald', type: 'accent', name: 'Circuit Green', value: 'emerald', swatch: '#34d399', cost: 200 },
   { id: 'ac_violet', type: 'accent', name: 'Cyber Violet', value: 'violet', swatch: '#a78bfa', cost: 250 },

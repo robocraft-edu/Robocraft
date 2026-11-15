@@ -7,32 +7,32 @@
 @layer base {
   /* ── LIGHT MODE (default) ── */
   :root {
-    /* Accent palette (Tailwind cyan by default; Reward Shop themes swap it) */
-    --ac-200: 165 243 252; --ac-300: 103 232 249; --ac-400: 34 211 238; --ac-500: 6 182 212; --ac-600: 8 145 178;
-    --background: 210 20% 97%;
+    /* Accent palette (Clean Lab green by default; Reward Shop themes swap it) */
+    --ac-200: 167 243 208; --ac-300: 110 231 183; --ac-400: 52 211 153; --ac-500: 16 185 129; --ac-600: 5 150 105; --ac-700: 4 120 87; --ac-800: 6 95 70;
+    --background: 210 40% 98%;
     --foreground: 222 32% 14%;
     --card: 0 0% 100%;
     --card-foreground: 222 32% 14%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 32% 14%;
-    --primary: 190 95% 29%;
+    --primary: 161 94% 24%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 16% 92%;
+    --secondary: 210 30% 94%;
     --secondary-foreground: 222 32% 14%;
-    --muted: 210 16% 93%;
+    --muted: 210 30% 95%;
     --muted-foreground: 215 18% 42%;
-    --accent: 190 95% 38%;
+    --accent: 161 94% 26%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 214 18% 86%;
     --input: 214 18% 86%;
-    --ring: 190 95% 38%;
+    --ring: 160 84% 39%;
     --success: 152 56% 38%;
     --warning: 38 92% 42%;
-    --chart-1: 190 95% 38%;
+    --chart-1: 160 84% 39%;
     --chart-2: 160 60% 40%;
-    --chart-3: 220 70% 50%;
+    --chart-3: 217 91% 60%;
     --chart-4: 280 65% 55%;
     --chart-5: 340 75% 50%;
     --radius: 0.875rem;
@@ -40,14 +40,14 @@
     --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --sidebar-background: 210 20% 98%;
+    --sidebar-background: 210 40% 99%;
     --sidebar-foreground: 222 32% 14%;
-    --sidebar-primary: 190 95% 38%;
+    --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 16% 92%;
     --sidebar-accent-foreground: 222 32% 14%;
     --sidebar-border: 214 18% 86%;
-    --sidebar-ring: 190 95% 38%;
+    --sidebar-ring: 160 84% 39%;
     --canvas: 210 16% 90%;
     --grid: 214 20% 70%;
   }
@@ -60,34 +60,34 @@
     --card-foreground: 210 40% 98%;
     --popover: 230 30% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 190 100% 50%;
+    --primary: 160 84% 45%;
     --primary-foreground: 230 35% 7%;
     --secondary: 230 25% 14%;
     --secondary-foreground: 210 40% 98%;
     --muted: 230 25% 14%;
     --muted-foreground: 215 20% 63%;
-    --accent: 200 100% 50%;
+    --accent: 217 91% 60%;
     --accent-foreground: 230 35% 7%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --border: 225 25% 18%;
     --input: 225 25% 18%;
-    --ring: 190 100% 50%;
+    --ring: 160 84% 45%;
     --success: 152 56% 46%;
     --warning: 38 92% 56%;
-    --chart-1: 190 100% 50%;
+    --chart-1: 160 84% 45%;
     --chart-2: 160 60% 45%;
     --chart-3: 220 70% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     --sidebar-background: 230 35% 8%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 190 100% 50%;
+    --sidebar-primary: 160 84% 45%;
     --sidebar-primary-foreground: 230 35% 7%;
     --sidebar-accent: 230 25% 14%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 225 25% 18%;
-    --sidebar-ring: 190 100% 50%;
+    --sidebar-ring: 160 84% 45%;
     --canvas: 222 30% 8%;
     --grid: 200 30% 55%;
   }
@@ -135,21 +135,21 @@
 }
 
 .neon-glow { box-shadow: 0 0 14px hsl(var(--primary) / 0.10); }
-.dark .neon-glow { box-shadow: 0 0 16px rgba(0, 210, 255, 0.08), 0 0 32px rgba(0, 210, 255, 0.04); }
+.dark .neon-glow { box-shadow: 0 0 16px rgb(var(--ac-400) / 0.08), 0 0 32px rgb(var(--ac-400) / 0.04); }
 .neon-text { text-shadow: 0 0 8px hsl(var(--primary) / 0.20); }
-.dark .neon-text { text-shadow: 0 0 10px rgba(0, 210, 255, 0.35); }
+.dark .neon-text { text-shadow: 0 0 10px rgb(var(--ac-400) / 0.35); }
 .neon-border { border: 1px solid hsl(var(--primary) / 0.30); box-shadow: 0 0 10px hsl(var(--primary) / 0.08); }
-.dark .neon-border { border: 1px solid rgba(0, 210, 255, 0.22); box-shadow: 0 0 12px rgba(0, 210, 255, 0.06); }
+.dark .neon-border { border: 1px solid rgb(var(--ac-400) / 0.22); box-shadow: 0 0 12px rgb(var(--ac-400) / 0.06); }
 
 .gradient-text {
   /* AA at any size on the light background: 5.0:1 and 5.3:1. */
-  background: linear-gradient(135deg, hsl(190 95% 28%), hsl(210 90% 40%));
+  background: linear-gradient(135deg, rgb(var(--ac-700)), hsl(221 83% 45%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .dark .gradient-text {
-  background: linear-gradient(135deg, hsl(190 100% 50%), hsl(210 100% 60%));
+  background: linear-gradient(135deg, rgb(var(--ac-400)), hsl(217 91% 65%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -204,8 +204,8 @@ pre.glass { background: #0a0f1c; }
   animation: pulse-glow-dark 3s ease-in-out infinite;
 }
 @keyframes pulse-glow-dark {
-  0%, 100% { box-shadow: 0 0 20px rgba(0, 210, 255, 0.15); }
-  50% { box-shadow: 0 0 40px rgba(0, 210, 255, 0.3); }
+  0%, 100% { box-shadow: 0 0 20px rgb(var(--ac-400) / 0.15); }
+  50% { box-shadow: 0 0 40px rgb(var(--ac-400) / 0.3); }
 }
 
 @keyframes slide-up {
@@ -294,17 +294,18 @@ html, body {
 @keyframes current-flow { to { stroke-dashoffset: -16; } }
 .wire-current { stroke-dasharray: 5 3; animation: current-flow 0.6s linear infinite; }
 /* Reward Shop accent themes */
-:root[data-accent="violet"] { --ac-200: 221 214 254; --ac-300: 196 181 253; --ac-400: 167 139 250; --ac-500: 139 92 246; --ac-600: 124 58 237; }
-:root[data-accent="emerald"] { --ac-200: 167 243 208; --ac-300: 110 231 183; --ac-400: 52 211 153; --ac-500: 16 185 129; --ac-600: 5 150 105; }
-:root[data-accent="amber"] { --ac-200: 253 230 138; --ac-300: 252 211 77; --ac-400: 251 191 36; --ac-500: 245 158 11; --ac-600: 217 119 6; }
-:root[data-accent="rose"] { --ac-200: 254 205 211; --ac-300: 253 164 175; --ac-400: 251 113 133; --ac-500: 244 63 94; --ac-600: 225 29 72; }
-:root[data-accent="sky"] { --ac-200: 186 230 253; --ac-300: 125 211 252; --ac-400: 56 189 248; --ac-500: 14 165 233; --ac-600: 2 132 199; }
-:root[data-accent="lime"] { --ac-200: 217 249 157; --ac-300: 190 242 100; --ac-400: 163 230 53; --ac-500: 132 204 22; --ac-600: 101 163 13; }
-:root[data-accent="teal"] { --ac-200: 153 246 228; --ac-300: 94 234 212; --ac-400: 45 212 191; --ac-500: 20 184 166; --ac-600: 13 148 136; }
-:root[data-accent="indigo"] { --ac-200: 199 210 254; --ac-300: 165 180 252; --ac-400: 129 140 248; --ac-500: 99 102 241; --ac-600: 79 70 229; }
-:root[data-accent="orange"] { --ac-200: 254 215 170; --ac-300: 253 186 116; --ac-400: 251 146 60; --ac-500: 249 115 22; --ac-600: 234 88 12; }
-:root[data-accent="fuchsia"] { --ac-200: 245 208 254; --ac-300: 240 171 252; --ac-400: 232 121 249; --ac-500: 217 70 239; --ac-600: 192 38 211; }
-:root[data-accent="slate"] { --ac-200: 226 232 240; --ac-300: 203 213 225; --ac-400: 148 163 184; --ac-500: 100 116 139; --ac-600: 71 85 105; }
+:root[data-accent="neon"] { --ac-200: 165 243 252; --ac-300: 103 232 249; --ac-400: 34 211 238; --ac-500: 6 182 212; --ac-600: 8 145 178; --ac-700: 14 116 144; --ac-800: 21 94 117; }
+:root[data-accent="violet"] { --ac-200: 221 214 254; --ac-300: 196 181 253; --ac-400: 167 139 250; --ac-500: 139 92 246; --ac-600: 124 58 237; --ac-700: 109 40 217; --ac-800: 91 33 182; }
+:root[data-accent="emerald"] { --ac-200: 167 243 208; --ac-300: 110 231 183; --ac-400: 52 211 153; --ac-500: 16 185 129; --ac-600: 5 150 105; --ac-700: 4 120 87; --ac-800: 6 95 70; }
+:root[data-accent="amber"] { --ac-200: 253 230 138; --ac-300: 252 211 77; --ac-400: 251 191 36; --ac-500: 245 158 11; --ac-600: 217 119 6; --ac-700: 180 83 9; --ac-800: 146 64 14; }
+:root[data-accent="rose"] { --ac-200: 254 205 211; --ac-300: 253 164 175; --ac-400: 251 113 133; --ac-500: 244 63 94; --ac-600: 225 29 72; --ac-700: 190 18 60; --ac-800: 159 18 57; }
+:root[data-accent="sky"] { --ac-200: 186 230 253; --ac-300: 125 211 252; --ac-400: 56 189 248; --ac-500: 14 165 233; --ac-600: 2 132 199; --ac-700: 3 105 161; --ac-800: 7 89 133; }
+:root[data-accent="lime"] { --ac-200: 217 249 157; --ac-300: 190 242 100; --ac-400: 163 230 53; --ac-500: 132 204 22; --ac-600: 101 163 13; --ac-700: 77 124 15; --ac-800: 63 98 18; }
+:root[data-accent="teal"] { --ac-200: 153 246 228; --ac-300: 94 234 212; --ac-400: 45 212 191; --ac-500: 20 184 166; --ac-600: 13 148 136; --ac-700: 15 118 110; --ac-800: 17 94 89; }
+:root[data-accent="indigo"] { --ac-200: 199 210 254; --ac-300: 165 180 252; --ac-400: 129 140 248; --ac-500: 99 102 241; --ac-600: 79 70 229; --ac-700: 67 56 202; --ac-800: 55 48 163; }
+:root[data-accent="orange"] { --ac-200: 254 215 170; --ac-300: 253 186 116; --ac-400: 251 146 60; --ac-500: 249 115 22; --ac-600: 234 88 12; --ac-700: 194 65 12; --ac-800: 154 52 18; }
+:root[data-accent="fuchsia"] { --ac-200: 245 208 254; --ac-300: 240 171 252; --ac-400: 232 121 249; --ac-500: 217 70 239; --ac-600: 192 38 211; --ac-700: 162 28 175; --ac-800: 134 25 143; }
+:root[data-accent="slate"] { --ac-200: 226 232 240; --ac-300: 203 213 225; --ac-400: 148 163 184; --ac-500: 100 116 139; --ac-600: 71 85 105; --ac-700: 51 65 85; --ac-800: 30 41 59; }
 
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -339,7 +340,7 @@ html, body {
    dark page (#141a2a). */
 html:not(.dark) .text-cyan-300,
 html:not(.dark) .text-cyan-400,
-html:not(.dark) .text-cyan-500  { color: #155e75; } /* 6.84:1 — passes on tinted pills too */
+html:not(.dark) .text-cyan-500  { color: rgb(var(--ac-800)); } /* 6.84:1 — passes on tinted pills too */
 html:not(.dark) .text-sky-400,
 html:not(.dark) .text-sky-500   { color: #0369a1; } /* 5.21:1 */
 html:not(.dark) .text-blue-400,
@@ -380,8 +381,8 @@ html:not(.dark) .text-slate-400 { color: #475569; } /* 7.0:1  */
    -600/-700 step keeps the brand hue and lifts every label past 4.5:1.
    Only elements that actually set text-white are touched, so decorative
    dots, bars and badges keep their original colour. */
-.bg-cyan-400.text-white { background-color: #0e7490; }
-.bg-cyan-500.text-white { background-color: #0e7490; }
+.bg-cyan-400.text-white { background-color: rgb(var(--ac-700)); }
+.bg-cyan-500.text-white { background-color: rgb(var(--ac-700)); }
 .bg-sky-500.text-white { background-color: #0369a1; }
 .bg-blue-500.text-white { background-color: #2563eb; }
 .bg-green-400.text-white { background-color: #15803d; }
@@ -402,8 +403,8 @@ html:not(.dark) .text-slate-400 { color: #475569; } /* 7.0:1  */
 .bg-violet-500.text-white { background-color: #7c3aed; }
 .bg-fuchsia-500.text-white { background-color: #a21caf; }
 
-.from-cyan-400.text-white { --tw-gradient-from: #0e7490 var(--tw-gradient-from-position); }
-.from-cyan-500.text-white { --tw-gradient-from: #0e7490 var(--tw-gradient-from-position); }
+.from-cyan-400.text-white { --tw-gradient-from: rgb(var(--ac-700)) var(--tw-gradient-from-position); }
+.from-cyan-500.text-white { --tw-gradient-from: rgb(var(--ac-700)) var(--tw-gradient-from-position); }
 .from-sky-500.text-white { --tw-gradient-from: #0369a1 var(--tw-gradient-from-position); }
 .from-blue-500.text-white { --tw-gradient-from: #2563eb var(--tw-gradient-from-position); }
 .from-green-400.text-white { --tw-gradient-from: #15803d var(--tw-gradient-from-position); }
@@ -424,8 +425,8 @@ html:not(.dark) .text-slate-400 { color: #475569; } /* 7.0:1  */
 .from-violet-500.text-white { --tw-gradient-from: #7c3aed var(--tw-gradient-from-position); }
 .from-fuchsia-500.text-white { --tw-gradient-from: #a21caf var(--tw-gradient-from-position); }
 
-.to-cyan-400.text-white { --tw-gradient-to: #0e7490 var(--tw-gradient-to-position); }
-.to-cyan-500.text-white { --tw-gradient-to: #0e7490 var(--tw-gradient-to-position); }
+.to-cyan-400.text-white { --tw-gradient-to: rgb(var(--ac-700)) var(--tw-gradient-to-position); }
+.to-cyan-500.text-white { --tw-gradient-to: rgb(var(--ac-700)) var(--tw-gradient-to-position); }
 .to-sky-500.text-white { --tw-gradient-to: #0369a1 var(--tw-gradient-to-position); }
 .to-blue-500.text-white { --tw-gradient-to: #2563eb var(--tw-gradient-to-position); }
 .to-green-400.text-white { --tw-gradient-to: #15803d var(--tw-gradient-to-position); }
@@ -447,8 +448,8 @@ html:not(.dark) .text-slate-400 { color: #475569; } /* 7.0:1  */
 .to-fuchsia-500.text-white { --tw-gradient-to: #a21caf var(--tw-gradient-to-position); }
 .to-fuchsia-600.text-white { --tw-gradient-to: #a21caf var(--tw-gradient-to-position); }
 
-.via-cyan-400.text-white { --tw-gradient-via: #0e7490 var(--tw-gradient-via-position); }
-.via-cyan-500.text-white { --tw-gradient-via: #0e7490 var(--tw-gradient-via-position); }
+.via-cyan-400.text-white { --tw-gradient-via: rgb(var(--ac-700)) var(--tw-gradient-via-position); }
+.via-cyan-500.text-white { --tw-gradient-via: rgb(var(--ac-700)) var(--tw-gradient-via-position); }
 .via-sky-500.text-white { --tw-gradient-via: #0369a1 var(--tw-gradient-via-position); }
 .via-blue-500.text-white { --tw-gradient-via: #2563eb var(--tw-gradient-via-position); }
 .via-green-400.text-white { --tw-gradient-via: #15803d var(--tw-gradient-via-position); }
@@ -480,7 +481,7 @@ html:not(.dark) .text-slate-400 { color: #475569; } /* 7.0:1  */
    the 3-D viewport, the splash) carry `.on-dark`, which keeps them bright.
    ────────────────────────────────────────────────────────────────────────── */
 html:not(.dark) {
-  --c-cyan: #0e7490; --c-sky: #0369a1; --c-teal: #0f766e; --c-blue: #1d4ed8;
+  --c-cyan: rgb(var(--ac-700)); --c-sky: #0369a1; --c-teal: #0f766e; --c-blue: #1d4ed8;
   --c-green: #15803d; --c-emerald: #047857; --c-lime: #4d7c0f;
   --c-amber: #92400e; --c-yellow: #a16207; --c-orange: #c2410c;
   --c-red: #b91c1c; --c-rose: #be123c; --c-pink: #be185d;
@@ -523,9 +524,9 @@ html:not(.dark) .text-fuchsia-400,
 html:not(.dark) .text-fuchsia-500 { color: var(--c-fuchsia); }
 
 /* Surfaces that stay dark in both themes keep the bright shades. */
-html:not(.dark) :is(.on-dark, .terminal-surface) .text-cyan-300    { color: #67e8f9; }
-html:not(.dark) :is(.on-dark, .terminal-surface) .text-cyan-400    { color: #22d3ee; }
-html:not(.dark) :is(.on-dark, .terminal-surface) .text-cyan-500    { color: #06b6d4; }
+html:not(.dark) :is(.on-dark, .terminal-surface) .text-cyan-300    { color: rgb(var(--ac-300)); }
+html:not(.dark) :is(.on-dark, .terminal-surface) .text-cyan-400    { color: rgb(var(--ac-400)); }
+html:not(.dark) :is(.on-dark, .terminal-surface) .text-cyan-500    { color: rgb(var(--ac-500)); }
 html:not(.dark) :is(.on-dark, .terminal-surface) .text-green-300   { color: #86efac; }
 html:not(.dark) :is(.on-dark, .terminal-surface) .text-green-400   { color: #4ade80; }
 html:not(.dark) :is(.on-dark, .terminal-surface) .text-green-500   { color: #22c55e; }
@@ -560,7 +561,7 @@ html:not(.dark) :is(.on-dark, .terminal-surface) .text-blue-400    { color: #60a
 .bg-gradient-to-bl.from-cyan-600,
 .bg-gradient-to-t.from-cyan-600,
 .bg-gradient-to-b.from-cyan-600 {
-  --tw-gradient-from: #0e7490 var(--tw-gradient-from-position);
+  --tw-gradient-from: rgb(var(--ac-700)) var(--tw-gradient-from-position);
 }
 .bg-gradient-to-r.from-green-500,
 .bg-gradient-to-l.from-green-500,
@@ -652,7 +653,7 @@ html:not(.dark) :is(.on-dark, .terminal-surface) .text-blue-400    { color: #60a
 .bg-gradient-to-bl.to-cyan-400,
 .bg-gradient-to-t.to-cyan-400,
 .bg-gradient-to-b.to-cyan-400 {
-  --tw-gradient-to: #0e7490 var(--tw-gradient-to-position);
+  --tw-gradient-to: rgb(var(--ac-700)) var(--tw-gradient-to-position);
 }
 
 /* Touch targets. Small icon buttons and the text "Back" links are under the

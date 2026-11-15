@@ -6,11 +6,8 @@
   document.documentElement.classList.add('js');
   try {
     var t = localStorage.getItem('robocraft_theme');
-    if (t !== 'light' && t !== 'dark') {
-      t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    }
+    // No saved choice: start in the bright "Clean Lab" look.
+    if (t !== 'light' && t !== 'dark') t = 'light';
     if (t === 'dark') document.documentElement.classList.add('dark');
-  } catch (e) {
-    document.documentElement.classList.add('dark');
-  }
+  } catch (e) { /* storage blocked: stay light */ }
 })();

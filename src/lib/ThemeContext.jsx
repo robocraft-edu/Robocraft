@@ -8,11 +8,8 @@ function initialTheme() {
     const saved = localStorage.getItem(KEY);
     if (saved === 'light' || saved === 'dark') return saved;
   } catch {}
-  // Respect system preference; default to dark when not explicitly light.
-  try {
-    if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
-  } catch {}
-  return 'dark';
+  // No saved choice: the bright "Clean Lab" look (dark mode is in Settings).
+  return 'light';
 }
 
 export function ThemeProvider({ children }) {
