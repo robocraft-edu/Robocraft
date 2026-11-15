@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset=".55" stop-color="#3B82F6"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient>
+    <radialGradient id="shine" cx=".3" cy=".2" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DCE7FF"/></linearGradient>
+    <linearGradient id="visor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0F1B3D"/><stop offset="1" stop-color="#1E1050"/></linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#1E1B6B" flood-opacity=".45"/></filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- circuit traces in background -->
+  <g stroke="#fff" stroke-opacity=".18" stroke-width="6" fill="none" stroke-linecap="round">
+    <path d="M40 150 H110 L140 120"/><circle cx="146" cy="114" r="8" fill="#fff" fill-opacity=".25" stroke="none"/>
+    <path d="M472 360 H410 L380 390"/><circle cx="374" cy="396" r="8" fill="#fff" fill-opacity=".25" stroke="none"/>
+    <path d="M60 420 L100 380 H130"/>
+  </g>
+  <rect width="512" height="512" rx="112" fill="url(#shine)"/>
+  <g filter="url(#shadow)">
+    <!-- antenna with glowing orb -->
+    <rect x="246" y="96" width="20" height="54" rx="10" fill="#fff"/>
+    <circle cx="256" cy="88" r="22" fill="#FDE047" filter="url(#glow)"/>
+    <!-- ears -->
+    <rect x="86" y="232" width="44" height="88" rx="22" fill="#E0E9FF"/>
+    <rect x="382" y="232" width="44" height="88" rx="22" fill="#E0E9FF"/>
+    <!-- head -->
+    <rect x="116" y="144" width="280" height="236" rx="84" fill="url(#head)"/>
+    <!-- visor -->
+    <rect x="148" y="194" width="216" height="120" rx="60" fill="url(#visor)"/>
+    <!-- left eye glowing -->
+    <circle cx="210" cy="254" r="27" fill="#22D3EE" filter="url(#glow)"/>
+    <circle cx="200" cy="244" r="8" fill="#fff"/>
+    <!-- right eye winking -->
+    <path d="M280 258 q22 -26 44 0" stroke="#22D3EE" stroke-width="14" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+    <!-- smile -->
+    <path d="M218 340 q38 24 76 0" stroke="#6D28D9" stroke-width="15" fill="none" stroke-linecap="round"/>
+    <!-- cheek blush -->
+    <ellipse cx="166" cy="334" rx="16" ry="9" fill="#F472B6" opacity=".55"/><ellipse cx="346" cy="334" rx="16" ry="9" fill="#F472B6" opacity=".55"/>
+  </g>
+  <!-- sparkles -->
+  <g fill="#fff">
+    <path d="M412 112 l7 18 18 7 -18 7 -7 18 -7 -18 -18 -7 18 -7z" opacity=".95"/>
+    <path d="M96 392 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z" opacity=".8"/>
+  </g>
+</svg>

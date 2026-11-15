@@ -18,12 +18,7 @@ const BuildSheet = forwardRef(({ data }, ref) => {
       {/* ── Header / Branding ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '3px solid #0EA5E9', paddingBottom: '16px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: '#0EA5E9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg viewBox="0 0 24 24" fill="none" style={{ width: '24px', height: '24px' }}>
-              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" />
-              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" opacity="0.6" />
-            </svg>
-          </div>
+          <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="RoboCraft" style={{ width: '48px', height: '48px' }} />
           <div>
             <div style={{ fontSize: '20px', fontWeight: 800, color: '#0EA5E9', letterSpacing: '-0.5px' }}>RoboCraft</div>
             <div style={{ fontSize: '11px', color: '#64748B' }}>Build Sheet — Robotics Project Manual</div>

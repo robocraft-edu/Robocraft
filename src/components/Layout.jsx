@@ -98,10 +98,7 @@ export default function Layout() {
               progress={classProgress}
               size={38}
               fallback={(
-                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" aria-label="RoboCraft">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" className="text-cyan-400" strokeLinejoin="round"/>
-                  <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" className="text-cyan-400/60" strokeLinejoin="round"/>
-                </svg>
+                <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="RoboCraft" className="w-full h-full rounded-[28%] object-cover" />
               )}
             />
             <span className="font-bold text-lg gradient-text hidden sm:block">RoboCraft</span>

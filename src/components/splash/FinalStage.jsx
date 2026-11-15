@@ -76,12 +76,7 @@ export default function FinalStage({ onDone }) {
       <div className={`relative z-10 flex flex-col items-center transition-all duration-700 ${phase >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'} ${explode ? 'opacity-0' : ''}`}>
         <div className="relative mb-5">
           <div className="absolute inset-0 bg-cyan-500/40 blur-3xl rounded-full animate-pulse-glow" />
-          <div className="relative w-24 h-24 rounded-3xl glass-strong flex items-center justify-center neon-border animate-pulse-glow">
-            <svg viewBox="0 0 24 24" fill="none" className="w-14 h-14 animate-spin-slow">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" strokeWidth="1.5" className="text-cyan-400" strokeLinejoin="round"/>
-              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="1.5" className="text-cyan-400/60" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="RoboCraft logo" className="relative w-28 h-28 drop-shadow-2xl animate-float" />
         </div>
         <div>
           <h1 className="text-3xl font-bold gradient-text neon-text">RoboCraft</h1>
