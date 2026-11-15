@@ -1,8 +1,9 @@
+import lazyRetry from '@/lib/lazyRetry';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate} from 'react-router-dom';
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { AppProvider, useApp } from '@/lib/AppContext';
@@ -23,37 +24,37 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 // Heavy pages are code-split so the app opens fast
-const ClassSelection = lazy(() => import('@/pages/ClassSelection'));
-const Home = lazy(() => import('@/pages/Home'));
-const Learn = lazy(() => import('@/pages/Learn'));
-const LessonDetail = lazy(() => import('@/pages/LessonDetail'));
-const Projects = lazy(() => import('@/pages/Projects'));
-const ProjectDetail = lazy(() => import('@/pages/ProjectDetail'));
-const Quiz = lazy(() => import('@/pages/Quiz'));
-const SearchPage = lazy(() => import('@/pages/SearchPage'));
-const ProgressPage = lazy(() => import('@/pages/ProgressPage'));
-const Settings = lazy(() => import('@/pages/Settings'));
-const Shop = lazy(() => import('@/pages/Shop'));
-const PythonPlayground = lazy(() => import('@/pages/PythonPlayground'));
-const PythonProjectMaker = lazy(() => import('@/pages/PythonProjectMaker'));
-const Leaderboard = lazy(() => import('@/pages/Leaderboard'));
-const StoryMap = lazy(() => import('@/pages/StoryMap'));
-const Mentor = lazy(() => import('@/pages/Mentor'));
-const Lab = lazy(() => import('@/pages/Lab'));
-const EngineeringChallenges = lazy(() => import('@/pages/EngineeringChallenges'));
-const RevisionMode = lazy(() => import('@/pages/RevisionMode'));
-const ExamPractice = lazy(() => import('@/pages/ExamPractice'));
-const DiagramBank = lazy(() => import('@/pages/DiagramBank'));
-const Problems = lazy(() => import('@/pages/Problems'));
-const Tools = lazy(() => import('@/pages/Tools'));
-const Arena = lazy(() => import('@/pages/Arena'));
-const DesignStudio = lazy(() => import('@/pages/DesignStudio'));
-const MechanismLab = lazy(() => import('@/pages/MechanismLab'));
-const Assessment = lazy(() => import('@/pages/Assessment'));
-const BuildHub = lazy(() => import('@/pages/BuildHub'));
-const RobotQuiz = lazy(() => import('@/pages/RobotQuiz'));
-const PythonCourse = lazy(() => import('@/pages/PythonCourse'));
-const About = lazy(() => import('@/pages/About'));
+const ClassSelection = lazyRetry(() => import('@/pages/ClassSelection'));
+const Home = lazyRetry(() => import('@/pages/Home'));
+const Learn = lazyRetry(() => import('@/pages/Learn'));
+const LessonDetail = lazyRetry(() => import('@/pages/LessonDetail'));
+const Projects = lazyRetry(() => import('@/pages/Projects'));
+const ProjectDetail = lazyRetry(() => import('@/pages/ProjectDetail'));
+const Quiz = lazyRetry(() => import('@/pages/Quiz'));
+const SearchPage = lazyRetry(() => import('@/pages/SearchPage'));
+const ProgressPage = lazyRetry(() => import('@/pages/ProgressPage'));
+const Settings = lazyRetry(() => import('@/pages/Settings'));
+const Shop = lazyRetry(() => import('@/pages/Shop'));
+const PythonPlayground = lazyRetry(() => import('@/pages/PythonPlayground'));
+const PythonProjectMaker = lazyRetry(() => import('@/pages/PythonProjectMaker'));
+const Leaderboard = lazyRetry(() => import('@/pages/Leaderboard'));
+const StoryMap = lazyRetry(() => import('@/pages/StoryMap'));
+const Mentor = lazyRetry(() => import('@/pages/Mentor'));
+const Lab = lazyRetry(() => import('@/pages/Lab'));
+const EngineeringChallenges = lazyRetry(() => import('@/pages/EngineeringChallenges'));
+const RevisionMode = lazyRetry(() => import('@/pages/RevisionMode'));
+const ExamPractice = lazyRetry(() => import('@/pages/ExamPractice'));
+const DiagramBank = lazyRetry(() => import('@/pages/DiagramBank'));
+const Problems = lazyRetry(() => import('@/pages/Problems'));
+const Tools = lazyRetry(() => import('@/pages/Tools'));
+const Arena = lazyRetry(() => import('@/pages/Arena'));
+const DesignStudio = lazyRetry(() => import('@/pages/DesignStudio'));
+const MechanismLab = lazyRetry(() => import('@/pages/MechanismLab'));
+const Assessment = lazyRetry(() => import('@/pages/Assessment'));
+const BuildHub = lazyRetry(() => import('@/pages/BuildHub'));
+const RobotQuiz = lazyRetry(() => import('@/pages/RobotQuiz'));
+const PythonCourse = lazyRetry(() => import('@/pages/PythonCourse'));
+const About = lazyRetry(() => import('@/pages/About'));
 import CreatorToast from '@/components/CreatorToast';
 
 function PageLoading() {
@@ -73,7 +74,7 @@ const AuthenticatedApp = () => {
     if (!pro) return;
     if (badgePopup) { toast({ title: 'Milestone reached', description: badgePopup.map(b => b.name).join(', ') }); setBadgePopup(null); }
     if (levelPopup) setLevelPopup(null);
-  }, [pro, badgePopup, levelPopup]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pro, badgePopup, levelPopup]);  
   const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine);
 
   useEffect(() => {

@@ -31,6 +31,31 @@ jobs:
         run: |
           npm run build
           cp dist/index.html dist/404.html   # deep links like /lesson/xyz work on refresh
+      # Each build renames its code files. Someone who opened the app before this
+      # update still asks for the old names, so keep earlier builds' files online
+      # (last 5 days, at most 250 MB) and those screens keep loading instead of failing.
+      - name: Restore files from earlier versions
+        uses: actions/cache/restore@v4
+        with:
+          path: old-assets
+          key: web-assets-${{ github.run_id }}
+          restore-keys: web-assets-
+      - name: Keep earlier versions' files next to the new ones
+        run: |
+          mkdir -p old-assets
+          find old-assets -type f -mtime +5 -delete
+          cp -n old-assets/* dist/assets/ 2>/dev/null || true
+          cp -n dist/assets/* old-assets/
+          # size cap: drop the oldest files first
+          while [ "$(du -sm old-assets | cut -f1)" -gt 250 ]; do
+            oldest=$(ls -tr old-assets | head -1); [ -z "$oldest" ] && break; rm -f "old-assets/$oldest"
+          done
+          echo "assets online: $(ls dist/assets | wc -l) files, $(du -sh dist/assets | cut -f1)"
+      - name: Save files for the next update
+        uses: actions/cache/save@v4
+        with:
+          path: old-assets
+          key: web-assets-${{ github.run_id }}
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist

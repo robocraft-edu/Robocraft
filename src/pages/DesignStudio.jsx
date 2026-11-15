@@ -1,5 +1,6 @@
+import lazyRetry from '@/lib/lazyRetry';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/lib/AppContext';
 import { SHAPES, newObjId, makeGroup, ungroup, objectSoup, toSTL } from '@/lib/design/shapes';
@@ -12,7 +13,7 @@ import {
   Home as HomeIcon, ArrowDownToLine, FlipHorizontal2, Box, Layers, ClipboardList, X, Check, FolderOpen, ZoomIn, ZoomOut, MousePointer2, SlidersHorizontal, FilePlus2, Sparkles,
 } from 'lucide-react';
 
-const StudioView = lazy(() => import('@/components/design/StudioView'));
+const StudioView = lazyRetry(() => import('@/components/design/StudioView'));
 const KEY = 'robocraft_designs';
 const COLORS = ['#ef4444', '#f97316', '#facc15', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f8fafc', '#334155'];
 
@@ -186,7 +187,7 @@ export default function DesignStudio() {
     updateProgress(selectedClass, { design: { ...designDone, [project.id]: Date.now() } });
     addXP(selectedClass, 30);
     flash(`🎉 ${project.title} complete! +30 XP`);
-  }, [checks]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [checks]);  
 
   // ── files ──
   const save = () => {

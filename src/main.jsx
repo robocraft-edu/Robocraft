@@ -27,7 +27,7 @@ window.addEventListener('load', () => {
 });
 window.addEventListener('vite:preloadError', (e) => { e.preventDefault(); reloadForStaleChunk(); });
 window.addEventListener('unhandledrejection', (e) => {
-  if (/dynamically imported module|Importing a module script failed|Failed to fetch/i.test(String(e?.reason?.message || ''))) {
+  if (/dynamically imported module|Importing a module script failed|module script|MIME type|Unable to preload|Loading (CSS )?chunk/i.test(String(e?.reason?.message || ''))) {
     e.preventDefault();
     reloadForStaleChunk();
   }

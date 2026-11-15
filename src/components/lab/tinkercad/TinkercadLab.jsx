@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import lazyRetry from '@/lib/lazyRetry';
+import React, { Suspense, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { aiEnabled } from '@/lib/features';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,7 +18,7 @@ import { runSketch } from '@/lib/arduino/runtime';
 import { transpile } from '@/lib/arduino/transpile';
 import Palette from './Palette';
 import Canvas from './Canvas';
-const Lab3DView = lazy(() => import('./Lab3DView'));
+const Lab3DView = lazyRetry(() => import('./Lab3DView'));
 import PropertiesPanel from './PropertiesPanel';
 import CodePanel from './CodePanel';
 import SerialMonitor from './SerialMonitor';

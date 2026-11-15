@@ -1,5 +1,6 @@
+import lazyRetry from '@/lib/lazyRetry';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useApp } from '@/lib/AppContext';
 import { TASKS, getTask } from '@/lib/arena/tasks';
@@ -10,11 +11,11 @@ import ShareScoreButton from '@/components/share/ShareScoreButton';
 import { Play, Square, RotateCcw, Bot, Eye, Code2, Terminal, Cpu, CheckCircle2, XCircle, Lightbulb, Video, Map as MapIcon, Sparkles, Loader2, Wrench, Package } from 'lucide-react';
 import { designRobot, makeTask, fixCode } from '@/lib/arena/customRobot';
 import { standardKitConnections, customRobotConnections, armKitConnections } from '@/lib/arena/wiringConnections';
-const CircuitDiagram = lazy(() => import('@/components/buildsheet/CircuitDiagram'));
-const WireList = lazy(() => import('@/components/buildsheet/CircuitDiagram').then(m => ({ default: m.WireList })));
-const FullscreenCircuit = lazy(() => import('@/components/buildsheet/FullscreenCircuit'));
+const CircuitDiagram = lazyRetry(() => import('@/components/buildsheet/CircuitDiagram'));
+const WireList = lazyRetry(() => import('@/components/buildsheet/CircuitDiagram').then(m => ({ default: m.WireList })));
+const FullscreenCircuit = lazyRetry(() => import('@/components/buildsheet/FullscreenCircuit'));
 
-const ArenaView = lazy(() => import('@/components/arena/ArenaView'));
+const ArenaView = lazyRetry(() => import('@/components/arena/ArenaView'));
 
 const codeKey = (id) => `robocraft_arena_code_${id}`;
 const load = (id) => { try { return localStorage.getItem(codeKey(id)); } catch { return null; } };

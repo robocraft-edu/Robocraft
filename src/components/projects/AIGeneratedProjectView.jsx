@@ -1,7 +1,8 @@
+import lazyRetry from '@/lib/lazyRetry';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import React, { useState, lazy, Suspense } from 'react';
-const CircuitDiagram = lazy(() => import('@/components/buildsheet/CircuitDiagram'));
-const FullscreenCircuit = lazy(() => import('@/components/buildsheet/FullscreenCircuit'));
+import React, { useState, Suspense } from 'react';
+const CircuitDiagram = lazyRetry(() => import('@/components/buildsheet/CircuitDiagram'));
+const FullscreenCircuit = lazyRetry(() => import('@/components/buildsheet/FullscreenCircuit'));
 import { sanitizeCode } from '@/lib/buildsheet/sanitizeCode';
 import BuildSheetModal from '@/components/buildsheet/BuildSheetModal';
 import { useInk } from '@/lib/ui/ink';

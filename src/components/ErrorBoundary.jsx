@@ -3,9 +3,12 @@ import { AlertTriangle, RotateCw, Home } from 'lucide-react';
 
 /** True when a lazily-loaded screen could not be fetched — almost always
  *  because a new version was deployed and the old chunk file is gone. */
+// Every browser words a missing code file differently (Chrome, Safari/iPhone, Firefox, Android WebView).
+export const STALE_RE = /dynamically imported module|Importing a module script failed|module script|MIME type|ChunkLoadError|Loading (CSS )?chunk|Unable to preload|error loading dynamically|Load failed.*\.js/i;
+
 export function isStaleChunkError(err) {
   const m = String(err?.message || err || '');
-  return /dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk \d+ failed/i.test(m);
+  return STALE_RE.test(m);
 }
 
 const RELOAD_KEY = 'rc_chunk_reload';
@@ -72,6 +75,14 @@ export default class ErrorBoundary extends React.Component {
     if (!error) return this.props.children;
 
     const stale = isStaleChunkError(error);
+    if (stale && !this.state.details) {
+      return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-muted-foreground">
+          <div className="w-8 h-8 border-4 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin" />
+          <p className="text-xs">Getting the latest version…</p>
+        </div>
+      );
+    }
     const title = stale ? 'A new version is ready' : 'Something went wrong';
     const body = stale
       ? 'RoboCraft was updated while you had it open. Reload to get the new version — your progress is safe.'
