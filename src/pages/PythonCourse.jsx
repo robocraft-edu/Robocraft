@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, Home, BookOpen, Dumbbell, FolderGit2, ShoppingBag, BarChart3, Youtube, Layers, HelpCircle,
-  Check, Play, Loader2, Trophy, RotateCcw, Eye, ChevronRight, ChevronLeft, Rocket, ExternalLink, Flame, Coins, Zap, Terminal, Shuffle,
+  Check, Play, Loader2, Trophy, RotateCcw, Eye, ChevronRight, ChevronLeft, Rocket, ExternalLink, Flame, Coins, Zap, Terminal, Shuffle, Settings as SettingsIcon,
 } from 'lucide-react';
 import { LEVELS, LESSONS, PROJECTS, PLAYLIST_URL, lessonsFor, projectsFor } from '@/lib/pycourse/course';
 import { TEXT, OUTPUTS } from '@/lib/pycourse/text';
@@ -11,6 +11,8 @@ import PythonRunner from '@/components/learning/PythonRunner';
 import LessonVideo from '@/components/learning/LessonVideo';
 import CircuitBackground from '@/components/CircuitBackground';
 import Shop from '@/pages/Shop';
+import Settings from '@/pages/Settings';
+import MadeBy from '@/components/MadeBy';
 import { useApp } from '@/lib/AppContext';
 import { getLevel, localDay } from '@/lib/gamification';
 
@@ -63,6 +65,7 @@ const NAV = [
   ['projects', 'Projects', FolderGit2, `${BASE}/projects`],
   ['shop', 'Shop', ShoppingBag, `${BASE}/shop`],
   ['progress', 'Progress', BarChart3, `${BASE}/progress`],
+  ['settings', 'Settings', SettingsIcon, `${BASE}/settings`],
 ];
 
 function PyShell({ tab, title, back, children }) {
@@ -93,7 +96,7 @@ function PyShell({ tab, title, back, children }) {
             const active = tab === k;
             return (
               <button key={k} onClick={() => { navigate(path); window.scrollTo(0, 0); }}
-                className={`flex flex-col items-center gap-1 px-1.5 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${active ? 'text-cyan-400 scale-110' : 'text-muted-foreground hover:text-cyan-400/70'}`}>
+                className={`flex flex-col items-center gap-1 px-1 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${active ? 'text-cyan-400 scale-110' : 'text-muted-foreground hover:text-cyan-400/70'}`}>
                 <div className={`p-1.5 rounded-lg transition-all ${active ? 'glass neon-glow' : ''}`}><Icon className="w-5 h-5" /></div>
                 <span className="text-[10px] font-medium">{label}</span>
               </button>
@@ -180,6 +183,7 @@ function HomeTab() {
         <button onClick={() => navigate(`${BASE}/practice`)} className="glass-strong rounded-xl p-4 text-left"><Dumbbell className="w-6 h-6 text-violet-500" /><p className="font-bold text-sm mt-1">Practice</p><p className="text-[11px] text-muted-foreground">Mixed quizzes and card review</p></button>
         <button onClick={() => navigate(`${BASE}/projects`)} className="glass-strong rounded-xl p-4 text-left"><Rocket className="w-6 h-6 text-rose-500" /><p className="font-bold text-sm mt-1">Projects</p><p className="text-[11px] text-muted-foreground">{PROJECTS.length} real mini apps to build</p></button>
       </div>
+      <MadeBy />
       <p className="text-[11px] text-muted-foreground text-center mt-4">How to earn: lesson read +10 XP · cards +5 · quiz pass +15 XP & 5 coins · task +25 XP & 10 coins · project +50 XP & 25 coins</p>
     </PyShell>
   );
@@ -664,7 +668,11 @@ function ShopTab() {
   );
 }
 
-const TAB_PAGES = { learn: LearnTab, practice: PracticeTab, projects: ProjectsTab, shop: ShopTab, progress: ProgressTab };
+function SettingsTab() {
+  return <PyShell tab="settings"><Settings /></PyShell>;
+}
+
+const TAB_PAGES = { learn: LearnTab, practice: PracticeTab, projects: ProjectsTab, shop: ShopTab, progress: ProgressTab, settings: SettingsTab };
 
 export default function PythonCourse() {
   const { lessonId, projectId } = useParams();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { formatClass } from '@/lib/utils';
 import { Outlet, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { Home, BookOpen, FolderGit2, BarChart3, Wrench, ShoppingBag } from 'lucide-react';
+import { Home, BookOpen, FolderGit2, BarChart3, Wrench, ShoppingBag, Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import AvatarBadge from '@/components/AvatarBadge';
 import AIMentor from '@/components/learning/AIMentor';
@@ -81,6 +81,7 @@ export default function Layout() {
     { path: '/shop', label: 'Shop', icon: ShoppingBag },
     { path: '/projects', label: 'Projects', icon: FolderGit2 },
     { path: '/progress', label: 'Progress', icon: BarChart3 },
+    { path: '/settings', label: 'Settings', icon: SettingsIcon },
   ];
 
   return (
@@ -138,7 +139,7 @@ export default function Layout() {
               <button
                 key={item.path}
                 onClick={() => handleTabClick(item.path)}
-                className={`flex flex-col items-center gap-1 px-2 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${
+                className={`flex flex-col items-center gap-1 px-1 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${
                   active ? 'text-cyan-400 scale-110' : 'text-muted-foreground hover:text-cyan-400/70'
                 }`}
               >

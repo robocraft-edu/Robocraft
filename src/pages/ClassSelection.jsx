@@ -111,6 +111,12 @@ export default function ClassSelection() {
         <p className="text-center text-xs text-muted-foreground mt-2">
           You can change your class anytime from Settings
         </p>
+        <p className="text-center mt-3">
+          <button onClick={() => navigate('/about')} className="inline-flex items-center gap-2 glass rounded-full pl-1 pr-3 py-1 text-xs text-muted-foreground hover:text-cyan-400">
+            <img src={`${import.meta.env.BASE_URL}about-photo.jpg`} alt="" className="w-6 h-6 rounded-full object-cover ring-2 ring-cyan-500" />
+            Made by Aryan · About
+          </button>
+        </p>
       </div>
     </div>
   );

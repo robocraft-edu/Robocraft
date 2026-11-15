@@ -53,6 +53,7 @@ const Assessment = lazy(() => import('@/pages/Assessment'));
 const BuildHub = lazy(() => import('@/pages/BuildHub'));
 const RobotQuiz = lazy(() => import('@/pages/RobotQuiz'));
 const PythonCourse = lazy(() => import('@/pages/PythonCourse'));
+const About = lazy(() => import('@/pages/About'));
 
 function PageLoading() {
   return (
@@ -114,6 +115,7 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route path="/splash" element={<Splash />} />
         <Route path="/robot-quiz" element={<RobotQuiz />} />
+        <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

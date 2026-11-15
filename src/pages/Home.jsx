@@ -1,3 +1,4 @@
+import MadeBy from '@/components/MadeBy';
 import React, { useMemo } from 'react';
 import { formatClass } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -414,6 +415,7 @@ export default function Home() {
           </div>
         </div>
       )}
+      <MadeBy className="mt-6" />
     </div>
   );
 }

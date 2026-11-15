@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, children }) {
   return (
@@ -32,6 +33,10 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
         {footer && (
           <p className="text-center text-sm text-muted-foreground mt-5">{footer}</p>
         )}
+        <Link to="/about" className="mt-5 mx-auto w-fit flex items-center gap-2 glass rounded-full pl-1 pr-3 py-1 text-xs text-muted-foreground hover:text-cyan-400 transition-colors">
+          <img src={`${import.meta.env.BASE_URL}about-photo.jpg`} alt="" className="w-6 h-6 rounded-full object-cover ring-2 ring-cyan-500" />
+          Made by Aryan · About
+        </Link>
       </div>
     </div>
   );
