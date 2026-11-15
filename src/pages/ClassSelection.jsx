@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/lib/AppContext';
 import { ArrowLeft, Check, Cpu } from 'lucide-react';
 
+import { LESSONS, PROJECTS } from '@/lib/pycourse/course';
+const LESSON_COUNT = LESSONS.length, PROJECT_COUNT = PROJECTS.length;
+
 export default function ClassSelection() {
   const navigate = useNavigate();
   const { selectClass, selectedClass, user, isGuest } = useApp();
@@ -85,6 +88,21 @@ export default function ClassSelection() {
             );
           })}
         </div>
+
+        {/* Learn Python: a separate course, open to every class */}
+        <button
+          onClick={() => navigate('/python-course')}
+          className="group mt-4 w-full rounded-3xl p-5 text-left flex items-center gap-4 border-2 border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-blue-500/10 hover:neon-glow transition-all animate-slide-up"
+          style={{ animationDelay: '0.3s' }}
+        >
+          <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center text-4xl shrink-0 group-hover:scale-110 transition-transform duration-300">🐍</div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400">Learn Python</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">Beginner to advanced · Hindi videos by CodeWithHarry · quizzes, flash cards, coding tasks and projects</p>
+            <p className="text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80 mt-1">{LESSON_COUNT} lessons · {PROJECT_COUNT} projects</p>
+          </div>
+          <span className="text-2xl text-emerald-500 group-hover:translate-x-1 transition-transform">→</span>
+        </button>
 
         {/* Info */}
         <p className="text-center text-xs text-muted-foreground mt-6 animate-fade-in">

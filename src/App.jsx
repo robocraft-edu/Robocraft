@@ -52,6 +52,7 @@ const MechanismLab = lazy(() => import('@/pages/MechanismLab'));
 const Assessment = lazy(() => import('@/pages/Assessment'));
 const BuildHub = lazy(() => import('@/pages/BuildHub'));
 const RobotQuiz = lazy(() => import('@/pages/RobotQuiz'));
+const PythonCourse = lazy(() => import('@/pages/PythonCourse'));
 
 function PageLoading() {
   return (
@@ -120,6 +121,9 @@ const AuthenticatedApp = () => {
         <Route path="/class-selection" element={<ClassSelection />} />
 
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/splash" replace />} />}>
+          <Route path="/python-course" element={<PythonCourse />} />
+          <Route path="/python-course/project/:projectId" element={<PythonCourse />} />
+          <Route path="/python-course/:lessonId" element={<PythonCourse />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/learn" element={<Learn />} />

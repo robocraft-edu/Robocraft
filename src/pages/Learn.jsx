@@ -32,6 +32,15 @@ export default function Learn() {
         <p className="text-sm text-muted-foreground">{formatClass(selectedClass)} curriculum • {subjects.length} subjects</p>
       </div>
 
+      <button onClick={() => navigate('/python-course')} className="w-full rounded-2xl p-4 flex items-center gap-3 text-left border-2 border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 to-blue-500/10">
+        <span className="text-3xl">🐍</span>
+        <span className="flex-1 min-w-0">
+          <span className="block font-bold text-emerald-600 dark:text-emerald-400">Learn Python: beginner to advanced</span>
+          <span className="block text-[11px] text-muted-foreground">Hindi videos by CodeWithHarry · quizzes · flash cards · coding tasks · projects</span>
+        </span>
+        <span className="text-emerald-500 text-xl">→</span>
+      </button>
+
       {subjects.map((subject, sIdx) => {
         const Icon = getIcon(subject.icon);
         const isExpanded = expandedSubject === subject.id;
