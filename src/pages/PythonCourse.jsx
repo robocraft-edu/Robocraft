@@ -13,7 +13,6 @@ import CircuitBackground from '@/components/CircuitBackground';
 import Shop from '@/pages/Shop';
 import Settings from '@/pages/Settings';
 import MadeBy from '@/components/MadeBy';
-import CreatorToast from '@/components/CreatorToast';
 import { useApp } from '@/lib/AppContext';
 import { getLevel, localDay } from '@/lib/gamification';
 
@@ -77,7 +76,6 @@ function PyShell({ tab, title, back, children }) {
   return (
     <div className="min-h-screen animated-bg grid-pattern isolate">
       <CircuitBackground />
-      <CreatorToast />
       <div className="fixed top-0 left-0 right-0 z-40 glass-strong border-b border-cyan-500/10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-3xl mx-auto px-4 py-2.5 flex items-center gap-2">
           <button onClick={() => navigate(back || exit)} className="w-9 h-9 rounded-full glass flex items-center justify-center shrink-0" aria-label={back ? 'Back' : 'Back to RoboCraft'}><ArrowLeft className="w-4 h-4" /></button>

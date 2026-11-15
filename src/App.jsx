@@ -54,6 +54,7 @@ const BuildHub = lazy(() => import('@/pages/BuildHub'));
 const RobotQuiz = lazy(() => import('@/pages/RobotQuiz'));
 const PythonCourse = lazy(() => import('@/pages/PythonCourse'));
 const About = lazy(() => import('@/pages/About'));
+import CreatorToast from '@/components/CreatorToast';
 
 function PageLoading() {
   return (
@@ -110,6 +111,7 @@ const AuthenticatedApp = () => {
           You're offline — lessons, quizzes and the lab still work. AI features need internet.
         </div>
       )}
+      <CreatorToast />
       <ErrorBoundary resetKey={location.pathname}>
       <Suspense fallback={<PageLoading />}>
       <Routes>
