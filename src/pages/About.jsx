@@ -240,17 +240,7 @@ const CSS = `
 `;
 
 export const EMAIL = 'aryansonkar243@gmail.com';
-const WHATSAPP = `https://wa.me/917310259096?text=${encodeURIComponent('Hi Aryan! I found RoboCraft and wanted to say hi 👋')}`;
-
-function WhatsAppIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
-      <path d="M12.04 2a9.9 9.9 0 0 0-8.5 15l-1.4 5 5.2-1.4A9.9 9.9 0 1 0 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3a8.2 8.2 0 1 1 7 3.9Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3Z" />
-    </svg>
-  );
-}
-
-// Contact card: flips in, shows the e-mail (copy / write) and a WhatsApp button.
+// Contact card: flips in and shows the e-mail (copy / write).
 function ContactCard({ onClose }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -285,10 +275,6 @@ function ContactCard({ onClose }) {
             </div>
           </div>
 
-          <a href={WHATSAPP} target="_blank" rel="noopener noreferrer"
-            className="mt-3 w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#1ebe5b] text-white font-bold flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(37,211,102,.35)] active:scale-[0.98] transition">
-            <WhatsAppIcon className="w-5 h-5" /> Message me on WhatsApp
-          </a>
           <p className="text-[10px] text-slate-500 mt-4">RoboCraft · Made &amp; licensed by Aryan</p>
         </div>
       </motion.div>
@@ -398,7 +384,6 @@ export default function About() {
           </ul>
           <div className="flex flex-wrap gap-2 mt-5">
             <button onClick={() => setContact(true)} className="text-sm px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold flex items-center gap-2"><Mail className="w-4 h-4" /> Contact me</button>
-            <button onClick={() => setContact(true)} className="text-sm px-4 py-2 rounded-full bg-[#25D366] text-white font-semibold flex items-center gap-2"><WhatsAppIcon className="w-4 h-4" /> WhatsApp</button>
             <a href="https://github.com/robocraft-edu/Robocraft" target="_blank" rel="noopener noreferrer" className="text-sm px-4 py-2 rounded-full bg-white/10 border border-white/15 flex items-center gap-2"><Github className="w-4 h-4" /> GitHub</a>
           </div>
         </Reveal>
