@@ -115,6 +115,7 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route path="/splash" element={<Splash />} />
         <Route path="/robot-quiz" element={<RobotQuiz />} />
+        <Route path="/creator" element={<About />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
