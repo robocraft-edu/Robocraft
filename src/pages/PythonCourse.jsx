@@ -73,7 +73,7 @@ function CourseHome() {
                 return (
                   <button key={l.id} onClick={() => navigate(`/python-course/${l.id}`)} className="w-full glass-strong rounded-xl p-3 flex items-center gap-3 text-left">
                     <span className="relative shrink-0">
-                      <img src={`https://i.ytimg.com/vi/${l.video.id}/mqdefault.jpg`} alt="" loading="lazy" className="w-20 h-[45px] rounded-lg object-cover bg-muted" onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />
+                      <img src={`https://i.ytimg.com/vi/${l.video.id}/mqdefault.jpg`} alt="" decoding="async" referrerPolicy="no-referrer" className="w-20 h-[45px] rounded-lg object-cover bg-muted" onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />
                       <span className={`absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ring-2 ring-background ${ok ? 'bg-green-500 text-white' : 'bg-cyan-600 text-white'}`}>{ok ? <Check className="w-3.5 h-3.5" /> : i + 1}</span>
                     </span>
                     <span className="flex-1 min-w-0">
