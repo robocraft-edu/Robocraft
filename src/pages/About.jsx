@@ -291,7 +291,7 @@ export default function About() {
             <SplitName text="Hi, I'm Aryan" delay={1.25} />
           </h1>
           <motion.p className="mt-3 text-lg sm:text-xl text-slate-300 h-7" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>
-            <Typewriter delay={2.1} words={['School student from Lucknow', 'Robotics & coding builder', 'Made RoboCraft for every student']} />
+            <Typewriter delay={2.1} words={['Just a student who loves to build', 'Learning by making things', 'RoboCraft started as my idea']} />
           </motion.p>
           <motion.div className="mt-12 flex flex-col items-center text-slate-400 text-xs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}>
             <span className="ab-anim ab-bob flex flex-col items-center">Scroll to know more <ChevronDown className="w-5 h-5 mt-1" /></span>
