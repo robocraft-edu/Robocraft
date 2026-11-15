@@ -119,7 +119,10 @@ export default function Layout() {
 
       {/* Main content */}
       <main id="main" className="min-h-screen" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top))', paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
-        <Outlet />
+        {/* keyed on the path so every screen change replays the entrance animation */}
+        <div key={location.pathname} className="page-enter">
+          <Outlet />
+        </div>
       </main>
 
       {/* Bottom navigation (hidden in the Lab, which has its own toolbar) */}

@@ -672,3 +672,47 @@ html:not(.dark) :is(.on-dark, .terminal-surface) .text-blue-400    { color: #60a
     transform: translate(-50%, -50%);
   }
 }
+
+
+/* ── Motion ──────────────────────────────────────────────────────────────
+   Screen changes fade and rise in; buttons grow a little on hover and press
+   in when tapped. Uses the `scale` property (not `transform`) so it stacks on
+   top of any translate/rotate a button already has instead of replacing it.
+   Animations use fill-mode backwards so nothing is left applied afterwards
+   (a held transform would trap position:fixed children). Add data-no-fx to
+   a button to opt it out. Everything is skipped when the
+   device asks for reduced motion. */
+@keyframes page-in {
+  from { opacity: 0; translate: 0 14px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+@keyframes pop-in {
+  from { opacity: 0; scale: .96; }
+  to   { opacity: 1; scale: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .page-enter { animation: page-in .34s cubic-bezier(.2,.8,.2,1) backwards; }
+  .page-enter > * > * { animation: pop-in .4s cubic-bezier(.2,.8,.2,1) backwards; }
+  .page-enter > * > *:nth-child(2) { animation-delay: .04s; }
+  .page-enter > * > *:nth-child(3) { animation-delay: .08s; }
+  .page-enter > * > *:nth-child(4) { animation-delay: .12s; }
+  .page-enter > * > *:nth-child(5) { animation-delay: .16s; }
+  .page-enter > * > *:nth-child(n+6) { animation-delay: .2s; }
+
+  :where(button, [role="button"], a.rounded-xl, a.rounded-2xl, a.rounded-full):not(:disabled):not([data-no-fx]) {
+    transition-property: color, background-color, border-color, box-shadow, opacity, filter, scale, translate, transform;
+    transition-duration: .18s;
+    transition-timing-function: cubic-bezier(.2,.8,.2,1);
+  }
+  @media (hover: hover) {
+    :where(button, [role="button"], a.rounded-xl, a.rounded-2xl, a.rounded-full):not(:disabled):not([data-no-fx]):hover {
+      scale: 1.03;
+      filter: brightness(1.08);
+    }
+  }
+  :where(button, [role="button"], a.rounded-xl, a.rounded-2xl, a.rounded-full):not(:disabled):not([data-no-fx]):active {
+    scale: .95;
+    filter: brightness(.95);
+    transition-duration: .08s;
+  }
+}
