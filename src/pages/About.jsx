@@ -13,12 +13,12 @@ function ParticleField() {
   const ref = useRef(null);
   useEffect(() => {
     const c = ref.current, ctx = c.getContext('2d');
-    let w, h, raf, dpr = Math.min(2, window.devicePixelRatio || 1);
+    let w, h, raf = 0, running = true, dpr = Math.min(1.5, window.devicePixelRatio || 1);
     const mouse = { x: -999, y: -999 };
     const pts = [];
     const resize = () => {
       w = c.clientWidth; h = c.clientHeight; c.width = w * dpr; c.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const n = Math.round(Math.min(90, (w * h) / 9000));
+      const n = Math.round(Math.min(w < 640 ? 34 : 60, (w * h) / 12000));
       pts.length = 0;
       for (let i = 0; i < n; i++) pts.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35, r: Math.random() * 1.6 + 0.6 });
     };
@@ -40,13 +40,18 @@ function ParticleField() {
         }
         ctx.fillStyle = 'rgba(165,243,252,0.9)'; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); ctx.fill();
       }
-      raf = requestAnimationFrame(tick);
+      if (running) raf = requestAnimationFrame(tick);
     };
+    const setRun = (on) => { if (on && !running) { running = true; raf = requestAnimationFrame(tick); } else if (!on) { running = false; cancelAnimationFrame(raf); } };
+    const io = new IntersectionObserver(([e]) => setRun(e.isIntersecting && !document.hidden));
+    io.observe(c);
+    const vis = () => setRun(!document.hidden);
+    document.addEventListener('visibilitychange', vis);
     resize(); tick();
     window.addEventListener('resize', resize);
-    window.addEventListener('pointermove', move); window.addEventListener('touchmove', move, { passive: true });
+    window.addEventListener('pointermove', move, { passive: true }); window.addEventListener('touchmove', move, { passive: true });
     window.addEventListener('pointerleave', leave);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); window.removeEventListener('pointermove', move); window.removeEventListener('touchmove', move); window.removeEventListener('pointerleave', leave); };
+    return () => { running = false; cancelAnimationFrame(raf); io.disconnect(); document.removeEventListener('visibilitychange', vis); window.removeEventListener('resize', resize); window.removeEventListener('pointermove', move); window.removeEventListener('touchmove', move); window.removeEventListener('pointerleave', leave); };
   }, []);
   return <canvas ref={ref} className="absolute inset-0 w-full h-full" aria-hidden />;
 }
@@ -57,23 +62,23 @@ function HeroPhoto({ still }) {
   const rx = useSpring(useTransform(my, [-1, 1], [14, -14]), { stiffness: 140, damping: 14 });
   const ry = useSpring(useTransform(mx, [-1, 1], [-14, 14]), { stiffness: 140, damping: 14 });
   const glareX = useTransform(mx, [-1, 1], ['10%', '90%']);
-  const glare = useTransform(glareX, x => `radial-gradient(circle at ${x} 30%, rgba(255,255,255,.55), transparent 55%)`);
+  const glare = useTransform(glareX, x => `radial-gradient(circle at ${x} 30%, rgba(255,255,255,.5), transparent 50%)`);
   const onMove = (e) => { const r = e.currentTarget.getBoundingClientRect(); mx.set(((e.clientX - r.left) / r.width) * 2 - 1); my.set(((e.clientY - r.top) / r.height) * 2 - 1); };
   const reset = () => { mx.set(0); my.set(0); };
   const icons = ['🤖', '🐍', '⚡', '📚', '🛠️', '🏆'];
   return (
     <div className="relative w-[260px] h-[260px] sm:w-[300px] sm:h-[300px]" style={{ perspective: 900 }} onPointerMove={onMove} onPointerLeave={reset}>
       {/* glow */}
-      <motion.div className="absolute -inset-10 rounded-full blur-3xl" style={{ background: 'conic-gradient(from 0deg, #06b6d4, #2563eb, #a855f7, #22c55e, #06b6d4)' }}
-        initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 0.45, scale: 1, rotate: still ? 0 : 360 }}
-        transition={{ opacity: { duration: 1.2, delay: 0.2 }, scale: { duration: 1.2, delay: 0.2, ease: EASE }, rotate: { duration: 14, repeat: Infinity, ease: 'linear' } }} />
+      <motion.div className="absolute -inset-12 rounded-full will-change-transform" style={{ background: 'radial-gradient(circle, rgba(34,211,238,.45) 0%, rgba(37,99,235,.28) 35%, rgba(168,85,247,.15) 55%, transparent 70%)' }}
+        initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: still ? 0.8 : [0.65, 1, 0.65], scale: 1 }}
+        transition={{ opacity: { duration: 3.5, delay: 0.2, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: 1.2, delay: 0.2, ease: EASE } }} />
       {/* orbiting icons */}
       {!still && (
-        <motion.div className="absolute -inset-8" animate={{ rotate: 360 }} transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}>
+        <motion.div className="absolute -inset-8 will-change-transform" animate={{ rotate: 360 }} transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}>
           {icons.map((ic, i) => {
             const a = (i / icons.length) * Math.PI * 2;
             return (
-              <motion.span key={ic} className="absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center text-lg bg-white/10 backdrop-blur-md border border-white/20 shadow-lg"
+              <motion.span key={ic} className="absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center text-lg bg-slate-800/90 border border-white/20 shadow-lg"
                 style={{ left: `${50 + Math.cos(a) * 50}%`, top: `${50 + Math.sin(a) * 50}%` }}
                 initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1, rotate: -360 }}
                 transition={{ opacity: { delay: 1.6 + i * 0.12 }, scale: { delay: 1.6 + i * 0.12, type: 'spring', stiffness: 260, damping: 14 }, rotate: { duration: 22, repeat: Infinity, ease: 'linear' } }}>{ic}</motion.span>
@@ -83,9 +88,9 @@ function HeroPhoto({ still }) {
       )}
       <motion.div className="relative w-full h-full" style={{ rotateX: rx, rotateY: ry, transformStyle: 'preserve-3d' }}>
         {/* two rings spinning opposite ways */}
-        <motion.div className="absolute inset-0 rounded-full" style={{ background: 'conic-gradient(#22d3ee, transparent 30%, #a855f7 50%, transparent 75%, #22d3ee)' }}
+        <motion.div className="absolute inset-0 rounded-full will-change-transform" style={{ background: 'conic-gradient(#22d3ee, transparent 30%, #a855f7 50%, transparent 75%, #22d3ee)' }}
           initial={{ opacity: 0 }} animate={{ opacity: 1, rotate: still ? 0 : 360 }} transition={{ opacity: { delay: 0.5, duration: 0.8 }, rotate: { duration: 4, repeat: Infinity, ease: 'linear' } }} />
-        <motion.div className="absolute inset-[5px] rounded-full" style={{ background: 'conic-gradient(#2563eb, transparent 40%, #22c55e 60%, transparent 85%, #2563eb)' }}
+        <motion.div className="absolute inset-[5px] rounded-full will-change-transform" style={{ background: 'conic-gradient(#2563eb, transparent 40%, #22c55e 60%, transparent 85%, #2563eb)' }}
           initial={{ opacity: 0 }} animate={{ opacity: 1, rotate: still ? 0 : -360 }} transition={{ opacity: { delay: 0.7, duration: 0.8 }, rotate: { duration: 6, repeat: Infinity, ease: 'linear' } }} />
         {/* the photo itself */}
         <motion.div className="absolute inset-[10px] rounded-full overflow-hidden bg-slate-900 border-4 border-[#070b16]" style={{ transform: 'translateZ(40px)' }}
@@ -94,7 +99,7 @@ function HeroPhoto({ still }) {
           transition={{ duration: 1.6, delay: 0.35, ease: EASE }}>
           <img src={PHOTO} alt="Aryan, the creator of RoboCraft" className="w-full h-full object-cover" draggable={false} />
           {/* moving glare that follows the tilt */}
-          <motion.div className="absolute inset-0 mix-blend-overlay pointer-events-none" style={{ background: glare }} />
+          <motion.div className="absolute inset-0 pointer-events-none opacity-40" style={{ background: glare }} />
           {/* light sweep */}
           {!still && <motion.div className="absolute inset-y-0 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none"
             initial={{ x: '-150%' }} animate={{ x: '400%' }} transition={{ duration: 1.4, delay: 2.2, repeat: Infinity, repeatDelay: 3.5, ease: 'easeInOut' }} />}
@@ -109,8 +114,8 @@ function SplitName({ text, delay = 0 }) {
     <span className="inline-flex overflow-hidden pb-1" style={{ perspective: 600 }}>
       {[...text].map((ch, i) => (
         <motion.span key={i} className="inline-block" style={{ transformOrigin: '50% 100%' }}
-          initial={{ y: '110%', rotateX: -90, opacity: 0, filter: 'blur(8px)' }}
-          animate={{ y: 0, rotateX: 0, opacity: 1, filter: 'blur(0px)' }}
+          initial={{ y: '110%', rotateX: -90, opacity: 0 }}
+          animate={{ y: 0, rotateX: 0, opacity: 1 }}
           transition={{ duration: 0.9, delay: delay + i * 0.06, ease: EASE }}>{ch === ' ' ? ' ' : ch}</motion.span>
       ))}
     </span>
@@ -165,7 +170,7 @@ function Spot({ children, className = '', i = 0 }) {
     <motion.div onPointerMove={onMove}
       initial={{ opacity: 0, y: 50, rotateX: -35, scale: 0.92 }} whileInView={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }} viewport={{ once: true, margin: '-30px' }}
       transition={{ duration: 0.8, delay: (i % 3) * 0.1, ease: EASE }} whileHover={{ y: -6, scale: 1.02 }}
-      className={`relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl p-4 ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-4 ${className}`}
       style={{ transformPerspective: 800, backgroundImage: 'radial-gradient(240px circle at var(--x,-200px) var(--y,-200px), rgba(34,211,238,.18), transparent 60%)' }}>
       {children}
     </motion.div>
@@ -183,7 +188,7 @@ function Magnetic({ children, onClick, className }) {
 }
 
 const Reveal = ({ children, delay = 0, className = '' }) => (
-  <motion.div className={className} initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }} whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }} viewport={{ once: true, margin: '-40px' }} transition={{ duration: 0.9, delay, ease: EASE }}>{children}</motion.div>
+  <motion.div className={className} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }} transition={{ duration: 0.9, delay, ease: EASE }}>{children}</motion.div>
 );
 
 const FEATURES = [
@@ -221,9 +226,9 @@ export default function About() {
       <section ref={hero} className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
         {/* aurora */}
         <div className="absolute inset-0" aria-hidden>
-          <motion.div className="absolute w-[60vmax] h-[60vmax] -top-[20vmax] -left-[15vmax] rounded-full bg-cyan-500/25 blur-[100px]" animate={reduce ? {} : { x: [0, 80, 0], y: [0, 60, 0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
-          <motion.div className="absolute w-[50vmax] h-[50vmax] -bottom-[20vmax] -right-[10vmax] rounded-full bg-fuchsia-600/20 blur-[100px]" animate={reduce ? {} : { x: [0, -70, 0], y: [0, -50, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }} />
-          <motion.div className="absolute w-[40vmax] h-[40vmax] top-1/3 left-1/2 rounded-full bg-blue-600/20 blur-[100px]" animate={reduce ? {} : { x: [0, -60, 40, 0] }} transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }} />
+          <motion.div className="absolute w-[60vmax] h-[60vmax] -top-[20vmax] -left-[15vmax] rounded-full will-change-transform bg-[radial-gradient(circle,rgba(6,182,212,.30),transparent_65%)]" animate={reduce ? {} : { x: [0, 80, 0], y: [0, 60, 0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
+          <motion.div className="absolute w-[50vmax] h-[50vmax] -bottom-[20vmax] -right-[10vmax] rounded-full will-change-transform bg-[radial-gradient(circle,rgba(192,38,211,.24),transparent_65%)]" animate={reduce ? {} : { x: [0, -70, 0], y: [0, -50, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }} />
+          <motion.div className="absolute w-[40vmax] h-[40vmax] top-1/3 left-1/2 rounded-full will-change-transform bg-[radial-gradient(circle,rgba(37,99,235,.24),transparent_65%)]" animate={reduce ? {} : { x: [0, -60, 40, 0] }} transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }} />
         </div>
         {!reduce && <ParticleField />}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.04)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" aria-hidden />
@@ -277,7 +282,7 @@ export default function About() {
 
       {/* ── PROMISE + CONTACT ── */}
       <section className="max-w-3xl mx-auto px-6 pb-16">
-        <Reveal className="rounded-3xl p-6 border border-cyan-400/20 bg-gradient-to-br from-cyan-500/10 via-blue-600/10 to-fuchsia-600/10 backdrop-blur-xl">
+        <Reveal className="rounded-3xl p-6 border border-cyan-400/20 bg-gradient-to-br from-cyan-500/10 via-blue-600/10 to-fuchsia-600/10">
           <h2 className="text-2xl font-black mb-3">My promise</h2>
           <ul className="space-y-2 text-slate-300 text-sm">
             <li>✅ RoboCraft is free to use, with no ads.</li>

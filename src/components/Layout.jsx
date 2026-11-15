@@ -6,6 +6,7 @@ import { useApp } from '@/lib/AppContext';
 import AvatarBadge from '@/components/AvatarBadge';
 import AIMentor from '@/components/learning/AIMentor';
 import CircuitBackground from '@/components/CircuitBackground';
+import CreatorToast from '@/components/CreatorToast';
 
 export default function Layout() {
   const location = useLocation();
@@ -153,6 +154,7 @@ export default function Layout() {
         </div>
       </div>}
 
+      <CreatorToast />
       {/* Floating AI Mentor */}
       {!inLab && location.pathname !== '/mentor' && <AIMentor compact />}
     </div>
