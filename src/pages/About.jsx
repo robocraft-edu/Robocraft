@@ -414,7 +414,7 @@ export default function About() {
           <p className="text-[11px] text-slate-500 mt-10">
             <a href={`${BASE}privacy.html`}>Privacy</a> · <a href={`${BASE}terms.html`}>Terms</a> · <button onClick={() => setContact(true)}>Contact</button> · <a href={`${BASE}security.html`}>Security</a>
           </p>
-          <p className="text-[11px] text-slate-500 mt-2">© {new Date().getFullYear()} Aryan Sonkar · Made &amp; licensed by Aryan · All rights reserved</p>
+          <p className="text-[11px] text-slate-500 mt-2">© {new Date().getFullYear()} Aryan · Made &amp; licensed by Aryan · All rights reserved</p>
         </Reveal>
       </section>
       <AnimatePresence>{contact && <ContactCard onClose={() => setContact(false)} />}</AnimatePresence>
