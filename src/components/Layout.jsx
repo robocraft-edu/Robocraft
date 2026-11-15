@@ -5,6 +5,7 @@ import { Home, BookOpen, FolderGit2, BarChart3, Wrench, ShoppingBag } from 'luci
 import { useApp } from '@/lib/AppContext';
 import AvatarBadge from '@/components/AvatarBadge';
 import AIMentor from '@/components/learning/AIMentor';
+import CircuitBackground from '@/components/CircuitBackground';
 
 export default function Layout() {
   const location = useLocation();
@@ -83,7 +84,9 @@ export default function Layout() {
   ];
 
   return (
-    <div className="min-h-screen animated-bg grid-pattern">
+    <div className="min-h-screen animated-bg grid-pattern isolate">
+      {/* moving circuit background; skipped in the full-screen workspaces */}
+      {!inLab && !location.pathname.startsWith('/arena') && <CircuitBackground />}
       <a href="#main" className="skip-link">Skip to content</a>
       {/* Top bar */}
       <div className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'glass-strong shadow-lg' : 'bg-transparent'}`} style={{ paddingTop: 'env(safe-area-inset-top)' }}>
