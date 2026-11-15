@@ -13,7 +13,9 @@ function ParticleField() {
   const ref = useRef(null);
   useEffect(() => {
     const c = ref.current, ctx = c.getContext('2d');
-    let w, h, raf = 0, running = true, dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    let w, h, raf = 0, running = true, frame = 0;
+    const phone = window.innerWidth < 640;
+    const dpr = phone ? 1 : Math.min(1.5, window.devicePixelRatio || 1);
     const mouse = { x: -999, y: -999 };
     const pts = [];
     const resize = () => {
@@ -25,21 +27,37 @@ function ParticleField() {
     const move = (e) => { const r = c.getBoundingClientRect(); const t = e.touches?.[0] || e; mouse.x = t.clientX - r.left; mouse.y = t.clientY - r.top; };
     const leave = () => { mouse.x = mouse.y = -999; };
     const tick = () => {
+      // phones: 30 frames a second is smooth for slow-moving dots and halves the work;
+      // skip drawing once the hero has scrolled mostly away
+      frame++;
+      if ((phone && frame % 2) || window.scrollY > h * 0.7) { if (running) raf = requestAnimationFrame(tick); return; }
       ctx.clearRect(0, 0, w, h);
       for (const p of pts) {
         const dx = mouse.x - p.x, dy = mouse.y - p.y, d = Math.hypot(dx, dy);
         if (d < 160) { p.vx += dx / d * 0.012; p.vy += dy / d * 0.012; }
         p.vx *= 0.99; p.vy *= 0.99; p.x += p.vx; p.y += p.vy;
         if (p.x < 0 || p.x > w) p.vx *= -1; if (p.y < 0 || p.y > h) p.vy *= -1;
+        if (phone) { p.x += p.vx; p.y += p.vy; } // same speed at half the frames
       }
+      // lines grouped into 4 strengths, so the canvas strokes 4 paths instead of hundreds
+      const groups = [[], [], [], []];
       for (let i = 0; i < pts.length; i++) {
         const a = pts[i];
         for (let j = i + 1; j < pts.length; j++) {
-          const b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-          if (d < 120) { ctx.strokeStyle = `rgba(34,211,238,${(1 - d / 120) * 0.35})`; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+          const b = pts[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
+          if (d2 < 14400) groups[Math.min(3, Math.floor(Math.sqrt(d2) / 30))].push(a, b);
         }
-        ctx.fillStyle = 'rgba(165,243,252,0.9)'; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); ctx.fill();
       }
+      ctx.lineWidth = 0.7;
+      groups.forEach((g, k) => {
+        if (!g.length) return;
+        ctx.strokeStyle = `rgba(34,211,238,${0.32 - k * 0.075})`; ctx.beginPath();
+        for (let m = 0; m < g.length; m += 2) { ctx.moveTo(g[m].x, g[m].y); ctx.lineTo(g[m + 1].x, g[m + 1].y); }
+        ctx.stroke();
+      });
+      ctx.fillStyle = 'rgba(165,243,252,0.9)'; ctx.beginPath();
+      for (const a of pts) { ctx.moveTo(a.x + a.r, a.y); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); }
+      ctx.fill();
       if (running) raf = requestAnimationFrame(tick);
     };
     const setRun = (on) => { if (on && !running) { running = true; raf = requestAnimationFrame(tick); } else if (!on) { running = false; cancelAnimationFrame(raf); } };
@@ -68,32 +86,35 @@ function HeroPhoto({ still }) {
   const icons = ['🤖', '🐍', '⚡', '📚', '🛠️', '🏆'];
   return (
     <div className="relative w-[260px] h-[260px] sm:w-[300px] sm:h-[300px]" style={{ perspective: 900 }} onPointerMove={onMove} onPointerLeave={reset}>
-      {/* glow */}
-      <motion.div className="absolute -inset-12 rounded-full will-change-transform" style={{ background: 'radial-gradient(circle, rgba(34,211,238,.45) 0%, rgba(37,99,235,.28) 35%, rgba(168,85,247,.15) 55%, transparent 70%)' }}
-        initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: still ? 0.8 : [0.65, 1, 0.65], scale: 1 }}
-        transition={{ opacity: { duration: 3.5, delay: 0.2, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: 1.2, delay: 0.2, ease: EASE } }} />
+      {/* glow (entrance once, then a CSS pulse that runs on the GPU) */}
+      <motion.div className="absolute -inset-12" initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.2, ease: EASE }}>
+        <div className="ab-anim ab-pulse absolute inset-0 rounded-full" style={{ background: 'radial-gradient(circle, rgba(34,211,238,.45) 0%, rgba(37,99,235,.28) 35%, rgba(168,85,247,.15) 55%, transparent 70%)' }} />
+      </motion.div>
       {/* orbiting icons */}
       {!still && (
-        <motion.div className="absolute -inset-8 will-change-transform" animate={{ rotate: 360 }} transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}>
+        <div className="ab-anim ab-spin absolute -inset-8" style={{ animationDuration: '22s' }}>
           {icons.map((ic, i) => {
             const a = (i / icons.length) * Math.PI * 2;
             return (
-              <motion.span key={ic} className="absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center text-lg bg-slate-800/90 border border-white/20 shadow-lg"
-                style={{ left: `${50 + Math.cos(a) * 50}%`, top: `${50 + Math.sin(a) * 50}%` }}
-                initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1, rotate: -360 }}
-                transition={{ opacity: { delay: 1.6 + i * 0.12 }, scale: { delay: 1.6 + i * 0.12, type: 'spring', stiffness: 260, damping: 14 }, rotate: { duration: 22, repeat: Infinity, ease: 'linear' } }}>{ic}</motion.span>
+              <motion.span key={ic} className="absolute w-10 h-10 -ml-5 -mt-5" style={{ left: `${50 + Math.cos(a) * 50}%`, top: `${50 + Math.sin(a) * 50}%` }}
+                initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }}
+                transition={{ opacity: { delay: 1.6 + i * 0.12 }, scale: { delay: 1.6 + i * 0.12, type: 'spring', stiffness: 260, damping: 14 } }}>
+                <span className="ab-anim ab-spin ab-rev w-full h-full rounded-full flex items-center justify-center text-lg bg-slate-800/90 border border-white/20 shadow-lg" style={{ animationDuration: '22s' }}>{ic}</span>
+              </motion.span>
             );
           })}
-        </motion.div>
+        </div>
       )}
       <motion.div className="relative w-full h-full" style={{ rotateX: rx, rotateY: ry, transformStyle: 'preserve-3d' }}>
         {/* two rings spinning opposite ways */}
-        <motion.div className="absolute inset-0 rounded-full will-change-transform" style={{ background: 'conic-gradient(#22d3ee, transparent 30%, #a855f7 50%, transparent 75%, #22d3ee)' }}
-          initial={{ opacity: 0 }} animate={{ opacity: 1, rotate: still ? 0 : 360 }} transition={{ opacity: { delay: 0.5, duration: 0.8 }, rotate: { duration: 4, repeat: Infinity, ease: 'linear' } }} />
-        <motion.div className="absolute inset-[5px] rounded-full will-change-transform" style={{ background: 'conic-gradient(#2563eb, transparent 40%, #22c55e 60%, transparent 85%, #2563eb)' }}
-          initial={{ opacity: 0 }} animate={{ opacity: 1, rotate: still ? 0 : -360 }} transition={{ opacity: { delay: 0.7, duration: 0.8 }, rotate: { duration: 6, repeat: Infinity, ease: 'linear' } }} />
+        <motion.div className="absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }}>
+          <div className="ab-anim ab-spin absolute inset-0 rounded-full" style={{ animationDuration: '4s', background: 'conic-gradient(#22d3ee, transparent 30%, #a855f7 50%, transparent 75%, #22d3ee)' }} />
+        </motion.div>
+        <motion.div className="absolute inset-[5px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.8 }}>
+          <div className="ab-anim ab-spin ab-rev absolute inset-0 rounded-full" style={{ animationDuration: '6s', background: 'conic-gradient(#2563eb, transparent 40%, #22c55e 60%, transparent 85%, #2563eb)' }} />
+        </motion.div>
         {/* the photo itself */}
-        <motion.div className="absolute inset-[10px] rounded-full overflow-hidden bg-slate-900 border-4 border-[#070b16]" style={{ transform: 'translateZ(40px)' }}
+        <motion.div className="absolute inset-[10px] rounded-full overflow-hidden bg-slate-900 border-4 border-[#070b16] will-change-transform" style={{ transform: 'translateZ(40px)' }}
           initial={{ clipPath: 'circle(0% at 50% 50%)', filter: 'blur(14px) saturate(0) brightness(1.6)', scale: 1.35 }}
           animate={{ clipPath: 'circle(75% at 50% 50%)', filter: 'blur(0px) saturate(1) brightness(1)', scale: 1 }}
           transition={{ duration: 1.6, delay: 0.35, ease: EASE }}>
@@ -101,8 +122,7 @@ function HeroPhoto({ still }) {
           {/* moving glare that follows the tilt */}
           <motion.div className="absolute inset-0 pointer-events-none opacity-40" style={{ background: glare }} />
           {/* light sweep */}
-          {!still && <motion.div className="absolute inset-y-0 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none"
-            initial={{ x: '-150%' }} animate={{ x: '400%' }} transition={{ duration: 1.4, delay: 2.2, repeat: Infinity, repeatDelay: 3.5, ease: 'easeInOut' }} />}
+          {!still && <div className="ab-anim ab-sweep absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />}
         </motion.div>
       </motion.div>
     </div>
@@ -156,11 +176,14 @@ function Word({ p, range, children }) {
   return <motion.span style={{ opacity: o, y }}>{children}</motion.span>;
 }
 
-function Counter({ to, suffix = '' }) {
+function Counter({ to, prefix = '', suffix = '' }) {
   const ref = useRef(null), inView = useInView(ref, { once: true, margin: '-40px' });
-  const [v, setV] = useState(0);
-  useEffect(() => { if (!inView) return undefined; const c = animate(0, to, { duration: 1.8, ease: EASE, onUpdate: x => setV(Math.round(x)) }); return () => c.stop(); }, [inView, to]);
-  return <span ref={ref}>{v}{suffix}</span>;
+  useEffect(() => {
+    if (!inView) return undefined;
+    const c = animate(0, to, { duration: 1.8, ease: EASE, onUpdate: x => { if (ref.current) ref.current.textContent = `${prefix}${Math.round(x)}${suffix}`; } });
+    return () => c.stop();
+  }, [inView, to, prefix, suffix]);
+  return <span ref={ref} className="whitespace-nowrap">{prefix}0{suffix}</span>;
 }
 
 // card with a light that follows the pointer
@@ -191,6 +214,31 @@ const Reveal = ({ children, delay = 0, className = '' }) => (
   <motion.div className={className} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }} transition={{ duration: 0.9, delay, ease: EASE }}>{children}</motion.div>
 );
 
+const STATS = [
+  [105, '', '+', 'Robotics & AI lessons'],
+  [3, '', '', 'Classes: 9, 10 and 11'],
+  [32, '', '', 'Python lessons, beginner to advanced'],
+  [100, '', '%', 'Free, with no ads'],
+];
+
+const CSS = `
+.ab-anim { will-change: transform; }
+.ab-spin { animation: ab-spin linear infinite; }
+.ab-rev { animation-direction: reverse; }
+.ab-pulse { animation: ab-pulse 3.5s ease-in-out infinite; will-change: opacity; }
+.ab-sweep { animation: ab-sweep 4.9s ease-in-out 2.2s infinite; transform: translateX(-150%) skewX(-12deg); }
+.ab-bob { animation: ab-bob 1.8s ease-in-out infinite; }
+.ab-d1 { animation: ab-d1 16s ease-in-out infinite; } .ab-d2 { animation: ab-d2 18s ease-in-out infinite; } .ab-d3 { animation: ab-d3 20s ease-in-out infinite; }
+@keyframes ab-spin { to { transform: rotate(360deg); } }
+@keyframes ab-pulse { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+@keyframes ab-sweep { 0% { transform: translateX(-150%) skewX(-12deg); } 29%, 100% { transform: translateX(400%) skewX(-12deg); } }
+@keyframes ab-bob { 50% { transform: translateY(8px); } }
+@keyframes ab-d1 { 50% { transform: translate3d(80px, 60px, 0); } }
+@keyframes ab-d2 { 50% { transform: translate3d(-70px, -50px, 0); } }
+@keyframes ab-d3 { 33% { transform: translate3d(-60px, 0, 0); } 66% { transform: translate3d(40px, 0, 0); } }
+@media (prefers-reduced-motion: reduce) { .ab-anim { animation: none !important; } }
+`;
+
 const FEATURES = [
   ['📚', 'Robotics & AI lessons', 'ICSE and ISC chapters in simple language, with board-style practice.'],
   ['🐍', 'Learn Python', '32 lessons from beginner to advanced, Hindi videos, quizzes and projects.'],
@@ -216,6 +264,7 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-[#05070f] text-slate-100 overflow-x-hidden selection:bg-cyan-400/30">
+      <style>{CSS}</style>
       <motion.div className="fixed top-0 left-0 right-0 h-[3px] z-50 origin-left bg-gradient-to-r from-cyan-400 via-blue-500 to-fuchsia-500" style={{ scaleX: bar }} />
       <button onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))} aria-label="Back"
         className="fixed z-50 left-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center" style={{ top: 'calc(env(safe-area-inset-top) + 14px)' }}>
@@ -226,9 +275,9 @@ export default function About() {
       <section ref={hero} className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
         {/* aurora */}
         <div className="absolute inset-0" aria-hidden>
-          <motion.div className="absolute w-[60vmax] h-[60vmax] -top-[20vmax] -left-[15vmax] rounded-full will-change-transform bg-[radial-gradient(circle,rgba(6,182,212,.30),transparent_65%)]" animate={reduce ? {} : { x: [0, 80, 0], y: [0, 60, 0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
-          <motion.div className="absolute w-[50vmax] h-[50vmax] -bottom-[20vmax] -right-[10vmax] rounded-full will-change-transform bg-[radial-gradient(circle,rgba(192,38,211,.24),transparent_65%)]" animate={reduce ? {} : { x: [0, -70, 0], y: [0, -50, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }} />
-          <motion.div className="absolute w-[40vmax] h-[40vmax] top-1/3 left-1/2 rounded-full will-change-transform bg-[radial-gradient(circle,rgba(37,99,235,.24),transparent_65%)]" animate={reduce ? {} : { x: [0, -60, 40, 0] }} transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }} />
+          <div className="ab-anim ab-d1 absolute w-[60vmax] h-[60vmax] -top-[20vmax] -left-[15vmax] rounded-full will-change-transform bg-[radial-gradient(circle,rgba(6,182,212,.30),transparent_65%)]" />
+          <div className="ab-anim ab-d2 absolute w-[50vmax] h-[50vmax] -bottom-[20vmax] -right-[10vmax] rounded-full will-change-transform bg-[radial-gradient(circle,rgba(192,38,211,.24),transparent_65%)]" />
+          <div className="ab-anim ab-d3 absolute w-[40vmax] h-[40vmax] top-1/3 left-1/2 rounded-full will-change-transform bg-[radial-gradient(circle,rgba(37,99,235,.24),transparent_65%)]" />
         </div>
         {!reduce && <ParticleField />}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.04)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" aria-hidden />
@@ -244,8 +293,8 @@ export default function About() {
           <motion.p className="mt-3 text-lg sm:text-xl text-slate-300 h-7" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>
             <Typewriter delay={2.1} words={['School student from Lucknow', 'Robotics & coding builder', 'Made RoboCraft for every student']} />
           </motion.p>
-          <motion.div className="mt-12 flex flex-col items-center text-slate-400 text-xs" initial={{ opacity: 0 }} animate={{ opacity: 1, y: reduce ? 0 : [0, 8, 0] }} transition={{ opacity: { delay: 2.6 }, y: { duration: 1.8, repeat: Infinity } }}>
-            Scroll to know more <ChevronDown className="w-5 h-5 mt-1" />
+          <motion.div className="mt-12 flex flex-col items-center text-slate-400 text-xs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.6 }}>
+            <span className="ab-anim ab-bob flex flex-col items-center">Scroll to know more <ChevronDown className="w-5 h-5 mt-1" /></span>
           </motion.div>
         </motion.div>
       </section>
@@ -257,10 +306,10 @@ export default function About() {
       </section>
 
       {/* ── NUMBERS ── */}
-      <section className="max-w-3xl mx-auto px-6 pb-16 grid grid-cols-3 gap-3">
-        {[[32, '', 'Python lessons'], [7, '', 'Python projects'], [100, '%', 'Free, no ads']].map(([n, s, label], i) => (
+      <section className="max-w-3xl mx-auto px-6 pb-16 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {STATS.map(([n, pre, suf, label], i) => (
           <Spot key={label} i={i} className="text-center">
-            <p className="text-3xl sm:text-4xl font-black bg-gradient-to-b from-white to-cyan-300 bg-clip-text text-transparent"><Counter to={n} suffix={s} /></p>
+            <p className="text-3xl sm:text-4xl font-black bg-gradient-to-b from-white to-cyan-300 bg-clip-text text-transparent px-1 leading-tight"><Counter to={n} prefix={pre} suffix={suf} /></p>
             <p className="text-[11px] sm:text-xs text-slate-400 mt-1">{label}</p>
           </Spot>
         ))}
