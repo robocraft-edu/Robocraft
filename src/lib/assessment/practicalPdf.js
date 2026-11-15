@@ -131,7 +131,7 @@ export async function buildPracticalPdf(details, items) {
   const total = doc.getNumberOfPages();
   for (let p = 2; p <= total; p++) {
     doc.setPage(p); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(120);
-    doc.text(`${pdfSafe(d.name || '')} - Practical File`, M, H - 32);
+    doc.text(d.name ? `${pdfSafe(d.name)} - Practical File` : 'Practical File', M, H - 32);
     doc.text(String(p), W - M, H - 32, { align: 'right' });
   }
   return doc;

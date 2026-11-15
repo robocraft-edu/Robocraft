@@ -2,7 +2,7 @@
 // Produces rows { name, type, description } that the student can edit.
 
 const COMMON = {
-  i: 'loop counter', j: 'inner loop counter', k: 'loop counter', n: 'number of items', count: 'counts matching items',
+  i: 'loop counter', j: 'inner loop counter', k: 'loop counter', n: 'stores the number being processed', count: 'counts matching items',
   total: 'stores the running total', sum: 'stores the sum', avg: 'stores the average', average: 'stores the average', mean: 'stores the mean',
   pct: 'stores the percentage', percentage: 'stores the percentage', max: 'largest value', min: 'smallest value', peak: 'highest value reached',
   temp: 'temporary value used while swapping', flag: 'status message / flag', found: 'true if the item is found', pos: 'position (index) of the item',

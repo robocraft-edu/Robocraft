@@ -7,7 +7,8 @@ import { assignmentsFor, KIND_LABEL } from '@/lib/assessment/assignments';
 import { makeVDT } from '@/lib/assessment/vdt';
 import { runPython } from '@/lib/python/runner';
 import { runSketch, SimBoard } from '@/lib/arduino/runtime';
-import { FileText, Play, Plus, Check, Trash2, ChevronUp, ChevronDown, Download, Loader2, Bot, ClipboardCheck, Timer, PenLine } from 'lucide-react';
+import { FileText, Play, Plus, Check, Trash2, ChevronUp, ChevronDown, Download, Loader2, Bot, ClipboardCheck, Timer, PenLine, Wand2 } from 'lucide-react';
+import { FILE_IDEAS } from '@/lib/assessment/fileMaker';
 
 const FILE_KEY = 'robocraft_practical_file';
 const loadFile = () => { try { return JSON.parse(localStorage.getItem(FILE_KEY)) || null; } catch { return null; } };
@@ -196,6 +197,55 @@ function Rehearsal({ pool }) {
   );
 }
 
+
+/** "Make my whole file": one request in, a complete practical file out. */
+function MakeWholeFile({ selectedClass, details, hasItems, onDone }) {
+  const [text, setText] = useState('');
+  const [step, setStep] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState(null);
+  const go = async (mode) => {
+    if (!text.trim() || busy) return;
+    setBusy(true); setResult(null); setStep('Starting…');
+    try {
+      const { makeWholeFile } = await import('@/lib/assessment/fileMaker');
+      const r = await makeWholeFile(text, selectedClass, details, setStep);
+      setResult(r);
+      if (r.items.length) onDone(r.items, mode);
+    } finally { setBusy(false); setStep(''); }
+  };
+  return (
+    <div className="glass-strong rounded-2xl p-4 border border-cyan-500/30">
+      <p className="text-sm font-bold flex items-center gap-1.5"><Wand2 className="w-4 h-4 text-cyan-500" /> Make my whole file</p>
+      <p className="text-[11px] text-muted-foreground mb-2">Say what you need. Every program is run before it goes in, so the output in your file is real and the code has no errors.</p>
+      <textarea value={text} onChange={e => setText(e.target.value)} rows={2} maxLength={300}
+        placeholder='e.g. give me a 15 page file with if else programs'
+        className="w-full bg-background/60 border border-border rounded-xl px-3 py-2 text-sm resize-none" />
+      <div className="flex flex-wrap gap-1.5 my-2">
+        {FILE_IDEAS.map(t => <button key={t} onClick={() => setText(t)} className="text-[10px] px-2.5 py-1 rounded-full glass">{t}</button>)}
+      </div>
+      {hasItems ? (
+        <div className="flex gap-2">
+          <button onClick={() => go('replace')} disabled={busy || !text.trim()} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-bold disabled:opacity-40">Make a new file</button>
+          <button onClick={() => go('append')} disabled={busy || !text.trim()} className="flex-1 py-2.5 rounded-xl glass text-xs font-semibold disabled:opacity-40">Add to my file</button>
+        </div>
+      ) : (
+        <button onClick={() => go('replace')} disabled={busy || !text.trim()} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-40">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />} Make my file
+        </button>
+      )}
+      {busy && <p className="text-[11px] text-cyan-500 mt-2 flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> {step}</p>}
+      {result && !busy && (
+        <p className="text-[11px] mt-2 text-muted-foreground">
+          {result.items.length
+            ? <>Done: <b>{result.items.length} programs</b>, <b>{result.pages} pages</b>{result.target ? ` (you asked for ${result.target})` : ''}. {result.items.every(i => i.verified) ? 'Every program ran without errors.' : 'Python could not start to record outputs; run each program once from the file to record it.'} {result.note}</>
+            : (result.note || 'Could not make the file. Check your internet and try again.')}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function Assessment() {
   const { selectedClass } = useApp();
   const { user } = useAuth();
@@ -246,6 +296,13 @@ export default function Assessment() {
           <button key={id} onClick={() => setTab(id)} className={`flex-1 py-2 rounded-lg ${tab === id ? 'bg-cyan-500 text-white font-semibold' : 'glass-strong'}`}>{l}</button>
         ))}
       </div>
+
+      {(tab === 'bank' || tab === 'file') && (
+        <div className="mb-3">
+          <MakeWholeFile selectedClass={selectedClass} details={file.details} hasItems={file.items.length > 0}
+            onDone={(items, mode) => { setFile(f => ({ ...f, items: mode === 'append' ? [...f.items, ...items] : items })); setTab('file'); }} />
+        </div>
+      )}
 
       {tab === 'bank' && (
         <div className="space-y-2">
