@@ -4,11 +4,12 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { unitShape, groupSoup, ungroup } from '@/lib/design/shapes';
 import { decalCanvas } from '@/lib/design/decals';
+import { partMaterial, shapeMaterial, kidGeometry, smoothUnit, studioLook } from '@/components/design/realism';
 
 const DEG = Math.PI / 180;
 
 function disposeTree(root) {
-  root?.traverse?.(o => { o.geometry?.dispose?.(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => m.dispose?.()); });
+  root?.traverse?.(o => { if (!o.userData?.sharedGeo) o.geometry?.dispose?.(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => m.dispose?.()); });
 }
 
 /** A board's printed top face: a textured plane laid flat on the part. */
@@ -109,9 +110,10 @@ export default function StudioView({ objects, selected, mode, snap, onPick, onTr
     const camera = new THREE.PerspectiveCamera(40, 1, 1, 5000);
     const orbit = new OrbitControls(camera, renderer.domElement);
     orbit.enableDamping = true; orbit.target.set(0, 0, 0); orbit.maxPolarAngle = Math.PI * 0.95;
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 1.6));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.4); sun.position.set(150, 300, 200); scene.add(sun);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 0.7));
+    const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(150, 300, 200); scene.add(sun);
     const back = new THREE.DirectionalLight(0xffffff, 0.5); back.position.set(-200, 100, -150); scene.add(back);
+    const undoLook = studioLook(renderer, scene, { sun });
 
     // workplane 200×200 mm, 10 mm grid like Tinkercad
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshBasicMaterial({ color: theme.plane, transparent: true, opacity: 0.9, side: THREE.DoubleSide }));
@@ -216,7 +218,7 @@ export default function StudioView({ objects, selected, mode, snap, onPick, onTr
       renderer.domElement.removeEventListener('pointerup', onUp);
       tc.detach(); tc.dispose?.(); orbit.dispose();
       meshes.forEach(({ mesh, assembly }) => { disposeTree(mesh); disposeTree(assembly); });
-      holeTex.dispose(); renderer.dispose(); renderer.domElement.remove();
+      undoLook(); holeTex.dispose(); renderer.dispose(); renderer.domElement.remove();
     };
   }, []);
 
@@ -248,8 +250,11 @@ export default function StudioView({ objects, selected, mode, snap, onPick, onTr
             }
             const mat = k.hole
               ? new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.95 })
-              : new THREE.MeshStandardMaterial({ color: k.color || obj.color || '#ef4444', roughness: 0.5, metalness: 0.08, emissive: 0x0c4a6e, emissiveIntensity: 0, flatShading: ['box', 'wedge', 'pyramid'].includes(k.type) });
-            const m = new THREE.Mesh(geometryFor(k), mat);
+              : partMaterial(k, obj.color);
+            const m = new THREE.Mesh(k.hole ? geometryFor(k) : kidGeometry(k), mat);
+            if (k.hole) m.visible = false; // a part's screw holes only matter when it is cut into a design
+            m.castShadow = !k.hole; m.receiveShadow = !k.hole;
+            m.userData.sharedGeo = !k.hole;
             m.userData.id = obj.id;
             assembly.add(m);
           }
@@ -260,17 +265,19 @@ export default function StudioView({ objects, selected, mode, snap, onPick, onTr
         const dragging = ctx.current.tc.dragging && ctx.current.tc.object === rec.mesh;
         if (!dragging) applyTransform(rec.mesh, obj);
         layoutAssembly(rec, dragging ? readTransform(rec.mesh, obj) : obj);
-        rec.assembly.children.forEach(m => { if (!m.material) return; m.material.opacity = obj.hole ? 0.45 : 1; m.material.transparent = !!obj.hole || !!m.material.map; });
+        rec.assembly.children.forEach(m => { if (!m.material) return; m.material.opacity = obj.hole ? 0.45 : 1; m.material.transparent = !!obj.hole || !!m.material.map || m.material.transmission > 0; });
         rec.mesh.userData.obj = obj;
         continue;
       }
       const geoKey = obj.type;
       if (!rec || rec.geoKey !== geoKey || rec.hole !== obj.hole) {
-        if (rec) { scene.remove(rec.mesh); rec.mesh.geometry.dispose(); rec.mesh.material.dispose(); }
+        if (rec) { scene.remove(rec.mesh); if (!rec.mesh.userData.sharedGeo) rec.mesh.geometry.dispose(); rec.mesh.material.dispose(); }
         const mat = obj.hole
           ? new THREE.MeshStandardMaterial({ color: 0xffffff, map: holeTex, transparent: true, opacity: 0.55, depthWrite: false, roughness: 0.8 })
-          : new THREE.MeshStandardMaterial({ color: obj.color || '#ef4444', roughness: 0.55, metalness: 0.05, flatShading: obj.type === 'group' || obj.type === 'box' || obj.type === 'wedge' || obj.type === 'pyramid' });
-        const mesh = new THREE.Mesh(geometryFor(obj), mat);
+          : shapeMaterial(obj.color || '#ef4444');
+        const mesh = new THREE.Mesh(obj.hole ? geometryFor(obj) : smoothUnit(obj.type), mat);
+        mesh.castShadow = !obj.hole; mesh.receiveShadow = !obj.hole;
+        mesh.userData.sharedGeo = !obj.hole;
         mesh.userData.id = obj.id;
         mesh.renderOrder = obj.hole ? 2 : 1;
         scene.add(mesh);

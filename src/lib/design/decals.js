@@ -122,7 +122,31 @@ function batteryLabel() {
   return c;
 }
 
-const MAKERS = { uno_top: unoTop, sonar_top: sonarTop, driver_top: driverTop, esp_top: espTop, battery_label: batteryLabel };
+
+/** Mini breadboard (83 × 55 mm): 30 columns × 2 blocks of 5 holes, two power rails each side. */
+function breadboardTop() {
+  const { c, g, s } = pcb(83, 55, '#f4f4f2', 8);
+  const hole = (x, y) => { g.fillStyle = '#2b2b2b'; g.fillRect(x - 0.55 * s, y - 0.55 * s, 1.1 * s, 1.1 * s); };
+  const x0 = 4.4;
+  for (let col = 0; col < 30; col++) {
+    const x = (x0 + col * 2.54) * s;
+    for (let r = 0; r < 5; r++) { hole(x, (12.3 + r * 2.54) * s); hole(x, (32.6 + r * 2.54) * s); }
+  }
+  for (const [y, color] of [[2.6, '#d62828'], [52.4, '#1d4ed8']]) { g.fillStyle = color; g.fillRect(3 * s, y * s, 77 * s, 0.5 * s); }
+  for (const [y, color] of [[8.2, '#1d4ed8'], [46.8, '#d62828']]) { g.fillStyle = color; g.fillRect(3 * s, y * s, 77 * s, 0.5 * s); }
+  for (let col = 0; col < 25; col++) {
+    if (col % 5 === 4) continue;
+    const x = (7 + col * 2.9) * s;
+    for (const y of [4.4, 6.6, 48.6, 50.8]) hole(x, y * s);
+  }
+  g.fillStyle = '#9ca3af'; g.font = `${1.6 * s}px sans-serif`;
+  for (let col = 0; col < 30; col += 5) g.fillText(String(col + 1), (x0 + col * 2.54 - 0.5) * s, 11 * s);
+  'abcde'.split('').forEach((ch, i) => g.fillText(ch, 1.2 * s, (12.8 + i * 2.54) * s));
+  'fghij'.split('').forEach((ch, i) => g.fillText(ch, 1.2 * s, (33.1 + i * 2.54) * s));
+  return c;
+}
+
+const MAKERS = { breadboard_top: breadboardTop, uno_top: unoTop, sonar_top: sonarTop, driver_top: driverTop, esp_top: espTop, battery_label: batteryLabel };
 const CACHE = {};
 
 /** A canvas with the named silkscreen, cached per session. */
