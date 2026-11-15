@@ -80,7 +80,7 @@ export default function CreatorToast() {
                 <motion.span className="absolute -right-0.5 -bottom-0.5 text-sm" animate={{ rotate: [0, 18, -8, 18, 0] }} transition={{ duration: 1, delay: 0.3 }}>👋</motion.span>
               </span>
               <span className="min-w-0">
-                <span className="block text-sm font-bold">Meet the creator</span>
+                <span className="block text-sm font-bold">Meet the founder</span>
                 <span className="block text-[11px] text-slate-300 truncate">Aryan built RoboCraft · tap to say hi</span>
               </span>
             </button>

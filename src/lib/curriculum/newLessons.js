@@ -1,4 +1,4 @@
-// Chapters added to cover the full CISCE syllabus (ICSE IX–X Robotics & AI, ISC XI Robotics).
+// Chapters added to cover the full Robotics & AI syllabus for Classes 9–11.
 // Keyed by class → subject id; appended to the end of each subject.
 export const NEW_LESSONS = {
   class_9: {

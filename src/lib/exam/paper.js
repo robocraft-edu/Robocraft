@@ -1,6 +1,6 @@
 // Builds board-style practice papers from the lesson exam questions.
-// Patterns follow the CISCE written-paper totals: ICSE IX/X — 100 marks, 2 hours;
-// ISC XI Robotics theory — 70 marks, 3 hours. Section layout is a RoboCraft practice format.
+// Patterns follow common board written-paper totals: Classes IX/X — 100 marks, 2 hours;
+// Class XI Robotics theory — 70 marks, 3 hours. Section layout is a RoboCraft practice format.
 import { getAllLessons, getHandQuiz } from '@/lib/curriculum';
 import { TEXTBOOK } from '@/lib/curriculum/textbook';
 
@@ -35,11 +35,11 @@ export const UNITS = {
 };
 
 export const PATTERNS = {
-  class_9: { board: 'ICSE', title: 'Robotics & Artificial Intelligence', total: 100, minutes: 120,
+  class_9: { board: 'Board', title: 'Robotics & Artificial Intelligence', total: 100, minutes: 120,
     A: { mcq: 20, short: 10, shortMarks: 2 }, B: { attempt: 4, partMarks: 5, parts: 3 } },
-  class_10: { board: 'ICSE', title: 'Robotics & Artificial Intelligence', total: 100, minutes: 120,
+  class_10: { board: 'Board', title: 'Robotics & Artificial Intelligence', total: 100, minutes: 120,
     A: { mcq: 20, short: 10, shortMarks: 2 }, B: { attempt: 4, partMarks: 5, parts: 3 } },
-  class_11: { board: 'ISC', title: 'Robotics — Paper I (Theory)', total: 70, minutes: 180,
+  class_11: { board: 'Class XI', title: 'Robotics — Paper I (Theory)', total: 70, minutes: 180,
     A: { mcq: 10, short: 5, shortMarks: 2 }, B: { attempt: 5, partMarks: 5, parts: 2 } },
 };
 

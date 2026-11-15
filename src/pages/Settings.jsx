@@ -244,7 +244,7 @@ export default function Settings() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          RoboCraft helps ICSE/ISC students learn Robotics &amp; AI: chapters, board-style practice, a circuit lab, a 3-D robot arena, a 3-D design studio and a practical file.
+          RoboCraft helps every student learn Robotics, AI &amp; Python: chapters, board-style practice, a circuit lab, a 3-D robot arena, a 3-D design studio and a practical file.
         </p>
         <a href={`${import.meta.env.BASE_URL}about`} onClick={(e) => { e.preventDefault(); navigate('/creator'); }} className="mt-3 flex items-center gap-3 rounded-xl glass p-2.5">
           <img src={`${import.meta.env.BASE_URL}about-photo.jpg`} alt="" className="w-11 h-11 rounded-full object-cover ring-2 ring-cyan-500" />

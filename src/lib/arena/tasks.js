@@ -1,4 +1,4 @@
-// Robot arena tasks — the lab experiments named in the CISCE syllabus plus extras.
+// Robot arena tasks — the lab experiments named in the syllabus plus extras.
 import { ROBOT_PINS as P } from './world';
 import { ARM_TASK } from './armTask';
 

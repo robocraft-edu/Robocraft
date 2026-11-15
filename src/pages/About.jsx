@@ -297,7 +297,7 @@ function ContactCard({ onClose }) {
 }
 
 const FEATURES = [
-  ['📚', 'Robotics & AI lessons', 'ICSE and ISC chapters in simple language, with board-style practice.'],
+  ['📚', 'Robotics & AI lessons', 'Classes 9 to 11 in simple language, with board-style practice.'],
   ['🐍', 'Learn Python', '32 lessons from beginner to advanced, Hindi videos, quizzes and projects.'],
   ['🛠️', '3D Design Studio', 'Build robots from realistic parts and test them in a 3D arena.'],
   ['⚡', 'Circuit lab', 'Wire up circuits and see them work, safely, on your phone.'],

@@ -31,7 +31,7 @@ export default function AnswerChecker({ question, model, marks, onMarks, lessonI
     setBusy(true); setErr(''); setRes(null);
     try {
       const r = await backend.integrations.Core.InvokeLLM({
-        prompt: `You are a strict but kind ICSE/ISC board examiner for Robotics and Artificial Intelligence.
+        prompt: `You are a strict but kind school board examiner for Robotics and Artificial Intelligence.
 Mark the student's answer out of ${marks} marks using the model answer as the marking scheme.
 Award marks only for correct, relevant points; do not reward length. Use simple English for a Class 9-11 student.
 Question: ${toPlainText(question)}

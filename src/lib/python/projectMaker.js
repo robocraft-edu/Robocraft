@@ -65,7 +65,7 @@ const LEVEL = {
 };
 
 function prompt(request, cls, previous) {
-  return `A school student (ICSE/ISC, ${cls || 'class 9-11'}) wants to build this in Python: "${request}".
+  return `A school student (${cls || 'class 9-11'}) wants to build this in Python: "${request}".
 ${LEVEL[cls] || LEVEL.class_10}
 Write a complete, SHORT (20-50 lines), correct Python 3 program for it, and teach from it.
 

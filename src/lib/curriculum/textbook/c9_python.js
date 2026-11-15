@@ -63,7 +63,7 @@ Note: int() is needed because input() gives text. Without it, "2" + "3" would gi
 
 **Script mode** (a .py file run in IDLE, VS Code or Thonny):
 • Write a complete program, save it, run it again and again.
-• Used for real projects and all ICSE practical assignments.
+• Used for real projects and school practical assignments.
 
 ~~~
 >>> 7 * 6
@@ -86,7 +86,7 @@ A multi-line string is often used
 as a block comment or docstring.
 """
 ~~~
-Comments explain **why** the code does something. ICSE practical marking gives credit for documentation, so comment your programs.` },
+Comments explain **why** the code does something. Practical marking gives credit for documentation, so comment your programs.` },
     ],
     exam: {
       short: [
@@ -234,7 +234,7 @@ is_even_tick = tick % 2 == 0
       short: [
         { q: 'Evaluate: 15 // 4 + 15 % 4 * 2', a: '15 // 4 = 3; 15 % 4 = 3; 3 * 2 = 6; 3 + 6 = 9.' },
         { q: 'Differentiate between == and is.', a: '== checks whether two values are equal; is checks whether two names refer to the same object in memory.' },
-        { q: 'What is the output of print("I" in "ICSE", 2 ** 3 ** 2)?', a: 'True 512' },
+        { q: 'What is the output of print("I" in "AI", 2 ** 3 ** 2)?', a: 'True 512' },
       ],
       long: [
         { q: 'Explain arithmetic, relational, logical, assignment, identity and membership operators with one example each.', a: 'Arithmetic: 7 % 3 → 1. Relational: 5 >= 3 → True. Logical: True and False → False. Assignment: x += 5. Identity: a is b. Membership: "a" in "cat" → True.' },

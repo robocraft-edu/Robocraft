@@ -29,7 +29,7 @@ Built with React, Vite and Tailwind CSS, packaged for Android with Capacitor.
 
 ## Features
 
-- 105 chapters for Classes 9–11 covering the CISCE syllabus (ICSE IX–X Robotics & AI, ISC XI Robotics)
+- 105 chapters for Classes 9–11 covering the Robotics & AI syllabus
 - Full textbook notes in every chapter with 71 labelled diagrams, key terms and a Diagram Bank
 - Exam Corner (525 board-style questions with model answers) and timed sample papers with PDF answer keys
 - Quizzes, flashcards, games, revision mode and chapter-notes PDFs
@@ -42,7 +42,7 @@ Built with React, Vite and Tailwind CSS, packaged for Android with Capacitor.
   real robot parts in true millimetre sizes, STL export for 3-D printing and guided design projects
 - **Mechanism Lab** — four-bar linkages with Grashof classification, slider-crank, 2R arm forward/inverse
   kinematics, gear trains and Grübler degrees of freedom
-- **Internal assessment** — CISCE-format assignment bank, automatic Variable Description Table,
+- **Internal assessment** — school-format assignment bank, automatic Variable Description Table,
   printable practical file (cover, certificate, index, programs, outputs) and a practical-exam rehearsal
 - AI answer marking out of the paper's marks, plus an offline keyword check
 - Exam-season mode (countdown + daily plan) and daily spaced repetition

@@ -1,9 +1,9 @@
-// Class 11 (ISC Robotics) — textbook notes, diagrams and exam questions.
+// Class 11 Robotics — textbook notes, diagrams and exam questions.
 export default {
   c11_r_1: {
     figs: ['robotFields', 'sensePlanAct'],
     sections: [
-      { h: 'Autonomous and semi-autonomous operation', b: `ISC defines a robot by **how it operates**:
+      { h: 'Autonomous and semi-autonomous operation', b: `The syllabus defines a robot by **how it operates**:
 • **Autonomous robots** sense, plan and act without human input during the task — a warehouse AMR choosing its route, a Mars rover driving between waypoints, a robotic lawn mower.
 • **Semi-autonomous robots** handle low-level control themselves while a human gives high-level commands or approves decisions — a surgical robot (surgeon controls, robot filters tremor), a drone that holds position while the pilot points the camera, a bomb-disposal robot with automatic arm stabilisation.
 Both rely on **sensors** for perception and increasingly on **AI** (computer vision, path planning, learning) for decisions.` },
@@ -53,7 +53,7 @@ Both rely on **sensors** for perception and increasingly on **AI** (computer vis
 
   c11_r_3: {
     sections: [
-      { h: 'AI and ML in new-age robotics (ISC focus)', b: `• **Smart manufacturing (Industry 4.0):** robots with vision inspect parts, predictive-maintenance models forecast failures from vibration data, digital twins simulate the whole factory, cobots share tasks with workers.
+      { h: 'AI and ML in new-age robotics', b: `• **Smart manufacturing (Industry 4.0):** robots with vision inspect parts, predictive-maintenance models forecast failures from vibration data, digital twins simulate the whole factory, cobots share tasks with workers.
 • **Healthcare:** surgical robots with tremor filtering and image guidance, rehabilitation exoskeletons adapting assistance with ML, pharmacy automation, disinfection robots, AI triage.
 • **Autonomous vehicles:** sensor fusion (camera + radar + LIDAR), deep-learning perception (lane, sign, pedestrian detection), path planning and control; levels of autonomy from L0 to L5.` },
       { h: 'Learning approaches used', b: `• **Supervised learning** for perception (labelled images of defects, pedestrians).
@@ -187,7 +187,7 @@ Paths: A–B–D–E = 3 + 5 + 2 + 4 = 14 days; A–C–E = 3 + 4 + 4 = 11 days.
   c11_m_1: {
     figs: ['frames'],
     sections: [
-      { h: 'Fixed and moving frames (ISC)', b: `• A **fixed frame** does not move during the task — the world frame, or the robot base frame for a bolted arm.
+      { h: 'Fixed and moving frames', b: `• A **fixed frame** does not move during the task — the world frame, or the robot base frame for a bolted arm.
 • A **moving frame** is attached to a body that moves — each link frame, the tool frame, the frame of a mobile robot's body.
 Describing a point in a moving frame and then converting it to the fixed frame is the core of kinematics. E.g. the camera on a mobile robot sees an object at (1 m, 0) in its own frame; if the robot is at (4, 2) facing 90° in the world frame, the object is at (4, 3) in the world frame.` },
       { h: 'Structural frames — quick design rules', b: `• Keep the centre of gravity low and inside the wheelbase.
@@ -423,7 +423,7 @@ Simpler expressions mean fewer gates or faster code.` },
 • **Buses** carry addresses and data between CPU, memory and peripherals.
 • **Peripherals**: GPIO, ADC, timers/counters (PWM, timing), UART/I2C/SPI, interrupt controller, watchdog timer.
 • **Clock** (crystal) sets the instruction speed, e.g. 16 MHz on Arduino Uno.` },
-      { h: 'Interrupts and timers (ISC syllabus)', b: `**Interrupts** let hardware events stop the main program briefly to run an **ISR (Interrupt Service Routine)**, then return — essential for counting encoder pulses or reacting to bumpers instantly.
+      { h: 'Interrupts and timers', b: `**Interrupts** let hardware events stop the main program briefly to run an **ISR (Interrupt Service Routine)**, then return — essential for counting encoder pulses or reacting to bumpers instantly.
 ~~~
 volatile long ticks = 0;
 void countTick() { ticks++; }          // ISR: keep it short
@@ -642,7 +642,7 @@ An **IMU** combines gyro + accelerometer (+ magnetometer); a complementary or Ka
   c11_e_3: {
     figs: ['batteryCompare'],
     sections: [
-      { h: 'Lithium-ion vs lead-acid (ISC syllabus)', b: `**Lithium-ion (Li-ion/LiPo):**
+      { h: 'Lithium-ion vs lead-acid', b: `**Lithium-ion (Li-ion/LiPo):**
 • Characteristics: 3.6–3.7 V per cell, high energy density (150–250 Wh/kg), low self-discharge, no memory effect, high discharge rates (LiPo).
 • Applications: drones, mobile robots, phones, laptops, EVs.
 • Drawbacks: costlier; needs a BMS; risk of fire/thermal runaway if overcharged, over-discharged, punctured or short-circuited; ageing reduces capacity.
@@ -726,7 +726,7 @@ Use a buck converter (12 V → 5 V, ≥ 4 A) for the Pi and logic.` },
   c11_e_6: {
     figs: ['pidLoop', 'openClosedLoop'],
     sections: [
-      { h: 'Basics of control systems (ISC)', b: `• **System/plant** — what we control (motor speed, robot heading, temperature).
+      { h: 'Basics of control systems', b: `• **System/plant** — what we control (motor speed, robot heading, temperature).
 • **Input/set point**, **output/controlled variable**, **error**, **controller**, **actuator**, **sensor/feedback**.
 • **Open loop** — no feedback; simple, cheap; cannot correct disturbances.
 • **Closed loop** — feedback corrects errors; accurate; can become unstable if badly tuned.

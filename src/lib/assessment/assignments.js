@@ -1,4 +1,4 @@
-// Practical-file assignment bank in the CISCE format:
+// Practical-file assignment bank in the standard school format:
 // Question → Algorithm → Program → Variable Description Table → Output.
 // Python programs run in the in-app Python; Arduino sketches run in the simulator.
 

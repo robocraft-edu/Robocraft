@@ -115,7 +115,7 @@ function ProgramEditor({ item, onSave, onCancel, saveLabel = 'Add to practical f
   );
 }
 
-// ISC-style practical rehearsal: planning session → examination session → viva
+// Board-style practical rehearsal: planning session → examination session → viva
 const VIVA = {
   python: ['What is the difference between a list and a tuple?', 'Why did you choose this loop?', 'What is the time complexity of your solution?', 'How would your program behave with invalid input?', 'What does the variable with the largest scope store?', 'Can this be written using a function? Why would that help?'],
   arduino: ['Why is setup() run only once?', 'What would happen if you removed the delay()?', 'Why do motor driver inputs need two pins per motor?', 'What does pulseIn() return and in what unit?', 'How does PWM control speed?', 'How would you make this robot safer?'],
@@ -290,7 +290,7 @@ export default function Assessment() {
         <BackButton />
         <h1 className="text-lg font-bold flex items-center gap-2"><ClipboardCheck className="w-5 h-5 text-cyan-500" /> Internal Assessment</h1>
       </div>
-      <p className="text-xs text-muted-foreground mb-3">Assignments in the CISCE practical-file format, an automatic Variable Description Table, a ready-to-print practical file, and a board-style practical rehearsal.</p>
+      <p className="text-xs text-muted-foreground mb-3">Assignments in the school practical-file format, an automatic Variable Description Table, a ready-to-print practical file, and a board-style practical rehearsal.</p>
       <div className="flex gap-1 mb-3 text-xs">
         {[['bank', 'Assignment bank'], ['file', `Practical file (${file.items.length})`], ['rehearse', 'Practical rehearsal']].map(([id, l]) => (
           <button key={id} onClick={() => setTab(id)} className={`flex-1 py-2 rounded-lg ${tab === id ? 'bg-cyan-500 text-white font-semibold' : 'glass-strong'}`}>{l}</button>

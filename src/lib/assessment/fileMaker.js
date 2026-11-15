@@ -39,10 +39,10 @@ const SCHEMA = { type: 'object', properties: { programs: { type: 'array', items:
   code: { type: 'string' }, sample_input: { type: 'string' },
 } } } } };
 
-const LEVEL = { class_9: 'Class 9 (simple)', class_10: 'Class 10', class_11: 'Class 11 (ISC)' };
+const LEVEL = { class_9: 'Class 9 (simple)', class_10: 'Class 10', class_11: 'Class 11' };
 
 function batchPrompt(request, cls, n, avoid) {
-  return `A school student (ICSE/ISC ${LEVEL[cls] || 'Class 9-11'}) needs programs for their Python practical file. Their request: "${request}".
+  return `A school student (${LEVEL[cls] || 'Class 9-11'}) needs programs for their Python practical file. Their request: "${request}".
 Write ${n} DIFFERENT practical programs that fit the request (use the topic they asked for in every program), from easy to harder.
 ${avoid.length ? `Do NOT repeat these, already in the file: ${avoid.slice(-25).join('; ')}.\n` : ''}Rules for every program:
 - Plain Python 3, 8-30 lines. No imports except math or random (call random.seed(1) first if you use random). No files, network, eval, exec or open.

@@ -250,7 +250,7 @@ export default function ExamPractice() {
                 <div key={u.name} className="flex text-[11px] text-muted-foreground"><span className="flex-1">{u.name}</span><span className="font-semibold">{u.marks} marks</span></div>
               ))}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-3">Unit marks follow the CISCE syllabus. The section layout is a RoboCraft practice format — check the official specimen paper below for the exact pattern.</p>
+            <p className="text-[10px] text-muted-foreground mt-3">Unit marks follow the syllabus. The section layout is a RoboCraft practice format — check the official specimen paper below for the exact pattern.</p>
           </div>
 
           <OfficialPapers classId={selectedClass} />
@@ -302,7 +302,7 @@ export default function ExamPractice() {
   );
 }
 
-/** Where to get the real CISCE specimen and past papers. */
+/** Where to get official specimen and past papers. */
 function OfficialPapers({ classId }) {
   const [open, setOpen] = useState(false);
   const isXI = classId === 'class_11';
@@ -312,28 +312,27 @@ function OfficialPapers({ classId }) {
       <button onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-2 text-left">
         <ExternalLink className="w-4 h-4 text-amber-500 shrink-0" />
         <span className="flex-1">
-          <span className="block text-sm font-bold">Official CISCE specimen &amp; past papers</span>
-          <span className="block text-[11px] text-muted-foreground">Free from the Council's own website — always practise these too.</span>
+          <span className="block text-sm font-bold">Official specimen &amp; past papers</span>
+          <span className="block text-[11px] text-muted-foreground">Free from your board's own website — always practise these too.</span>
         </span>
         {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
       </button>
       {open && (
         <div className="mt-3 space-y-2 text-[11px] text-muted-foreground">
           {isXI ? (
-            <p>Class XI is a <b>school examination</b>, so the Council does not publish a specimen paper for it. Your school sets the paper from the ISC Class XI syllabus — and the ISC Class XII specimen paper for Robotics is the closest official guide to the style of questions.</p>
+            <p>Class XI is a <b>school examination</b>, so the board does not publish a specimen paper for it. Your school sets the paper from the Class XI syllabus — and your board's Class XII specimen paper for Robotics is the closest official guide to the style of questions.</p>
           ) : (
-            <p>CISCE publishes a specimen paper for <b>Robotics and Artificial Intelligence</b> every year, plus the previous years' board papers.</p>
+            <p>Your board publishes a specimen paper for <b>Robotics and Artificial Intelligence</b> every year, plus the previous years' board papers.</p>
           )}
           <ol className="list-decimal ml-4 space-y-0.5">
-            <li>Open <b>cisce.org</b>.</li>
-            <li>Go to <b>Examinations</b> → <b>{isXI ? 'ISC Examination (Class XII)' : 'ICSE Examination (Class X)'}</b>.</li>
+            <li>Open your <b>board's official website</b>.</li>
+            <li>Go to <b>Examinations</b> → <b>{isXI ? 'Class XII' : 'Class X'}</b>.</li>
             <li>Choose <b>Specimen Question Papers</b> for the latest year, then the <b>Robotics</b> paper.</li>
           </ol>
           <div className="flex flex-wrap gap-2 pt-1">
-            <button onClick={() => go('https://cisce.org/')} className="px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-500 font-bold">Open cisce.org</button>
-            <button onClick={() => go('https://www.google.com/search?q=' + encodeURIComponent(isXI ? 'cisce.org ISC specimen question paper Robotics' : 'cisce.org ICSE specimen question paper Robotics and Artificial Intelligence'))} className="px-3 py-1.5 rounded-lg glass font-bold text-cyan-500">Search for the paper</button>
+                        <button onClick={() => go('https://www.google.com/search?q=' + encodeURIComponent(isXI ? 'Class 12 Robotics specimen question paper' : 'Class 10 Robotics and Artificial Intelligence specimen question paper'))} className="px-3 py-1.5 rounded-lg glass font-bold text-cyan-500">Search for the paper</button>
           </div>
-          <p className="pt-1">Write the specimen paper on real paper with a timer, then mark it with the Council's marking scheme. Use RoboCraft's papers for extra practice between them.</p>
+          <p className="pt-1">Write the specimen paper on real paper with a timer, then mark it with the board's marking scheme. Use RoboCraft's papers for extra practice between them.</p>
         </div>
       )}
     </div>

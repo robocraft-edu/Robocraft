@@ -4,7 +4,7 @@ import { useApp } from '@/lib/AppContext';
 import { todaysPlan, localDay } from '@/lib/examPlan';
 import { CalendarClock, Check, ChevronRight, Settings2 } from 'lucide-react';
 
-const PRESETS = ['Half-yearly exam', 'Pre-board', 'Annual exam', 'ICSE board exam', 'ISC board exam', 'Unit test'];
+const PRESETS = ['Half-yearly exam', 'Pre-board', 'Annual exam', 'Board exam', 'Final exam', 'Unit test'];
 
 /** Exam-season mode: countdown + today's checklist. Shows a small "set exam date" prompt when off. */
 export default function ExamSeasonCard() {

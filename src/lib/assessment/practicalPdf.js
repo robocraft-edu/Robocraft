@@ -1,4 +1,4 @@
-// Practical file (internal assessment) as a printable PDF, CISCE layout:
+// Practical file (internal assessment) as a printable PDF, school layout:
 // cover → certificate → index → for each program: question, algorithm, program,
 // variable description table, output, and a teacher's signature line.
 import { downloadFile } from '@/lib/platform';
@@ -75,7 +75,7 @@ export async function buildPracticalPdf(details, items) {
   doc.addPage(); border(); y = 130;
   text('CERTIFICATE', { size: 22, bold: true, align: 'center' });
   y += 30;
-  text(`This is to certify that ${d.name || '__________'} of class ${d.className || '____'}${d.section ? ' ' + d.section : ''}, Roll No. ${d.roll || '____'}, has satisfactorily completed the practical work in ${d.subject || 'Robotics and Artificial Intelligence'} as prescribed by the Council for the Indian School Certificate Examinations (CISCE) during the academic session ${d.session || '________'}.`, { size: 12.5, gap: 8 });
+  text(`This is to certify that ${d.name || '__________'} of class ${d.className || '____'}${d.section ? ' ' + d.section : ''}, Roll No. ${d.roll || '____'}, has satisfactorily completed the practical work in ${d.subject || 'Robotics and Artificial Intelligence'} as prescribed by the school during the academic session ${d.session || '________'}.`, { size: 12.5, gap: 8 });
   y = H - 170;
   doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
   doc.line(M, y, M + 150, y); doc.line(W - M - 150, y, W - M, y);

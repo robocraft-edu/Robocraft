@@ -225,7 +225,7 @@ Advantage: explains its reasoning; consistent. Limitation: cannot learn by itsel
   c9_a_8: {
     figs: ['aiProjectCycle', 'fourWs'],
     sections: [
-      { h: 'The five stages in your syllabus', b: `ICSE counts **five stages** of the AI Project Cycle: Problem Scoping → Data Acquisition → Data Exploration → Modelling → Evaluation. Many books add **Deployment** as a sixth step after evaluation — it is good to know both.` },
+      { h: 'The five stages in your syllabus', b: `The syllabus counts **five stages** of the AI Project Cycle: Problem Scoping → Data Acquisition → Data Exploration → Modelling → Evaluation. Many books add **Deployment** as a sixth step after evaluation — it is good to know both.` },
       { h: 'Problem scoping with the 4Ws canvas', b: `• **Who** — who are the stakeholders affected by the problem?
 • **What** — what exactly is the problem, and what evidence shows it exists?
 • **Where** — in what situation or location does it occur?

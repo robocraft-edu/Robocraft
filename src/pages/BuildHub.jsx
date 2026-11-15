@@ -65,7 +65,7 @@ const EXTRAS = [
   { path: '/arena', icon: Bot, color: '#38bdf8', title: 'Robot Arena 3D', sub: 'Write Arduino code and watch a real robot obey it — line follower, maze, PID.', key: 'arena' },
   { path: '/mechanisms', icon: Cog, color: '#a3e635', title: 'Mechanism Lab', sub: 'Linkages, robot-arm kinematics, gear trains and degrees of freedom.', key: 'mech' },
   { path: '/challenges', icon: Trophy, color: '#a78bfa', title: 'Engineering Challenges', sub: 'Design problems with real constraints and trade-offs.' },
-  { path: '/assessment', icon: FileText, color: '#34d399', title: 'Practical File', sub: 'CISCE assignments, variable tables and a printable practical file.' },
+  { path: '/assessment', icon: FileText, color: '#34d399', title: 'Practical File', sub: 'School assignments, variable tables and a printable practical file.' },
 ];
 
 export default function BuildHub() {

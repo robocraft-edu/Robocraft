@@ -1,5 +1,5 @@
 // Class 10 — textbook notes, diagrams and exam questions.
-// Follows the CISCE ICSE Class X Robotics & AI syllabus.
+// Follows the Class X Robotics & AI syllabus.
 export default {
   c10_r_1: {
     sections: [

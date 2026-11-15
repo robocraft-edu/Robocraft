@@ -39,7 +39,7 @@ export async function drawScoreCard(card) {
   };
 
   centre('ROBOCRAFT', 182, 40, '#22d3ee', '800');
-  centre('Robotics & AI · ICSE / ISC', 226, 26, 'rgba(255,255,255,0.55)', '500');
+  centre('Robotics · AI · Python', 226, 26, 'rgba(255,255,255,0.55)', '500');
 
   // title
   g.textAlign = 'center';

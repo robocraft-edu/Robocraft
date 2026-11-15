@@ -1,5 +1,5 @@
 // Class 9 · Robotics — full textbook notes, diagrams and exam questions.
-// Follows the CISCE ICSE Class IX Robotics & AI syllabus (Part I: Robotics).
+// Follows the Class IX Robotics & AI syllabus (Part I: Robotics).
 export default {
   c9_r_1: {
     figs: ['robotFields'],
@@ -152,7 +152,7 @@ The laws are fiction, but they started the serious discussion of **robot ethics*
   c9_r_5: {
     figs: ['robotClassification'],
     sections: [
-      { h: 'Classification by field / terrain (where it works)', b: `The ICSE syllabus groups robots by the terrain they move in:
+      { h: 'Classification by field / terrain (where it works)', b: `The syllabus groups robots by the terrain they move in:
 • **Ground robots** — work on land. Wheeled (rovers, AGVs, Roomba), tracked (bomb-disposal robots), legged (Spot, humanoids).
 • **Aerial robots** — fly. Drones/UAVs (quadcopters, fixed-wing) used for photography, crop spraying, delivery and surveys.
 • **Underwater robots** — ROVs (remotely operated vehicles) and AUVs (autonomous underwater vehicles) inspect pipelines, study marine life and search shipwrecks.

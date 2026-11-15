@@ -45,12 +45,12 @@ Paste `backend/firestore.rules` into Firebase console → Firestore → Rules �
 (new: the `reports` collection used by the *Report* buttons).
 
 ## 5. Store listing (copy-paste)
-- **App name:** RoboCraft – Robotics & AI (ICSE/ISC)
-- **Short description (80):** Learn Robotics & AI for ICSE/ISC Class 9–11: notes, labs, 3D robots, exam prep.
+- **App name:** RoboCraft – Robotics, AI & Python
+- **Short description (80):** Robotics, AI & Python for every student: notes, labs, 3D robots, exam prep.
 - **Full description:**
 
 ```
-RoboCraft is a complete Robotics & Artificial Intelligence companion for ICSE and ISC students (Classes 9, 10 and 11).
+RoboCraft is a complete Robotics & Artificial Intelligence companion for every student, with Classes 9, 10 and 11 covered in full.
 
 LEARN THE SYLLABUS
 • Every chapter as clear textbook notes with labelled diagrams, key terms and audio
@@ -66,7 +66,7 @@ BUILD AND CODE
 • Python playground that runs in the app
 
 INTERNAL ASSESSMENT
-• Practical assignments in the CISCE format
+• Practical assignments in the standard school format
 • Automatic Variable Description Table
 • Download a complete practical file PDF (cover, certificate, index, programs, outputs)
 • Practical exam rehearsal with planning session, timer and viva questions
