@@ -33,8 +33,11 @@ function ItemPreview({ item }) {
   return <span className="text-sm font-bold text-cyan-400 text-center px-1">“{item.name}”</span>;
 }
 
-export default function Shop() {
-  const { selectedClass, getProgressForClass, buyOrEquipItem, buyMysteryBox } = useApp();
+// classId lets another track (Learn Python) use the same shop with its own coins.
+export default function Shop({ classId, hideBack = false }) {
+  const app = useApp();
+  const { getProgressForClass, buyOrEquipItem, buyMysteryBox } = app;
+  const selectedClass = classId || app.selectedClass;
   const progress = getProgressForClass(selectedClass);
   const coins = progress.coins || 0;
   const owned = progress.shop?.owned || [];
@@ -97,7 +100,7 @@ export default function Shop() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-4 pb-28">
-      <BackButton className="mb-3" />
+      {!hideBack && <BackButton className="mb-3" />}
       <div className="flex items-center justify-between mb-4 animate-slide-up">
         <div className="flex items-center gap-3">
           <AvatarBadge progress={progress} size={52} />
@@ -112,7 +115,7 @@ export default function Shop() {
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground mb-4">Earn coins by finishing lessons (+10), quizzes (+2 per correct answer), flash cards and missions. Spend them here.</p>
+      <p className="text-xs text-muted-foreground mb-4">{classId ? 'Earn coins by passing quizzes (+5), solving tasks (+10) and building projects (+25). Spend them here.' : 'Earn coins by finishing lessons (+10), quizzes (+2 per correct answer), flash cards and missions. Spend them here.'}</p>
 
       {/* The picture is read here, resized and kept on this device. It is
           never uploaded and never appears on the leaderboard. */}
