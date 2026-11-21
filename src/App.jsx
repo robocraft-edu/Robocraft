@@ -38,6 +38,7 @@ const Shop = lazyRetry(() => import('@/pages/Shop'));
 const PythonPlayground = lazyRetry(() => import('@/pages/PythonPlayground'));
 const PythonProjectMaker = lazyRetry(() => import('@/pages/PythonProjectMaker'));
 const Leaderboard = lazyRetry(() => import('@/pages/Leaderboard'));
+const Community = lazyRetry(() => import('@/pages/Community'));
 const StoryMap = lazyRetry(() => import('@/pages/StoryMap'));
 const Mentor = lazyRetry(() => import('@/pages/Mentor'));
 const Lab = lazyRetry(() => import('@/pages/Lab'));
@@ -144,6 +145,7 @@ const AuthenticatedApp = () => {
             <Route path="/python" element={<PythonPlayground />} />
             <Route path="/pyproject" element={<PythonProjectMaker />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/community" element={<Community />} />
             <Route path="/story" element={<StoryMap />} />
             <Route path="/mentor" element={<Mentor />} />
             <Route path="/lab" element={<Lab />} />
