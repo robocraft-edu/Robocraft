@@ -9,6 +9,19 @@ function AIMentorInner({ lessonContext, compact }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  // The floating button fades away while scrolling down and returns on scroll up.
+  const [mentorVisible, setMentorVisible] = useState(true);
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > last + 6 && y > 80) setMentorVisible(false);
+      else if (y < last - 6) setMentorVisible(true);
+      last = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const scrollRef = useRef(null);
 
   const systemPrompt = lessonContext
@@ -84,7 +97,7 @@ function AIMentorInner({ lessonContext, compact }) {
           aria-label="Ask the AI mentor"
           onClick={() => setOpen(true)}
           style={{ bottom: 'calc(7.25rem + env(safe-area-inset-bottom))' }}
-          className="fixed right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center neon-glow hover:scale-110 transition-transform"
+          className={`fixed right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center neon-glow hover:scale-110 transition-all duration-500 ${mentorVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
         >
           <Bot className="w-6 h-6 text-white" />
         </button>
