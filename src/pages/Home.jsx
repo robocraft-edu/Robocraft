@@ -12,7 +12,7 @@ import { equippedItems, localDay, DAILY_GOAL_XP } from '@/lib/gamification';
 import { getReminderSettings, askWebNotifications } from '@/lib/reminders';
 import { isNative } from '@/lib/platform';
 import HighFiveNote from '@/components/HighFiveNote';
-import { GraduationCap, Shapes, RotateCcw, Cpu, Sigma, Calculator, Terminal, Medal, ShoppingBag, Map as MapIcon, Bell, Flame, Target, Zap, BookOpen, ArrowRight, Lightbulb, TrendingUp, Clock, Coins, Star, Bot, Award, ChevronRight, Calendar, Rocket, Wrench, FileText } from 'lucide-react';
+import { Trophy, GraduationCap, Shapes, RotateCcw, Cpu, Sigma, Calculator, Terminal, Medal, ShoppingBag, Map as MapIcon, Bell, Flame, Target, Zap, BookOpen, ArrowRight, Lightbulb, TrendingUp, Clock, Coins, Star, Bot, Award, ChevronRight, Calendar, Rocket, Wrench, FileText } from 'lucide-react';
 import DailyMissions from '@/components/learning/DailyMissions';
 import ExamSeasonCard from '@/components/ExamSeasonCard';
 import EngineeringHome from '@/components/adaptive/EngineeringHome';
@@ -95,8 +95,8 @@ export default function Home() {
         <button onClick={() => navigate('/shop')} className="flex items-center gap-3 text-left" aria-label="Open Reward Shop">
           <AvatarBadge progress={progress} size={52} />
           <div>
-            <h1 className="text-2xl font-bold">{greeting}! 👋</h1>
-            <p className="text-sm text-muted-foreground">{equippedItems(progress).title?.name} · Ready to build robots?</p>
+            <h1 className="text-2xl font-bold">{greeting}</h1>
+            <p className="text-sm text-muted-foreground">{equippedItems(progress).title?.name} · Pick up where you left off</p>
           </div>
         </button>
         <div className="relative" style={{ width: levelRingSize, height: levelRingSize }}>
@@ -137,43 +137,13 @@ export default function Home() {
 
       <HighFiveNote />
 
-      {/* Robot Gallery: share a robot photo (approved before others see it) */}
-      <button onClick={() => navigate('/community')} className="w-full glass-strong rounded-2xl p-3 flex items-center gap-3 text-left animate-slide-up">
-        <div className="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center text-lg">📸</div>
-        <div className="flex-1">
-          <p className="text-xs font-bold">Robot Gallery</p>
-          <p className="text-[11px] text-muted-foreground">Share a photo of your robot and see what others built.</p>
-        </div>
-        <ArrowRight className="w-4 h-4 text-muted-foreground" />
-      </button>
-
-      {/* Your Robot Room: the pet and decor the student has bought with coins */}
-      {(() => {
-        const eq = equippedItems(progress);
-        const pet = eq.pet && eq.pet.id !== 'pet_none' ? eq.pet.emoji : null;
-        const decor = eq.room && eq.room.id !== 'room_none' ? eq.room.emoji : null;
-        return (
-          <button onClick={() => navigate('/shop')} className="w-full glass-strong rounded-2xl p-4 flex items-center gap-4 text-left animate-slide-up" aria-label="Open your robot room in the Shop">
-            <div className="w-24 h-16 rounded-xl bg-gradient-to-br from-cyan-500/15 to-violet-500/15 border border-border flex items-end justify-around px-2 pb-1 shrink-0">
-              <span className="text-2xl">{decor || '🧱'}</span>
-              <span className="text-2xl">{pet || '🫧'}</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold">Your Robot Room</p>
-              <p className="text-[11px] text-muted-foreground">{pet ? `${eq.pet.name} lives here` : 'Adopt a pet'}{decor ? ` · ${eq.room.name}` : ''}. Decorate with coins in the Shop.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-muted-foreground" />
-          </button>
-        );
-      })()}
-
       {/* Goal-done break message: celebrate, then suggest a break */}
       {(() => {
         const xpToday = progress.xpDay === localDay() ? (progress.xpToday || 0) : 0;
         if (xpToday < DAILY_GOAL_XP) return null;
         return (
           <div className="w-full glass-strong rounded-2xl p-3 flex items-center gap-3 border border-green-500/40 animate-slide-up">
-            <div className="w-9 h-9 rounded-xl bg-green-500/15 flex items-center justify-center text-lg">🎉</div>
+            <div className="w-9 h-9 rounded-xl bg-green-500/15 flex items-center justify-center"><Trophy className="w-4 h-4 text-green-500" /></div>
             <div className="flex-1">
               <p className="text-xs font-bold text-green-500">Today's goal is done!</p>
               <p className="text-[11px] text-muted-foreground">Great work. Take a break and come back tomorrow to grow your {progress.streak || 1}-day streak.</p>

@@ -280,31 +280,15 @@ export const REWARD_SHOP = [
   { id: 'ti_debug', type: 'title', name: 'Bug Hunter', cost: 150 },
   { id: 'ti_maker', type: 'title', name: 'Maker', cost: 200 },
   { id: 'ti_board', type: 'title', name: 'Board Topper', cost: 400 },
-  // Pets: one companion that sits beside your avatar on Home
-  { id: 'pet_none', type: 'pet', name: 'No pet', emoji: '', cost: 0 },
-  { id: 'pet_bot', type: 'pet', name: 'Robo Puppy', emoji: '🐶', cost: 120 },
-  { id: 'pet_cat', type: 'pet', name: 'Circuit Cat', emoji: '🐱', cost: 150 },
-  { id: 'pet_bird', type: 'pet', name: 'Sensor Bird', emoji: '🐦', cost: 180 },
-  { id: 'pet_fox', type: 'pet', name: 'Fox Engineer', emoji: '🦊', cost: 220 },
-  { id: 'pet_panda', type: 'pet', name: 'Panda Coder', emoji: '🐼', cost: 260 },
-  { id: 'pet_dragon', type: 'pet', name: 'Mini Dragon', emoji: '🐲', cost: 380 },
-  // Room decor: items shown on your Robot Room on Home
-  { id: 'room_none', type: 'room', name: 'Bare room', emoji: '', cost: 0 },
-  { id: 'room_desk', type: 'room', name: 'Robot Workbench', emoji: '🛠️', cost: 90 },
-  { id: 'room_plant', type: 'room', name: 'Desk Plant', emoji: '🌱', cost: 60 },
-  { id: 'room_poster', type: 'room', name: 'Space Poster', emoji: '🪐', cost: 110 },
-  { id: 'room_lamp', type: 'room', name: 'Lab Lamp', emoji: '💡', cost: 130 },
-  { id: 'room_trophy', type: 'room', name: 'Trophy Shelf', emoji: '🏆', cost: 240 },
-  { id: 'room_rocket', type: 'room', name: 'Model Rocket', emoji: '🚀', cost: 200 },
 ];
 
-export const SHOP_DEFAULTS = { avatar: 'av_bot', accent: 'ac_cyan', frame: 'fr_none', title: 'ti_learner', pet: 'pet_none', room: 'room_none' };
+export const SHOP_DEFAULTS = { avatar: 'av_bot', accent: 'ac_cyan', frame: 'fr_none', title: 'ti_learner' };
 
 /** The equipped item of each type (falls back to the free default). */
 export function equippedItems(progress) {
   const shop = progress?.shop || {};
   const pick = (type) => REWARD_SHOP.find(i => i.id === (shop[type] || SHOP_DEFAULTS[type])) || REWARD_SHOP.find(i => i.id === SHOP_DEFAULTS[type]);
-  return { avatar: pick('avatar'), accent: pick('accent'), frame: pick('frame'), title: pick('title'), pet: pick('pet'), room: pick('room') };
+  return { avatar: pick('avatar'), accent: pick('accent'), frame: pick('frame'), title: pick('title') };
 }
 
 export const XP_REWARDS = {

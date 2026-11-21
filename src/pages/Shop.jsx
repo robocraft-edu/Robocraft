@@ -13,8 +13,6 @@ const TABS = [
   { id: 'accent', label: 'Themes' },
   { id: 'frame', label: 'Frames' },
   { id: 'title', label: 'Titles' },
-  { id: 'pet', label: 'Pets' },
-  { id: 'room', label: 'Room' },
   { id: 'mystery', label: 'Mystery' },
 ];
 
@@ -26,7 +24,6 @@ function ItemPreview({ item }) {
       : <span className="text-4xl" aria-hidden>{item.emoji}</span>;
   }
   if (item.type === 'avatar') return <span className="text-4xl" aria-hidden>{item.emoji}</span>;
-  if (item.type === 'pet' || item.type === 'room') return <span className="text-4xl" aria-hidden>{item.emoji || '—'}</span>;
   if (item.type === 'accent') return <span className="w-10 h-10 rounded-full shadow-lg" style={{ background: item.swatch, boxShadow: `0 0 18px ${item.swatch}80` }} />;
   if (item.type === 'frame') return (
     <span className="w-12 h-12 rounded-full p-[3px]" style={{ background: item.value === 'transparent' ? 'transparent' : item.value, border: item.value === 'transparent' ? '1px dashed currentColor' : 'none' }}>

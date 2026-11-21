@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { formatClass } from '@/lib/utils';
 import { Outlet, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { Home, BookOpen, FolderGit2, BarChart3, Wrench, ShoppingBag } from 'lucide-react';
+import { Home, BookOpen, FolderGit2, BarChart3, Wrench, ShoppingBag, Camera, Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import AvatarBadge from '@/components/AvatarBadge';
 import AIMentor from '@/components/learning/AIMentor';
@@ -32,6 +32,7 @@ export default function Layout() {
     if (pathname.startsWith('/project')) return '/projects';
     if (['/build', '/lab', '/arena', '/design', '/mechanisms', '/challenges', '/assessment'].some(x => pathname.startsWith(x))) return '/build';
     if (pathname.startsWith('/shop')) return '/shop';
+    if (pathname.startsWith('/community')) return '/community';
     if (pathname.startsWith('/progress')) return '/progress';
     if (pathname === '/') return '/';
     return null; // settings, mentor, revision, search, challenges: no tab highlighted
@@ -81,6 +82,7 @@ export default function Layout() {
     { path: '/shop', label: 'Shop', icon: ShoppingBag },
     { path: '/projects', label: 'Projects', icon: FolderGit2 },
     { path: '/progress', label: 'Progress', icon: BarChart3 },
+    { path: '/community', label: 'Gallery', icon: Camera },
   ];
 
   return (
@@ -109,9 +111,10 @@ export default function Layout() {
             </span>
             <button
               onClick={() => navigate('/settings')}
-              className="w-8 h-8 rounded-full glass flex items-center justify-center text-sm font-bold text-cyan-400 hover:neon-glow transition-all"
+              aria-label="Settings"
+              className="w-8 h-8 rounded-full glass flex items-center justify-center text-cyan-400 hover:neon-glow transition-all"
             >
-              {user?.full_name?.[0]?.toUpperCase() || (isGuest ? 'G' : 'U')}
+              <SettingsIcon className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -127,7 +130,7 @@ export default function Layout() {
 
       {/* Bottom navigation (hidden in the Lab, which has its own toolbar) */}
       {!inLab && <div className="fixed bottom-0 left-0 right-0 z-40 glass-strong border-t border-cyan-500/10" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-around px-2 py-2">
+        <div className="max-w-2xl mx-auto flex items-center justify-around px-1 sm:px-2 py-2">
           {navItems.map(item => {
             const active = activeTab === item.path;
             const Icon = item.icon;
@@ -135,7 +138,7 @@ export default function Layout() {
               <button
                 key={item.path}
                 onClick={() => handleTabClick(item.path)}
-                className={`flex flex-col items-center gap-1 px-2 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${
+                className={`flex flex-col items-center gap-1 px-1 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${
                   active ? 'text-cyan-400 scale-110' : 'text-muted-foreground hover:text-cyan-400/70'
                 }`}
               >
