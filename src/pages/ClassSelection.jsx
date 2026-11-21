@@ -45,7 +45,8 @@ export default function ClassSelection() {
         </div>
 
         {/* Class cards */}
-        <div className="grid gap-4 sm:grid-cols-3">
+        {/* Square tiles: 3 classes + Learn Python, all visible without scrolling */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {classes.map((cls, idx) => {
             const isSelected = selectedClass === cls.id;
             const isSelecting = selecting === cls.id;
@@ -53,7 +54,7 @@ export default function ClassSelection() {
               <button
                 key={cls.id}
                 onClick={() => handleSelect(cls.id)}
-                className={`group relative glass-strong rounded-3xl p-6 text-left transition-all duration-500 animate-slide-up hover:scale-[1.03] hover:neon-glow ${
+                className={`group relative aspect-square overflow-hidden glass-strong rounded-3xl p-4 sm:p-5 text-left transition-all duration-500 animate-slide-up hover:scale-[1.03] hover:neon-glow ${
                   isSelecting ? 'scale-105 neon-glow' : ''
                 }`}
                 style={{ animationDelay: `${idx * 0.1}s` }}
@@ -64,45 +65,44 @@ export default function ClassSelection() {
                   style={{ background: `radial-gradient(circle at center, ${cls.color}15, transparent 70%)` }}
                 />
 
-                <div className="relative z-10">
+                <div className="relative z-10 h-full flex flex-col">
                   {/* Icon */}
                   <div
-                    className="w-16 h-16 rounded-2xl glass flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform duration-300"
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl glass flex items-center justify-center text-3xl sm:text-4xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300"
                     style={{ borderColor: `${cls.color}30` }}
                   >
                     {cls.icon}
                   </div>
 
                   {/* Name */}
-                  <h3 className="text-xl font-bold mb-1" style={{ color: cls.color }}>{cls.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{cls.desc}</p>
-                  <p className="text-xs font-medium" style={{ color: `${cls.color}99` }}>{cls.lessons}</p>
+                  <h3 className="text-base sm:text-lg font-bold mb-1 leading-tight" style={{ color: cls.color }}>{cls.name}</h3>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug line-clamp-2">{cls.desc}</p>
+                  <p className="mt-auto pt-1 text-[11px] sm:text-xs font-medium truncate" style={{ color: `${cls.color}99` }}>{cls.lessons}</p>
 
                   {isSelected && (
-                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: cls.color }}>
-                      <Check className="w-3.5 h-3.5 text-background" />
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: cls.color }}>
+                      <Check className="w-3 h-3 text-background" />
                     </div>
                   )}
                 </div>
               </button>
             );
           })}
-        </div>
 
-        {/* Learn Python: a separate course, open to every class */}
-        <button
-          onClick={() => navigate('/python-course')}
-          className="group mt-4 w-full rounded-3xl p-5 text-left flex items-center gap-4 border-2 border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-blue-500/10 hover:neon-glow transition-all animate-slide-up"
-          style={{ animationDelay: '0.3s' }}
-        >
-          <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center text-4xl shrink-0 group-hover:scale-110 transition-transform duration-300">🐍</div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400">Learn Python</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">Beginner to advanced · Hindi videos by CodeWithHarry · quizzes, flash cards, coding tasks and projects</p>
-            <p className="text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80 mt-1">{LESSON_COUNT} lessons · {PROJECT_COUNT} projects</p>
-          </div>
-          <span className="text-2xl text-emerald-500 group-hover:translate-x-1 transition-transform">→</span>
-        </button>
+          {/* Learn Python: a separate course, open to every class */}
+          <button
+            onClick={() => navigate('/python-course')}
+            className="group relative aspect-square overflow-hidden rounded-3xl p-4 sm:p-5 text-left border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-blue-500/10 hover:neon-glow hover:scale-[1.03] transition-all duration-500 animate-slide-up"
+            style={{ animationDelay: '0.3s' }}
+          >
+            <div className="relative z-10 h-full flex flex-col">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl glass flex items-center justify-center text-3xl sm:text-4xl mb-2 sm:mb-3 shrink-0 group-hover:scale-110 transition-transform duration-300">🐍</div>
+              <h3 className="text-base sm:text-lg font-bold leading-tight text-emerald-600 dark:text-emerald-400">Learn Python</h3>
+              <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug line-clamp-2">Beginner to advanced · Hindi videos by CodeWithHarry · quizzes, flash cards, coding tasks and projects</p>
+              <p className="mt-auto pt-1 text-[11px] sm:text-xs font-medium truncate text-emerald-600/80 dark:text-emerald-400/80">{LESSON_COUNT} lessons · {PROJECT_COUNT} projects</p>
+            </div>
+          </button>
+        </div>
 
         {/* Info */}
         <p className="text-center text-xs text-muted-foreground mt-6 animate-fade-in">
