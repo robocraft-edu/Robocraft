@@ -7,7 +7,7 @@ import { getFirestore, collection, query, where, limit, getDocs, doc, updateDoc,
 // so this screen is not the only lock.
 const ADMIN_EMAIL = 'aryansonkar243@gmail.com';
 // Set this to the URL of the deployed admin Worker (backend/admin-worker.js).
-const ADMIN_WORKER_URL = 'https://robocraft-admin.REPLACE-ME.workers.dev';
+const ADMIN_WORKER_URL = 'https://robocraft-admin.sonkermonika13.workers.dev';
 
 const app = initializeApp({
   apiKey: 'AIzaSyBg2gI3OHnDfN2Ay1Qo8zF_wVplYYEU3Jw',
