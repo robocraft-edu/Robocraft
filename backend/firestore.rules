@@ -1,6 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Only the owner's verified Google/email account counts as admin.
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'aryansonkar243@gmail.com' && request.auth.token.email_verified == true;
+    }
     // Each student can read and write only their own progress.
     match /users/{uid} {
       allow read, delete: if request.auth != null && request.auth.uid == uid;
@@ -52,8 +56,11 @@ service cloud.firestore {
     // Robot Gallery: a student's photo is shown only after the owner sets its
     // status to "approved" in the Firebase console. Students can't approve posts.
     match /community/{id} {
-      allow read: if request.auth != null && (resource.data.status == 'approved' || resource.data.uid == request.auth.uid);
-      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow read: if isAdmin() || (request.auth != null && (resource.data.status == 'approved' || resource.data.uid == request.auth.uid));
+      // Only the admin can approve a post, and only by changing its status.
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status == 'approved';
+      allow delete: if isAdmin() || (request.auth != null && resource.data.uid == request.auth.uid);
       allow create: if request.auth != null && request.resource.data.uid == request.auth.uid
         && request.resource.data.status == 'pending'
         && request.resource.data.keys().hasOnly(['uid', 'nickname', 'avatar', 'caption', 'image', 'status', 'created'])
@@ -63,6 +70,12 @@ service cloud.firestore {
         && request.resource.data.image is string && request.resource.data.image.size() <= 400000
         && request.resource.data.image.matches('^data:image/jpeg;base64,.*')
         && request.resource.data.created is string && request.resource.data.created.size() <= 40;
+    }
+    // Admin change requests: only the owner can read, write or delete them.
+    match /changeRequests/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.keys().hasOnly(['text', 'created'])
+        && request.resource.data.text is string && request.resource.data.text.size() <= 2000;
     }
     // AI-generated projects. These documents are written straight from the
     // browser with the public Firebase config, so they are PRIVATE to the
