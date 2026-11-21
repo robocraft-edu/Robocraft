@@ -72,9 +72,12 @@ function Dashboard({ user }) {
       <main className="wrap">
         <div className="tabs">
           <button className={`tab ${tab === 'photos' ? 'on' : ''}`} onClick={() => setTab('photos')}>Photos to approve</button>
+          <button className={`tab ${tab === 'gallery' ? 'on' : ''}`} onClick={() => setTab('gallery')}>Approved gallery</button>
           <button className={`tab ${tab === 'claude' ? 'on' : ''}`} onClick={() => setTab('claude')}>Ask Claude to change the app</button>
         </div>
-        {tab === 'photos' ? <Photos /> : <ClaudeChanges user={user} />}
+        {tab === 'photos' && <Photos />}
+        {tab === 'gallery' && <Gallery />}
+        {tab === 'claude' && <ClaudeChanges user={user} />}
       </main>
     </div>
   );
@@ -133,6 +136,58 @@ function Photos() {
                 <button className="btn ok" style={{ flex: 1 }} onClick={() => approve(p.id)}>Approve</button>
                 <button className="btn bad" style={{ flex: 1 }} onClick={() => reject(p.id)}>Delete</button>
               </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Gallery() {
+  const [posts, setPosts] = useState(null);
+  const [msg, setMsg] = useState('');
+
+  const load = useCallback(async () => {
+    setPosts(null);
+    setMsg('');
+    try {
+      const snap = await getDocs(query(collection(db, 'community'), where('status', '==', 'approved'), limit(100)));
+      setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.created || '').localeCompare(a.created || '')));
+    } catch (e) {
+      setMsg(`Could not load the gallery: ${e.message}`);
+      setPosts([]);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Deleting the post removes it from the database, so it disappears from every
+  // student's gallery the next time their gallery is loaded.
+  const remove = async (id) => {
+    if (!window.confirm('Delete this photo from the gallery for everyone? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db, 'community', id));
+      setPosts(p => p.filter(x => x.id !== id));
+    } catch (e) { setMsg(`Not deleted: ${e.message}`); }
+  };
+
+  return (
+    <section>
+      <div className="row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <p className="muted" style={{ margin: 0 }}>{posts ? `${posts.length} photos in the gallery` : 'Loading…'}</p>
+        <button className="btn" onClick={load}>Refresh</button>
+      </div>
+      {msg && <p className="err">{msg}</p>}
+      {posts && posts.length === 0 && <p className="muted">The gallery is empty.</p>}
+      <div className="grid">
+        {(posts || []).map(p => (
+          <article key={p.id} className="card">
+            <img src={p.image} alt={p.caption || 'Robot photo'} />
+            <div className="body">
+              <strong>{p.avatar} {p.nickname}</strong>
+              {p.caption ? <span className="muted">{p.caption}</span> : <span className="muted">No caption</span>}
+              <button className="btn bad" onClick={() => remove(p.id)}>Delete from gallery</button>
             </div>
           </article>
         ))}
