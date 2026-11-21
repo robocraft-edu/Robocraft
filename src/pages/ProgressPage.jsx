@@ -5,6 +5,7 @@ import { useApp } from '@/lib/AppContext';
 import { getMode } from '@/lib/adaptive';
 import { getAllLessons, getTotalLessons, getSubjects, getProjects } from '@/lib/curriculum';
 import EngineeringProgress from '@/components/adaptive/EngineeringProgress';
+import SkillTree from '@/components/SkillTree';
 import { Zap, Flame, Trophy, BookOpen, Bookmark, Star, Target, Award, TrendingUp } from 'lucide-react';
 import { useInk } from '@/lib/ui/ink';
 
@@ -121,6 +122,11 @@ export default function ProgressPage() {
           <p className="text-xl font-bold text-yellow-400">{progress.bookmarks.length}</p>
           <p className="text-[10px] text-muted-foreground">Bookmarks</p>
         </div>
+      </div>
+
+      {/* Skill tree: levels unlock as XP grows */}
+      <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        <SkillTree xp={progress.xp || 0} />
       </div>
 
       {/* Subject Progress */}

@@ -8,8 +8,9 @@ import { getAllLessons, getRecommendedLessons, getRecommendedProjects, getTotalL
 import { getLevel, BADGES } from '@/lib/gamification';
 import AvatarBadge from '@/components/AvatarBadge';
 import { WeeklyChallengeCard } from '@/pages/Leaderboard';
-import { equippedItems, localDay } from '@/lib/gamification';
-import { getReminderSettings } from '@/lib/reminders';
+import { equippedItems, localDay, DAILY_GOAL_XP } from '@/lib/gamification';
+import { getReminderSettings, askWebNotifications } from '@/lib/reminders';
+import { isNative } from '@/lib/platform';
 import { GraduationCap, Shapes, RotateCcw, Cpu, Sigma, Calculator, Terminal, Medal, ShoppingBag, Map as MapIcon, Bell, Flame, Target, Zap, BookOpen, ArrowRight, Lightbulb, TrendingUp, Clock, Coins, Star, Bot, Award, ChevronRight, Calendar, Rocket, Wrench, FileText } from 'lucide-react';
 import DailyMissions from '@/components/learning/DailyMissions';
 import ExamSeasonCard from '@/components/ExamSeasonCard';
@@ -133,22 +134,66 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Streak reminder (shown in the evening if the student hasn't studied today) */}
+      {/* Your Robot Room: the pet and decor the student has bought with coins */}
+      {(() => {
+        const eq = equippedItems(progress);
+        const pet = eq.pet && eq.pet.id !== 'pet_none' ? eq.pet.emoji : null;
+        const decor = eq.room && eq.room.id !== 'room_none' ? eq.room.emoji : null;
+        return (
+          <button onClick={() => navigate('/shop')} className="w-full glass-strong rounded-2xl p-4 flex items-center gap-4 text-left animate-slide-up" aria-label="Open your robot room in the Shop">
+            <div className="w-24 h-16 rounded-xl bg-gradient-to-br from-cyan-500/15 to-violet-500/15 border border-border flex items-end justify-around px-2 pb-1 shrink-0">
+              <span className="text-2xl">{decor || '🧱'}</span>
+              <span className="text-2xl">{pet || '🫧'}</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold">Your Robot Room</p>
+              <p className="text-[11px] text-muted-foreground">{pet ? `${eq.pet.name} lives here` : 'Adopt a pet'}{decor ? ` · ${eq.room.name}` : ''}. Decorate with coins in the Shop.</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+        );
+      })()}
+
+      {/* Goal-done break message: celebrate, then suggest a break */}
+      {(() => {
+        const xpToday = progress.xpDay === localDay() ? (progress.xpToday || 0) : 0;
+        if (xpToday < DAILY_GOAL_XP) return null;
+        return (
+          <div className="w-full glass-strong rounded-2xl p-3 flex items-center gap-3 border border-green-500/40 animate-slide-up">
+            <div className="w-9 h-9 rounded-xl bg-green-500/15 flex items-center justify-center text-lg">🎉</div>
+            <div className="flex-1">
+              <p className="text-xs font-bold text-green-500">Today's goal is done!</p>
+              <p className="text-[11px] text-muted-foreground">Great work. Take a break and come back tomorrow to grow your {progress.streak || 1}-day streak.</p>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Streak warning: shown in the evening if the student hasn't studied today */}
       {(() => {
         const studied = progress.lastStreakDate === localDay() || (progress.xpDay === localDay() && (progress.xpToday || 0) > 0);
         const r = getReminderSettings();
         const [h] = (r.time || '18:00').split(':').map(Number);
         if (studied || new Date().getHours() < Math.min(h, 17)) return null;
+        const hoursLeft = 24 - new Date().getHours();
+        const urgent = progress.streak > 0 && hoursLeft <= 7;
         return (
-          <button onClick={() => navigate(continueLearning ? `/lesson/${continueLearning.id}` : '/learn')}
-            className="w-full glass-strong rounded-2xl p-3 flex items-center gap-3 text-left border border-orange-500/30 animate-slide-up">
-            <div className="w-9 h-9 rounded-xl bg-orange-500/15 flex items-center justify-center"><Bell className="w-4 h-4 text-orange-400" /></div>
-            <div className="flex-1">
-              <p className="text-xs font-bold text-orange-400">{progress.streak > 0 ? `Keep your ${progress.streak}-day streak alive!` : 'Start a streak today!'}</p>
-              <p className="text-[11px] text-muted-foreground">One quick lesson or quiz today counts.</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-orange-400" />
-          </button>
+          <div className="space-y-2">
+            <button onClick={() => navigate(continueLearning ? `/lesson/${continueLearning.id}` : '/learn')}
+              className={`w-full glass-strong rounded-2xl p-3 flex items-center gap-3 text-left border animate-slide-up ${urgent ? 'border-red-500/50' : 'border-orange-500/30'}`}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${urgent ? 'bg-red-500/15' : 'bg-orange-500/15'}`}><Bell className={`w-4 h-4 ${urgent ? 'text-red-400' : 'text-orange-400'}`} /></div>
+              <div className="flex-1">
+                <p className={`text-xs font-bold ${urgent ? 'text-red-400' : 'text-orange-400'}`}>{progress.streak > 0 ? (urgent ? `Your ${progress.streak}-day streak ends tonight!` : `Keep your ${progress.streak}-day streak alive!`) : 'Start a streak today!'}</p>
+                <p className="text-[11px] text-muted-foreground">One quick lesson or quiz today counts.</p>
+              </div>
+              <ArrowRight className={`w-4 h-4 ${urgent ? 'text-red-400' : 'text-orange-400'}`} />
+            </button>
+            {!isNative && typeof Notification !== 'undefined' && Notification.permission === 'default' && (
+              <button onClick={() => askWebNotifications()} className="text-[11px] glass rounded-full px-3 py-1.5 flex items-center gap-1">
+                <Bell className="w-3.5 h-3.5" /> Turn on streak alerts
+              </button>
+            )}
+          </div>
         );
       })()}
 

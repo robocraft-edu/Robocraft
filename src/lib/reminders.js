@@ -79,3 +79,69 @@ export async function setReminderSettings(next, studiedToday = false) {
 }
 
 export const remindersAreNative = isNative;
+
+// ── Streak warnings ─────────────────────────────────────────────────────────
+// If a student has a streak and hasn't studied today, they get up to four
+// escalating warnings before midnight, so the streak isn't lost by surprise.
+// Android: scheduled phone notifications. Web (PC, Android browser, iPhone home-screen
+// app): browser notifications while the app is open, plus the Home streak card.
+const WARN_IDS = [2001, 2002, 2003, 2004];
+const WARN_TIMES = ['17:00', '19:00', '20:30', '21:45'];
+const WARN_MESSAGES = [
+  ['🔥 Your streak is waiting!', 'Your {n}-day streak ends at midnight. One lesson keeps it alive.'],
+  ['⚡ {n} days strong!', 'A few hours left to keep your streak going. Do one quiz now.'],
+  ['🚨 Streak alert!', 'Your {n}-day streak ends tonight. A 5-minute lesson saves it.'],
+  ['🏁 Last chance tonight!', 'Your {n}-day streak ends at midnight. Finish one step right now!'],
+];
+
+function warnText(i, n) {
+  const [t, b] = WARN_MESSAGES[i];
+  return { title: t.replace('{n}', n), body: b.replace('{n}', n) };
+}
+
+/** Warnings still to come today, as { slot, at, title, body }. */
+export function streakWarningsToday(streak, studiedToday, now = new Date()) {
+  if (!streak || streak < 1 || studiedToday) return [];
+  const out = [];
+  WARN_TIMES.forEach((t, i) => {
+    const [h, m] = t.split(':').map(Number);
+    const at = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+    if (at > now) out.push({ slot: i, at, ...warnText(i, streak) });
+  });
+  return out;
+}
+
+/** Android: schedule today's warnings, or cancel them if the student already studied. */
+export async function scheduleStreakWarnings(streak, studiedToday) {
+  const LN = await plugin();
+  if (!LN) return;
+  try {
+    await LN.cancel({ notifications: WARN_IDS.map(id => ({ id })) });
+    const due = streakWarningsToday(streak, studiedToday);
+    if (!due.length) return;
+    if (!(await ensurePermission(LN))) return;
+    await LN.schedule({ notifications: due.map(d => ({ id: WARN_IDS[d.slot], title: d.title, body: d.body, schedule: { at: d.at } })) });
+  } catch (e) {
+    console.warn('Streak warnings failed', e);
+  }
+}
+
+/** Web/PC: show a browser notification when a warning time arrives while the app is open. */
+export function showWebStreakWarning(streak, studiedToday, now = new Date()) {
+  if (isNative || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const slot = WARN_TIMES.indexOf(hhmm);
+  if (slot < 0) return;
+  const key = `robocraft_warn_${now.toDateString()}_${slot}`;
+  try { if (localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch { /* ignore */ }
+  const due = streakWarningsToday(streak, studiedToday, new Date(now.getTime() - 60000)).find(d => d.slot === slot);
+  if (!due) return;
+  new Notification(due.title, { body: due.body, icon: `${import.meta.env.BASE_URL}icon-192.png`, tag: 'streak-warning' });
+}
+
+/** Ask for notification permission (PC/web). Only call from a button tap. */
+export async function askWebNotifications() {
+  if (isNative || typeof Notification === 'undefined') return false;
+  if (Notification.permission === 'granted') return true;
+  return (await Notification.requestPermission()) === 'granted';
+}
