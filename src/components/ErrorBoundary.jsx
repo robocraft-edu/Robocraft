@@ -53,6 +53,30 @@ export default class ErrorBoundary extends React.Component {
 
   // The error text, behind a tap. A screenshot of this is the one thing that
   // makes a crash on someone else's phone fixable.
+  // Opens the student's email app with the error details already written in,
+  // addressed to the developer. No account or server is needed.
+  reportLink() {
+    const { details } = this.state;
+    const page = typeof window !== 'undefined' ? window.location.href : '';
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const body = [
+      'RoboCraft error report',
+      `When: ${new Date().toString()}`,
+      `Page: ${page}`,
+      `Device: ${ua}`,
+      '',
+      details || 'No details available.',
+      '',
+      'Please describe what you were doing (optional):',
+    ].join('\n').slice(0, 1800);
+    const href = `mailto:aryansonkar243@gmail.com?subject=${encodeURIComponent('RoboCraft error report')}&body=${encodeURIComponent(body)}`;
+    return (
+      <a href={href} className="mt-3 inline-block px-3 py-2 rounded-xl glass text-xs font-bold">
+        Send report to the developer
+      </a>
+    );
+  }
+
   renderDetails() {
     const { details, showDetails } = this.state;
     if (!details) return null;
@@ -125,6 +149,7 @@ export default class ErrorBoundary extends React.Component {
           {!stale && (
             <>
               {this.renderDetails()}
+              {this.state.details && this.reportLink()}
               <p className="text-[10px] text-muted-foreground mt-3">
                 If this keeps happening, please report it from Settings so we can fix it.
               </p>
