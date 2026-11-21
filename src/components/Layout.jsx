@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { formatClass } from '@/lib/utils';
 import { Outlet, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { Home, BookOpen, FolderGit2, BarChart3, Wrench, ShoppingBag, Camera, Settings as SettingsIcon } from 'lucide-react';
+import { Home, BookOpen, FolderGit2, BarChart3, Wrench, ShoppingBag, Camera, MoreHorizontal, Settings as SettingsIcon } from 'lucide-react';
 import { useApp } from '@/lib/AppContext';
 import AvatarBadge from '@/components/AvatarBadge';
 import AIMentor from '@/components/learning/AIMentor';
@@ -18,6 +18,19 @@ export default function Layout() {
   const classProgress = selectedClass ? getProgressForClass(selectedClass) : null;
 
   const [scrolled, setScrolled] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [showMoreHint, setShowMoreHint] = useState(false);
+
+  // Tell students what is under More. Shown on the first two app openings only.
+  useEffect(() => {
+    let shown = 0;
+    try { shown = Number(localStorage.getItem('robocraft_more_hint') || 0); } catch { /* ignore */ }
+    if (shown >= 2) return;
+    try { localStorage.setItem('robocraft_more_hint', String(shown + 1)); } catch { /* ignore */ }
+    setShowMoreHint(true);
+    const t = setTimeout(() => setShowMoreHint(false), 5000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -40,6 +53,7 @@ export default function Layout() {
 
   const activeTab = useMemo(() => getActiveTab(location.pathname), [location.pathname]);
   const inLab = location.pathname.startsWith('/lab') || location.pathname.startsWith('/design');
+  const moreActive = moreNav.some(m => location.pathname.startsWith(m.path));
 
   useEffect(() => {
     if (!activeTab) return;
@@ -75,13 +89,16 @@ export default function Layout() {
     return <Navigate to="/class-selection" replace />;
   }
 
-  const navItems = [
+  // Footer: the five main screens. Projects and Gallery sit behind More.
+  const mainNav = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/learn', label: 'Learn', icon: BookOpen },
     { path: '/build', label: 'Build', icon: Wrench },
     { path: '/shop', label: 'Shop', icon: ShoppingBag },
-    { path: '/projects', label: 'Projects', icon: FolderGit2 },
     { path: '/progress', label: 'Progress', icon: BarChart3 },
+  ];
+  const moreNav = [
+    { path: '/projects', label: 'Projects', icon: FolderGit2 },
     { path: '/community', label: 'Gallery', icon: Camera },
   ];
 
@@ -131,7 +148,7 @@ export default function Layout() {
       {/* Bottom navigation (hidden in the Lab, which has its own toolbar) */}
       {!inLab && <div className="fixed bottom-0 left-0 right-0 z-40 glass-strong border-t border-cyan-500/10" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="max-w-2xl mx-auto flex items-center justify-around px-1 sm:px-2 py-2">
-          {navItems.map(item => {
+          {mainNav.map(item => {
             const active = activeTab === item.path;
             const Icon = item.icon;
             return (
@@ -149,8 +166,50 @@ export default function Layout() {
               </button>
             );
           })}
+          <button
+            onClick={() => setMoreOpen(true)}
+            aria-label="More screens"
+            className={`flex flex-col items-center gap-1 px-1 sm:px-3 py-1.5 rounded-xl transition-all duration-300 ${moreActive ? 'text-cyan-400' : 'text-muted-foreground hover:text-cyan-400/70'}`}
+          >
+            <div className={`p-1.5 rounded-lg transition-all ${moreActive ? 'glass neon-glow' : ''}`}>
+              <MoreHorizontal className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] font-medium">More</span>
+          </button>
         </div>
       </div>}
+
+      {/* More: Projects and Gallery */}
+      {moreOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setMoreOpen(false)}>
+          <div className="absolute bottom-0 left-0 right-0 glass-strong rounded-t-3xl p-5" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 rounded-full bg-muted mx-auto mb-4" />
+            <p className="font-bold mb-3">More</p>
+            <div className="grid grid-cols-2 gap-3">
+              {moreNav.map(item => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => { setMoreOpen(false); navigate(item.path); window.scrollTo(0, 0); }}
+                    className="glass rounded-2xl p-4 flex items-center gap-3 text-left"
+                  >
+                    <Icon className="w-5 h-5 text-cyan-400" />
+                    <span className="font-semibold text-sm">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* One-time hint: what is under More */}
+      {showMoreHint && (
+        <div className="fixed left-1/2 -translate-x-1/2 z-40 glass-strong rounded-full px-4 py-2 text-xs shadow-lg animate-fade-in whitespace-nowrap" style={{ bottom: 'calc(5.5rem + env(safe-area-inset-bottom))' }}>
+          Projects and Gallery are under <b>More</b>
+        </div>
+      )}
 
       {/* Floating AI Mentor */}
       {!inLab && location.pathname !== '/mentor' && <AIMentor compact />}
