@@ -3,7 +3,7 @@ import { backend } from '@/api/client';
 import { getLevel, checkBadges, XP_REWARDS, DAILY_MISSIONS, WEEKLY_MISSIONS, recordMission, openMysteryBox, MYSTERY_BOXES, localDay, REWARD_SHOP, equippedItems, weekId, weeklyChallengeStatus } from '@/lib/gamification';
 import { getAllLessons } from '@/lib/curriculum';
 import { useAuth } from '@/lib/AuthContext';
-import { scheduleReminders } from '@/lib/reminders';
+import { scheduleReminders, scheduleStreakWarnings, showWebStreakWarning } from '@/lib/reminders';
 
 const AppContext = createContext();
 
@@ -144,6 +144,17 @@ export const AppProvider = ({ children }) => {
     if (isLoading) return;
     scheduleReminders(studiedToday);
   }, [studiedToday, isLoading]);
+
+  // Streak warnings: up to four before midnight while the streak is at risk.
+  // Android schedules them on the phone; web/PC shows them while the app is open.
+  const currentStreak = currentProgress?.streak || 0;
+  const hasProgress = !!currentProgress;
+  useEffect(() => {
+    if (isLoading || !hasProgress) return;
+    scheduleStreakWarnings(currentStreak, studiedToday);
+    const t = setInterval(() => showWebStreakWarning(currentStreak, studiedToday), 60000);
+    return () => clearInterval(t);
+  }, [currentStreak, studiedToday, isLoading, hasProgress]);
 
   const selectClass = (classId) => {
     const uid = user?.id || 'guest';
