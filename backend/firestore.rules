@@ -35,6 +35,35 @@ service cloud.firestore {
         && request.resource.data.message is string && request.resource.data.message.size() <= 1000
         && request.resource.data.excerpt is string && request.resource.data.excerpt.size() <= 1500;
     }
+    // High-fives: a preset emoji from one student to a classmate, once per pair per day.
+    // The id is fixed as from_to_day, so a repeat in the same day is rejected.
+    // Only the recipient can read them; the sender can delete their own.
+    match /highfives/{id} {
+      allow read: if request.auth != null && resource.data.to == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.from == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string && request.resource.data.to != request.auth.uid
+        && request.resource.data.keys().hasOnly(['from', 'to', 'emoji', 'day', 'created'])
+        && request.resource.data.emoji in ['🙌', '⭐', '🔥', '🤖']
+        && request.resource.data.day is string && request.resource.data.day.size() <= 12
+        && request.resource.data.created is string && request.resource.data.created.size() <= 40
+        && id == request.auth.uid + '_' + request.resource.data.to + '_' + request.resource.data.day;
+    }
+    // Robot Gallery: a student's photo is shown only after the owner sets its
+    // status to "approved" in the Firebase console. Students can't approve posts.
+    match /community/{id} {
+      allow read: if request.auth != null && (resource.data.status == 'approved' || resource.data.uid == request.auth.uid);
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'avatar', 'caption', 'image', 'status', 'created'])
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() <= 40
+        && request.resource.data.avatar is string && request.resource.data.avatar.size() <= 8
+        && request.resource.data.caption is string && request.resource.data.caption.size() <= 140
+        && request.resource.data.image is string && request.resource.data.image.size() <= 400000
+        && request.resource.data.image.matches('^data:image/jpeg;base64,.*')
+        && request.resource.data.created is string && request.resource.data.created.size() <= 40;
+    }
     // AI-generated projects. These documents are written straight from the
     // browser with the public Firebase config, so they are PRIVATE to the
     // student who made them: sharing the cache between accounts would let

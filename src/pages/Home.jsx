@@ -11,6 +11,7 @@ import { WeeklyChallengeCard } from '@/pages/Leaderboard';
 import { equippedItems, localDay, DAILY_GOAL_XP } from '@/lib/gamification';
 import { getReminderSettings, askWebNotifications } from '@/lib/reminders';
 import { isNative } from '@/lib/platform';
+import HighFiveNote from '@/components/HighFiveNote';
 import { GraduationCap, Shapes, RotateCcw, Cpu, Sigma, Calculator, Terminal, Medal, ShoppingBag, Map as MapIcon, Bell, Flame, Target, Zap, BookOpen, ArrowRight, Lightbulb, TrendingUp, Clock, Coins, Star, Bot, Award, ChevronRight, Calendar, Rocket, Wrench, FileText } from 'lucide-react';
 import DailyMissions from '@/components/learning/DailyMissions';
 import ExamSeasonCard from '@/components/ExamSeasonCard';
@@ -133,6 +134,18 @@ export default function Home() {
           />
         </div>
       </div>
+
+      <HighFiveNote />
+
+      {/* Robot Gallery: share a robot photo (approved before others see it) */}
+      <button onClick={() => navigate('/community')} className="w-full glass-strong rounded-2xl p-3 flex items-center gap-3 text-left animate-slide-up">
+        <div className="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center text-lg">📸</div>
+        <div className="flex-1">
+          <p className="text-xs font-bold">Robot Gallery</p>
+          <p className="text-[11px] text-muted-foreground">Share a photo of your robot and see what others built.</p>
+        </div>
+        <ArrowRight className="w-4 h-4 text-muted-foreground" />
+      </button>
 
       {/* Your Robot Room: the pet and decor the student has bought with coins */}
       {(() => {

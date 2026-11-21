@@ -100,6 +100,20 @@ export default function Leaderboard() {
     }
   };
 
+  // Co-op: the whole group works towards one shared weekly target.
+  const TEAM_TARGET = 500;
+  const teamXp = me?.group ? board.rows.filter(r => r.group === me.group).reduce((s, r) => s + (r.weekXp || 0), 0) : 0;
+  const [sentTo, setSentTo] = useState(() => new Set());
+  const highFive = async (r, emoji = '🙌') => {
+    try {
+      const lb = await import('@/api/leaderboard');
+      await lb.sendHighFive(r.id, emoji);
+      setSentTo(s => new Set(s).add(r.id));
+      toast({ title: `${emoji} High-five sent to ${r.nickname}` });
+    } catch (e) {
+      toast({ title: 'Not sent', description: e?.code === 'permission-denied' ? 'You already sent one to them today.' : (e?.message || 'Try again later.') });
+    }
+  };
   const rows = tab === 'group' && me?.group ? board.rows.filter(r => r.group === me.group) : board.rows;
   const myRank = rows.findIndex(r => r.me) + 1;
   const top = rows.slice(0, 50);
@@ -199,6 +213,19 @@ export default function Leaderboard() {
             </div>
           )}
 
+          {me?.group && tab === 'group' && !loading && (
+            <div className="glass-strong rounded-2xl p-4 mb-3 border border-cyan-500/30">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-bold">🤝 Team quest: Group {me.group}</span>
+                <span className="text-xs text-muted-foreground">{Math.min(teamXp, TEAM_TARGET)} / {TEAM_TARGET} XP</span>
+              </div>
+              <div className="mt-2 h-2.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all" style={{ width: `${Math.min(100, (teamXp / TEAM_TARGET) * 100)}%` }} />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5">{teamXp >= TEAM_TARGET ? 'Team goal reached this week! 🎉' : 'Every lesson and quiz from your group adds up. Reach the target together.'}</p>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-cyan-400" /></div>
           ) : error ? (
@@ -213,6 +240,10 @@ export default function Leaderboard() {
                   <span className="text-xl" aria-hidden>{r.avatar || '🤖'}</span>
                   <span className="flex-1 text-sm font-medium truncate">{r.nickname}{r.me ? ' (you)' : ''}</span>
                   <span className="text-sm font-bold text-cyan-400">{r.weekXp} XP</span>
+                  {tab === 'group' && !r.me && (
+                    <button onClick={() => highFive(r)} disabled={sentTo.has(r.id)} aria-label={`High-five ${r.nickname}`}
+                      className="text-base px-2 py-1 rounded-lg glass disabled:opacity-40">{sentTo.has(r.id) ? '✅' : '🙌'}</button>
+                  )}
                 </div>
               ))}
               {myRank > 50 && (

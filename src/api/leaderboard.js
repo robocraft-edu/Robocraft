@@ -92,3 +92,31 @@ export async function fetchBoard(classId, week) {
     .sort((a, b) => b.weekXp - a.weekXp);
   return { signedIn: true, uid: c.uid, rows };
 }
+
+// ── High-fives ──────────────────────────────────────────────────────────────
+// A high-five is a preset emoji from one student to a classmate on the board.
+// No text is sent, so there is nothing to moderate. One per pair per day: the
+// document id is fixed for that pair and day, so the database rejects repeats.
+export const HIGH_FIVE_EMOJI = ['🙌', '⭐', '🔥', '🤖'];
+const HF_COL = 'highfives';
+const dayKey = () => new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD
+
+export async function sendHighFive(toUid, emoji) {
+  const c = await ctx();
+  if (!c) throw Object.assign(new Error('Sign in to send a high-five.'), { status: 401 });
+  if (toUid === c.uid) throw new Error("You can't high-five yourself.");
+  if (!HIGH_FIVE_EMOJI.includes(emoji)) throw new Error('Unknown high-five.');
+  const day = dayKey();
+  await c.F.setDoc(c.F.doc(c.db, HF_COL, `${c.uid}_${toUid}_${day}`), {
+    from: c.uid, to: toUid, emoji, day, created: new Date().toISOString(),
+  });
+}
+
+/** High-fives the signed-in student received today. */
+export async function myHighFivesToday() {
+  const c = await ctx();
+  if (!c) return [];
+  const q = c.F.query(c.F.collection(c.db, HF_COL), c.F.where('to', '==', c.uid), c.F.where('day', '==', dayKey()));
+  const snap = await c.F.getDocs(q);
+  return snap.docs.map(d => d.data());
+}
