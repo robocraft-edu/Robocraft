@@ -53,7 +53,6 @@ export default function Layout() {
 
   const activeTab = useMemo(() => getActiveTab(location.pathname), [location.pathname]);
   const inLab = location.pathname.startsWith('/lab') || location.pathname.startsWith('/design');
-  const moreActive = moreNav.some(m => location.pathname.startsWith(m.path));
 
   useEffect(() => {
     if (!activeTab) return;
@@ -101,6 +100,7 @@ export default function Layout() {
     { path: '/projects', label: 'Projects', icon: FolderGit2 },
     { path: '/community', label: 'Gallery', icon: Camera },
   ];
+  const moreActive = moreNav.some(m => location.pathname.startsWith(m.path));
 
   return (
     <div className="min-h-screen animated-bg grid-pattern isolate">
